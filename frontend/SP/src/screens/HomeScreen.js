@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image} from "react-native";
+import { View, Text, TouchableOpacity} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { commonStyles } from "../styles/commonStyles";
@@ -27,7 +27,7 @@ export default function HomeScreen({ navigation }) {
       {loggedIn ? (
         <View style={commonStyles.homeContent}>
           <TouchableOpacity style={commonStyles.cameraButton} onPress={() => handlePhotoFlow(openCamera,navigation)}>
-            <Ionicons name="camera" size={50} color="white" />
+            <Ionicons name="rocket" size={50} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={commonStyles.button} onPress={() => handlePhotoFlow(openLibrary,navigation)}>
             <Text style={commonStyles.authText}>Upload from library</Text>
@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
           <TouchableOpacity
             style={commonStyles.button}
-            onPress={() => navigation.replace("Registration")} // registration  route changed for testing
+            onPress={() => navigation.replace("Registration")}
           >
             <Text style={commonStyles.authText}>Register</Text>
           </TouchableOpacity>

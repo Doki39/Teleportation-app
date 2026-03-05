@@ -1,23 +1,20 @@
 import * as ImagePicker from "expo-image-picker";
 import { Platform, Alert } from "react-native";
-import { sendPhotoToAnalyze } from "../services/photoServices";
+import { sendPhotoToGenerate } from "../services/photoServices";
 
 export async function handlePhotoFlow(getPayload, navigation) {
   try {
     const payload = await getPayload();
     if (!payload) return;
 
-    const data = await sendPhotoToAnalyze(payload);
+    const data = await sendPhotoToGenerate(payload);
 
     let imageUri = payload.uri ?? null;
     if (payload.file && typeof URL !== "undefined" && URL.createObjectURL) {
       imageUri = URL.createObjectURL(payload.file);
     }
 
-    navigation.replace("CarDetails", {
-      carData: data.carData,
-      imageUrl: data.imageUrl ?? null,
-      imageUri,
+    navigation.replace("Library", {
     });
   } catch (err) {
     console.log(err);

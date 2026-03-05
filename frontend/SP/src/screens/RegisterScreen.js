@@ -1,5 +1,5 @@
 import { use, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, styles, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { commonStyles } from "../styles/commonStyles";

@@ -9,8 +9,8 @@ import { pool } from "./data/dbconnection.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-fs.mkdirSync(path.join(UPLOADS_DIR, "cars"), { recursive: true });
-fs.mkdirSync(path.join(UPLOADS_DIR, "keys"), { recursive: true });
+fs.mkdirSync(path.join(UPLOADS_DIR, "processed"), { recursive: true });
+fs.mkdirSync(path.join(UPLOADS_DIR, "unprocessed"), { recursive: true });
 
 const PORT = 3000;
 const app = express();
@@ -20,10 +20,10 @@ app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 import authRoutes from "./routes/auth.js";
-import vehicleRoutes from "./routes/vehicles.js";
+import photoRoutes from "./routes/photos.js";
 
 app.use("/api/auth", authRoutes);
-app.use("/api/vehicle", vehicleRoutes);
+app.use("/api/photos", photoRoutes);
 
 app.listen(PORT, () => console.log("Server running on port " + PORT));
 
