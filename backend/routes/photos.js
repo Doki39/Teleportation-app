@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { nanoid } from "nanoid";
 import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
+import { uploadImage } from "../services/uploadService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
@@ -23,6 +24,7 @@ const unprocessedStorage = multer.diskStorage({
 });
 
 const uploadUnprocessed = multer({ storage: unprocessedStorage });
+const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
 router.get("/", async (_req, res) => {
@@ -36,6 +38,19 @@ router.get("/", async (_req, res) => {
     res.status(500).json({ message: "Failed to fetch photos" });
   }
 });
+router.post("/upload", uploadToDrive.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No photo sent" });
+    }
+    const imageUrl = await uploadImage(req.file);
+    return res.json({ imageUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || "Upload to Drive failed" });
+  }
+});
+
 
 router.post("/generate", uploadUnprocessed.single("image"), async (req, res) => {
   try {
