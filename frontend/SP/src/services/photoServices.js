@@ -11,7 +11,8 @@ export async function uploadPhotoToDrive({ uri, file }) {
     const text = await response.text();
     throw new Error(`Server responded with ${response.status}: ${text}`);
   }
-  return response.json();
+  const data = await response.json();
+  return data;
 }
 
 

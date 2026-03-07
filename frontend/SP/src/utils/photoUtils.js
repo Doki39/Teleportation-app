@@ -7,14 +7,9 @@ export async function handlePhotoFlow(getPayload, navigation) {
     const payload = await getPayload();
     if (!payload) return;
 
-    await uploadPhotoToDrive(payload);
-
-    let imageUri = payload.uri ?? null;
-    if (payload.file && typeof URL !== "undefined" && URL.createObjectURL) {
-      imageUri = URL.createObjectURL(payload.file);
-    }
-
+    const { imageUrl } = await uploadPhotoToDrive(payload);
     navigation.replace("Library", {
+      imageUrl,
     });
   } catch (err) {
     console.log(err);

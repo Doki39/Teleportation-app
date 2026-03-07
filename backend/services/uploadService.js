@@ -35,7 +35,7 @@ export async function uploadImage(file) {
       supportsAllDrives: true,
     });
 
-    return `https://drive.google.com/uc?id=${fileId}`;
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
   } catch (err) {
     if (err?.code === 403 && err?.message?.includes("storage quota")) {
       throw new Error(
