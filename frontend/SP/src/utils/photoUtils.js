@@ -1,13 +1,13 @@
 import * as ImagePicker from "expo-image-picker";
 import { Platform, Alert } from "react-native";
-import { sendPhotoToGenerate } from "../services/photoServices";
+import { uploadPhotoToDrive } from "../services/photoServices";
 
 export async function handlePhotoFlow(getPayload, navigation) {
   try {
     const payload = await getPayload();
     if (!payload) return;
 
-    const data = await sendPhotoToGenerate(payload);
+    await uploadPhotoToDrive(payload);
 
     let imageUri = payload.uri ?? null;
     if (payload.file && typeof URL !== "undefined" && URL.createObjectURL) {
