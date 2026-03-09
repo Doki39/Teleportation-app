@@ -7,8 +7,8 @@ class NanoBananaAPI {
     this.apiKey = apiKey;
     this.baseUrl = "https://api.nanobananaapi.ai/api/v1/nanobanana";
   }
-  
-  async generateImage(prompt,imageUrl) {
+
+  async generateImage(imageUrl, prompt) {
     const response = await fetch(`${this.baseUrl}/generate`, {
       method: "POST",
       headers: {
@@ -17,23 +17,22 @@ class NanoBananaAPI {
       },
       body: JSON.stringify({
         prompt,
-        type: "IMAGETOIMAGE",
-        imageUrl,
+        type: "IMAGETOIAMGE",
+        imageUrls: imageUrl,
         numImages: 1,
         image_size: "16:9",
       }),
     });
 
+
     const text = await response.text();
     let result;
+
     try {
       result = JSON.parse(text);
     } catch {
       throw new Error(
-        `NanoBanana generateImage non-JSON response (status ${response.status}): ${text.slice(
-          0,
-          200
-        )}`
+        `NanoBanana generateImage non-JSON response (status ${response.status}): ${text.slice(0,200)}`
       );
     }
 
@@ -44,7 +43,6 @@ class NanoBananaAPI {
         }`
       );
     }
-    
     return result.data.taskId;
   }
   
@@ -74,17 +72,24 @@ class NanoBananaAPI {
     
     while (Date.now() - startTime < maxWaitTime) {
       const status = await this.getTaskStatus(taskId);
-      
-      switch (status.successFlag) {
+      const data = status?.data;
+
+      if (!data) {
+        console.log("NanoBanana getTaskStatus response missing data:", status);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        continue;
+      }
+
+      switch (data.successFlag) {
         case 0:
           console.log("Task is generating...");
           break;
         case 1:
           console.log("Generation completed successfully!");
-          return status.response;
+          return data.response;
         case 2:
         case 3:
-          throw new Error(status.errorMessage || "Generation failed");
+          throw new Error(data.errorMessage || "Generation failed");
       }
       
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -94,7 +99,7 @@ class NanoBananaAPI {
   }
 }
 
-export async function generatePicture(prompt, imageUrl) {
+export async function generatePicture(imageUrl, prompt) {
   const apiKey = process.env.NANOBANANA_API_KEY;
   if (!apiKey) {
     throw new Error("NANOBANANA_API_KEY is not set in environment");
@@ -107,7 +112,7 @@ export async function generatePicture(prompt, imageUrl) {
 
   const api = new NanoBananaAPI(apiKey);
 
-  const taskId = await api.generateImage(prompt, imageUrl);
+  const taskId = await api.generateImage(imageUrl, prompt); // 
 
   const result = await api.waitForCompletion(taskId);
 

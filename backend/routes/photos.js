@@ -52,22 +52,21 @@ router.post("/upload", uploadToDrive.single("image"), async (req, res) => {
 });
 
 
-router.post("/generate", uploadUnprocessed.single("image"), async (req, res) => {
+router.post("/generate", async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No photo sent" });
+    const { imageUrl, prompt } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ message: "No imageUrl provided" });
     }
 
-    const imageBuffer = await fs.readFile(req.file.path);
-    const base64 = await generatePicture(imageBuffer);
-
+    const base64 = await generatePicture(imageUrl, prompt);
     const processedFilename = `${nanoid()}.jpg`;
     const processedPath = path.join(PROCESSED_DIR, processedFilename);
 
     const processedBuffer = Buffer.from(base64, "base64");
     await fs.writeFile(processedPath, processedBuffer);
 
-    const unprocessedImageUri = "/uploads/unprocessed/" + req.file.filename;
+    const unprocessedImageUri = imageUrl;
     const processedUri = "/uploads/processed/" + processedFilename;
 
     await pool.query(`
@@ -86,11 +85,6 @@ router.post("/generate", uploadUnprocessed.single("image"), async (req, res) => 
 
     return res.status(201).json(rows[0]);
   } catch (err) {
-    if (req.file?.path) {
-      try {
-        await fs.unlink(req.file.path);
-      } catch (_) {}
-    }
     console.error(err);
     res.status(500).json({ error: err.message });
   }

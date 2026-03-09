@@ -16,14 +16,13 @@ export async function uploadPhotoToDrive({ uri, file }) {
 }
 
 
-export async function sendPhotoToGenerate(imageUrl) {
-  
+export async function sendPhotoToGenerate(imageUrl, prompt) {
   const response = await fetch(`${API_BASE_URL}/api/photos/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ imageUrl }),
+    body: JSON.stringify({ imageUrl, prompt }),
   });
   if (!response.ok) {
     const text = await response.text();

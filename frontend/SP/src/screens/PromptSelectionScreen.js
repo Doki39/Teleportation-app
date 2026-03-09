@@ -8,7 +8,18 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const { imageUrl } = route.params || {};
 
   async function handleGenerate () {
-    await sendPhotoToGenerate(imageUrl).catch((error) => {
+    const prompt = `
+  Use the reference image as the base composition.
+
+  Preserve:
+  - subject pose
+  - camera angle
+  - general lighting
+
+  Modify:
+  - change background to a Sancuary of Truth in Pattaya, Thailand
+`;
+    await sendPhotoToGenerate(imageUrl,prompt).catch((error) => {
       console.log(error);
       Alert.alert("Error", error.message || "Failed to generate image.");
     });
