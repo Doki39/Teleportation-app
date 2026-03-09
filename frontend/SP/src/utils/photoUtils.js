@@ -8,7 +8,7 @@ export async function handlePhotoFlow(getPayload, navigation) {
     if (!payload) return;
 
     const { imageUrl } = await uploadPhotoToDrive(payload);
-    navigation.replace("Library", {
+    navigation.replace("PromptSelection", {
       imageUrl,
     });
   } catch (err) {

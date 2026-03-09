@@ -20,7 +20,10 @@ export async function sendPhotoToGenerate(imageUrl) {
   
   const response = await fetch(`${API_BASE_URL}/api/photos/generate`, {
     method: "POST",
-    body: imageUrl,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ imageUrl }),
   });
   if (!response.ok) {
     const text = await response.text();
