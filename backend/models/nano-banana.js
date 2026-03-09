@@ -1,4 +1,3 @@
-import sharp from "sharp";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -9,7 +8,7 @@ class NanoBananaAPI {
     this.baseUrl = "https://api.nanobananaapi.ai/api/v1/nanobanana";
   }
   
-  async generateImage(prompt, options = {}) {
+  async generateImage(prompt,imageUrl) {
     const response = await fetch(`${this.baseUrl}/generate`, {
       method: "POST",
       headers: {
@@ -18,12 +17,10 @@ class NanoBananaAPI {
       },
       body: JSON.stringify({
         prompt,
-        type: options.type || "TEXTTOIAMGE",
-        numImages: options.numImages || 1,
-        callBackUrl: options.callBackUrl,
-        watermark: options.watermark,
-        imageUrls: options.imageUrls,
-        image_size: options.image_size || "1:1",
+        type: "IMAGETOIMAGE",
+        imageUrl,
+        numImages: 1,
+        image_size: "16:9",
       }),
     });
 
@@ -97,19 +94,7 @@ class NanoBananaAPI {
   }
 }
 
-export async function generatePicture(buffer) {
-  const prompt = `
-  Use the reference image as the base composition.
-
-  Preserve:
-  - subject pose
-  - camera angle
-  - general lighting
-
-  Modify:
-  - change background to a Sancuary of Truth in Pattaya, Thailand
-`;
-
+export async function generatePicture(prompt, imageUrl) {
   const apiKey = process.env.NANOBANANA_API_KEY;
   if (!apiKey) {
     throw new Error("NANOBANANA_API_KEY is not set in environment");
@@ -122,12 +107,7 @@ export async function generatePicture(buffer) {
 
   const api = new NanoBananaAPI(apiKey);
 
-  const taskId = await api.generateImage(prompt, {
-    type: "TEXTTOIAMGE",
-    numImages: 1,
-    image_size: "1:1",
-    callBackUrl: callbackUrl,
-  });
+  const taskId = await api.generateImage(prompt, imageUrl);
 
   const result = await api.waitForCompletion(taskId);
 
@@ -149,3 +129,4 @@ export async function generatePicture(buffer) {
 
   return outputBase64;
 }
+
