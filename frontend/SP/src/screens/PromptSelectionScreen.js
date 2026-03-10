@@ -8,7 +8,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const { imageUrl } = route.params || {};
 
   async function handleGenerate () {
-    const prompt = `
+    const prompt1 = `
   Use the reference image as the base composition.
 
   Preserve:
@@ -19,7 +19,17 @@ export default function PromptSelectionScreen({ route, navigation }) {
   Modify:
   - change background to a Sancuary of Truth in Pattaya, Thailand
 `;
-    await sendPhotoToGenerate(imageUrl,prompt).catch((error) => {
+    const prompt2 = `  Use the reference image as the base composition.
+
+  Preserve:
+  - subject pose
+  - camera angle
+  - general lighting
+
+  Modify:
+  - Replace the background so the subject appears standing in front of Mount Fuji in Japan, with the mountain clearly visible in the background, natural landscape, and realistic lighting.`
+
+    await sendPhotoToGenerate(imageUrl,prompt2).catch((error) => {
       console.log(error);
       Alert.alert("Error", error.message || "Failed to generate image.");
     });
