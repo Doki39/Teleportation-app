@@ -1,70 +1,104 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, Alert, Image, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { commonStyles, colors } from "../styles/commonStyles";
+import { commonStyles } from "../styles/commonStyles";
 import { sendPhotoToGenerate } from "../services/photoServices";
+import { getPromptSelection } from "../services/promptServices";
+import { API_BASE_URL } from "../config/api";
 
 export default function PromptSelectionScreen({ route, navigation }) {
   const { imageUrl } = route.params || {};
 
-  async function handleGenerate () {
-    const prompt1 = `
-  Use the reference image as the base composition.
+  const [prompts, setPrompts] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
 
-  Preserve:
-  - subject pose
-  - camera angle
-  - general lighting
+  useEffect(() => {
+    async function loadPrompts() {
+      try {
+        const data = await getPromptSelection();
+        setPrompts(data);
+      } catch (err) {
+        console.log(err);
+        Alert.alert("Error", err.message || "Failed to load prompts.");
+      }
+    }
 
-  Modify:
-  - change background to a Sancuary of Truth in Pattaya, Thailand
-`;
-    const prompt2 = `  Use the reference image as the base composition.
+    loadPrompts();
+  }, []);
 
-  Preserve:
-  - subject pose
-  - camera angle
-  - general lighting
+  async function handleConfirm() {
+    if (!selectedId) {
+      Alert.alert("Select prompt", "Please select an option first.");
+      return;
+    }
 
-  Modify:
-  - Replace the background so the subject appears standing in front of Mount Fuji in Japan, with the mountain clearly visible in the background, natural landscape, and realistic lighting.`
+    const selected = prompts.find((p) => p.id === selectedId);
+    if (!selected) {
+      Alert.alert("Error", "Selected prompt not found.");
+      return;
+    }
 
-    await sendPhotoToGenerate(imageUrl,prompt2).catch((error) => {
+    try {
+      await sendPhotoToGenerate(imageUrl, selected.prompt);
+      navigation.replace("Library");
+    } catch (error) {
       console.log(error);
       Alert.alert("Error", error.message || "Failed to generate image.");
-    });
-    
-    navigation.replace("Library");
-  };
+    }
+  }
 
   return (
     <View style={commonStyles.libraryScreen}>
-      <View style={commonStyles.libraryHeader}>
-        <TouchableOpacity onPress={() => navigation.replace("Home")}>
-          <Ionicons name="arrow-back" size={24} />
-        </TouchableOpacity>
-        <Text style={commonStyles.libraryHeaderTitle}>Generate Background</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
       <View style={commonStyles.homeContent}>
-        {imageUrl ? (
-          <Image 
-            source={{ uri: imageUrl }} 
-            style={[commonStyles.preview, { width: 250, height: 250 }]} 
-            resizeMode="cover"
-          />
-        ) : null}
-
-        <Text style={[commonStyles.title, { marginTop: 30, textAlign: "center" }]}>
-          Ready to transform?
+        <Text style={[commonStyles.title, { marginTop: 20, textAlign: "center" }]}>
+          Pick one of the styles
         </Text>
 
+    
+        <ScrollView style={{ width: "100%", marginTop: 20 }}>
+          {prompts.map((item) => {
+            const isSelected = item.id === selectedId;
+            const imageUri = item.image_url?.startsWith("http")
+              ? item.image_url
+              : `${API_BASE_URL}${item.image_url}`;
+            const shortTitle =
+              item.prompt && item.prompt.length > 40
+                ? item.prompt.slice(0, 40) + "..."
+                : item.prompt;
+
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => setSelectedId(item.id)}
+                style={{
+                  marginHorizontal: 20,
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: isSelected ? "#FFD700" : "#ccc",
+                  backgroundColor: isSelected ? "#fffbea" : "white",
+                  overflow: "hidden",
+                }}
+              >
+                {imageUri ? (
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={{ width: "100%", height: 150 }}
+                    resizeMode="cover"
+                  />
+                ) : null}
+                <View style={{ padding: 12 }}>
+                  <Text style={{ fontWeight: "600", fontSize: 16 }}>{shortTitle}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
         <TouchableOpacity
           style={[commonStyles.button, { width: "80%", marginTop: 20 }]}
-          onPress={handleGenerate}
+          onPress={handleConfirm}
         >
-          <Text style={commonStyles.buttonText}>Generate Image</Text>
+          <Text style={commonStyles.buttonText}>Confirm & Generate</Text>
         </TouchableOpacity>
       </View>
     </View>
