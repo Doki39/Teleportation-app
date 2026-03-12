@@ -21,9 +21,10 @@ app.use("/uploads", express.static(UPLOADS_DIR));
 
 import authRoutes from "./routes/auth.js";
 import photoRoutes from "./routes/photos.js";
-
+import promptRoutes from "./routes/prompt.js";
 app.use("/api/auth", authRoutes);
 app.use("/api/photos", photoRoutes);
+app.use("/api/prompts", promptRoutes);
 
 app.listen(PORT, () => console.log("Server running on port " + PORT));
 
