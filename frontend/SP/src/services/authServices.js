@@ -43,6 +43,10 @@ export const handleRegistration = async ({
   }
 };
 
+export const handleLogout = async () => {
+  await AsyncStorage.multiRemove(["token", "user"]);
+};
+
 export const handleLogin = async ({ email, password, navigation }) => {
   try {
     const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });

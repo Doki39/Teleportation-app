@@ -15,6 +15,7 @@ import RocketButton from "../components/RocketButton";
 import { commonStyles } from "../styles/commonStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
+import { handleLogout } from "../services/authServices";
 
 export default function HomeScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -99,8 +100,8 @@ export default function HomeScreen({ navigation }) {
 
   const handleUpload = () => handlePhotoFlow(openLibrary, navigation);
   const handleCamera = () => handlePhotoFlow(openCamera, navigation);
-  const handleLogout = async () => {
-    await AsyncStorage.multiRemove(["token", "user"]);
+  const onLogout = async () => {
+    await handleLogout();
     setLoggedIn(false);
   };
 
@@ -173,7 +174,7 @@ export default function HomeScreen({ navigation }) {
               <ActionButton
                 icon={<Ionicons name="log-out-outline" size={20} color="#FCA5A5" />}
                 label="Log Out"
-                onPress={handleLogout}
+                onPress={onLogout}
                 variant="logout"
               />
         </View>
