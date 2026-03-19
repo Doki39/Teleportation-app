@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Platform,
   PanResponder,
-  FlatList,
+  ScrollView,
   Dimensions,
 } from "react-native";
 import { useSharedValue, withSpring } from "react-native-reanimated";
@@ -98,7 +98,7 @@ export default function Cylinder3D({
         perspective: 1400,
         width: CARD_WIDTH + 60,
         height: 380,
-        ...webStyles.cylinderContainer,
+        transformStyle: "preserve-3d",
       }
     : {
         width: CARD_WIDTH + 60,
@@ -247,10 +247,13 @@ function WebCylinder({
                     src={imageUri}
                     alt={getLabel(item)}
                     style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
-                      position: "absolute",
+                      objectFit: "contain",
+                      objectPosition: "center",
                     }}
                     draggable={false}
                   />
@@ -260,6 +263,8 @@ function WebCylinder({
                       width: "100%",
                       height: "100%",
                       position: "absolute",
+                      top: 0,
+                      left: 0,
                       backgroundColor: ui.colors.glass,
                     }}
                   />
@@ -329,89 +334,92 @@ function NativeCarousel({
   getEmoji,
   commonStyles,
 }) {
-  const flatListRef = useRef(null);
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
-    if (viewableItems.length > 0) onSnapToIndex(viewableItems[0].index ?? 0);
-  }).current;
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+  const scrollRef = useRef(null);
+  const isScrolling = useRef(false);
 
   React.useEffect(() => {
-    flatListRef.current?.scrollToIndex({ index: currentIndex, animated: true });
+    if (scrollRef.current && !isScrolling.current) {
+      scrollRef.current.scrollTo({ x: currentIndex * SCREEN_WIDTH, animated: true });
+    }
   }, [currentIndex]);
 
-  const renderCard = ({ item, index }) => {
-    const isSelected = item.id === selectedId;
-    const isFront = index === currentIndex;
-    const imageUri = getImageUri(item);
+  const handleScroll = (e) => {
+    const offset = e.nativeEvent.contentOffset.x;
+    const index = Math.round(offset / SCREEN_WIDTH);
+    if (index >= 0 && index < prompts.length && index !== currentIndex) {
+      isScrolling.current = true;
+      onSnapToIndex(index);
+      setTimeout(() => { isScrolling.current = false; }, 100);
+    }
+  };
 
-    return (
-      <View style={{ width: SCREEN_WIDTH, alignItems: "center", justifyContent: "center" }}>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            if (isFront) {
-              onSelect(isSelected ? null : item.id);
-            } else {
-              onSnapToIndex(index);
-            }
-          }}
-          style={[
-            commonStyles.promptCard,
-            isSelected && isFront && commonStyles.promptCardSelected,
-          ]}
-        >
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={commonStyles.promptCardImage} resizeMode="cover" />
-          ) : (
-            <View style={[commonStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
-          )}
-          <LinearGradient
-            colors={["rgba(5,11,26,0.85)", "rgba(5,11,26,0.2)", "transparent"]}
-            locations={[0, 0.4, 0.6]}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
-            <ScanlineOverlay />
-          </View>
-          <View style={commonStyles.promptCardLabel}>
-            <Text style={commonStyles.promptCardEmoji}>{getEmoji(item)}</Text>
-            <Text style={commonStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
-          </View>
-          {isSelected && isFront && (
-            <View style={commonStyles.promptSelectedCheck}>
-              <Ionicons name="checkmark" size={16} color="#fff" />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-    );
+  const handleMomentumScrollEnd = (e) => {
+    const offset = e.nativeEvent.contentOffset.x;
+    const index = Math.round(offset / SCREEN_WIDTH);
+    if (index >= 0 && index < prompts.length) onSnapToIndex(index);
+    isScrolling.current = false;
   };
 
   return (
-    <FlatList
-      ref={flatListRef}
-      data={prompts}
-      renderItem={renderCard}
-      keyExtractor={(item) => String(item.id)}
+    <ScrollView
+      ref={scrollRef}
       horizontal
       pagingEnabled
       showsHorizontalScrollIndicator={false}
-      snapToInterval={SCREEN_WIDTH}
-      snapToAlignment="center"
-      decelerationRate="fast"
-      onViewableItemsChanged={onViewableItemsChanged}
-      viewabilityConfig={viewabilityConfig}
-      getItemLayout={(_, index) => ({
-        length: SCREEN_WIDTH,
-        offset: SCREEN_WIDTH * index,
-        index,
+      onScroll={handleScroll}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
+      scrollEventThrottle={16}
+      contentContainerStyle={{ width: SCREEN_WIDTH * prompts.length }}
+      style={{ width: SCREEN_WIDTH, flexGrow: 0 }}
+    >
+      {prompts.map((item, index) => {
+        const isSelected = item.id === selectedId;
+        const isFront = index === currentIndex;
+        const imageUri = getImageUri(item);
+
+        return (
+          <View key={item.id} style={{ width: SCREEN_WIDTH, alignItems: "center", justifyContent: "center" }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                if (isFront) {
+                  onSelect(isSelected ? null : item.id);
+                } else {
+                  onSnapToIndex(index);
+                }
+              }}
+              style={[
+                commonStyles.promptCard,
+                isSelected && isFront && commonStyles.promptCardSelected,
+              ]}
+            >
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={commonStyles.promptCardImage} resizeMode="contain" />
+              ) : (
+                <View style={[commonStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
+              )}
+              <LinearGradient
+                colors={["rgba(5,11,26,0.85)", "rgba(5,11,26,0.2)", "transparent"]}
+                locations={[0, 0.4, 0.6]}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
+                <ScanlineOverlay />
+              </View>
+              <View style={commonStyles.promptCardLabel}>
+                <Text style={commonStyles.promptCardEmoji}>{getEmoji(item)}</Text>
+                <Text style={commonStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
+              </View>
+              {isSelected && isFront && (
+                <View style={commonStyles.promptSelectedCheck}>
+                  <Ionicons name="checkmark" size={16} color="#fff" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        );
       })}
-      onScrollToIndexFailed={(info) => {
-        setTimeout(() => {
-          flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
-        }, 100);
-      }}
-    />
+    </ScrollView>
   );
 }
 
@@ -421,27 +429,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  cylinderInner: {
-    width: "100%",
-    height: "100%",
-    position: "relative",
-  },
-  cardWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });
 
-const webStyles = {
-  cylinderContainer: {
-    transformStyle: "preserve-3d",
-  },
-  cylinderInner: {
-    transformStyle: "preserve-3d",
-  },
-};

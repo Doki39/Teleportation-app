@@ -106,7 +106,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
   const getEmoji = useCallback((item) => item.emoji || "✨", []);
 
-  // Keyboard navigation (web)
   useEffect(() => {
     if (Platform.OS !== "web") return;
     const handler = (e) => {
@@ -123,8 +122,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
   return (
     <View style={commonStyles.promptScreen}>
       <ProfileButton onPress={() => Alert.alert("Not implemented", "Settings screen is not implemented yet.")} />
-
-      {/* Header */}
       <View style={commonStyles.promptHeader}>
         <TouchableOpacity style={commonStyles.promptBackBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
@@ -137,8 +134,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
           <Ionicons name="sparkles" size={20} color={ui.colors.primary} />
         </View>
       </View>
-
-      {/* Floating particles - static, no animation (around cylinder) */}
       <View style={commonStyles.promptParticles} pointerEvents="none">
         {Array.from({ length: 20 }).map((_, i) => (
           <View
@@ -155,10 +150,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
           />
         ))}
       </View>
-
-      {/* Cylinder area */}
       <View style={commonStyles.promptCarouselWrap}>
-        {/* Glow ring */}
         {prompts.length > 0 && (
           <View
             style={{
@@ -175,8 +167,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
             }}
           />
         )}
-
-        {/* Navigation arrows */}
         <View style={commonStyles.promptNavArrowRow}>
           <TouchableOpacity
             style={[commonStyles.promptNavArrow, commonStyles.promptNavLeft]}
@@ -193,8 +183,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
             <Ionicons name="chevron-forward" size={20} color={ui.colors.primary} />
           </TouchableOpacity>
         </View>
-
-        {/* 3D Cylinder */}
         {loading ? (
           <View style={commonStyles.promptCylinder}>
             <ActivityIndicator size="large" color={ui.colors.primary} />
@@ -217,8 +205,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
             commonStyles={commonStyles}
           />
         )}
-
-        {/* Destination info */}
         {prompts.length > 0 && (
           <View style={commonStyles.promptDestInfo}>
             <Text style={commonStyles.promptDestTitle}>
@@ -236,8 +222,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
             </Text>
           </View>
         )}
-
-        {/* Dot indicators */}
         {prompts.length > 0 && (
           <View style={commonStyles.promptDots}>
             {prompts.map((p, i) => (
@@ -254,8 +238,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
           </View>
         )}
       </View>
-
-      {/* Bottom confirm bar */}
       <View style={commonStyles.promptConfirmBar}>
         <TouchableOpacity
           style={[
