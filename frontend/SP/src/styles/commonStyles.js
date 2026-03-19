@@ -1,29 +1,18 @@
 import { StyleSheet } from "react-native";
-
-
-export const primaryBox = {
-  borderWidth: 1,
-  borderColor: "#ccc",
-  padding: 10,
-  marginVertical: 10,
-};
-
-export const primaryContainer = {
-  padding: 20,
-  flex: 1,
-  justifyContent: "center",
-};
-
-export const primaryTitle = {
-  fontSize: 28,
-  marginBottom: 20,
-  fontWeight: "bold",
-};
+import { ui } from "../theme/ui";
 
 export const commonStyles = StyleSheet.create({
-  container: primaryContainer,
-  title: primaryTitle,
-  box: primaryBox,
+  // Auth / form
+  container: {
+    padding: 20,
+    flex: 1,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 28,
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
   input: {
     borderWidth: 1,
     padding: 12,
@@ -46,58 +35,17 @@ export const commonStyles = StyleSheet.create({
     color: "red",
     marginBottom: 8,
   },
-  cameraButton: {
-    width: 120,
-    height: 120,
-    backgroundColor: "#066ddb",
-    borderRadius: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  preview: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  authButtons: {
-    marginTop: 40,
-    width: "70%",
-    gap: 15,
-  },
-  authButton: {
-    backgroundColor: "#222",
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 12,
-  },
-  authText: {
-    color: "white",
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "bold",
+
+  // Library
+  libraryScreen: {
+    flex: 1,
+    backgroundColor: "#9EC8FF",
   },
   homeContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-  },
-  cameraContainer: {
-    flex: 1,
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 40,
-    width: "100%",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  // Library / history screen styles
-  libraryScreen: {
-    flex: 1,
-    backgroundColor: "#9EC8FF",
   },
   libraryHeader: {
     flexDirection: "row",
@@ -138,107 +86,289 @@ export const commonStyles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 12,
   },
-  libraryCardInfo: {
+
+  // Home screen
+  homeRoot: {
     flex: 1,
+    backgroundColor: ui.colors.background,
+    alignItems: "center",
+    overflow: "hidden",
   },
-  libraryLabel: {
-    fontSize: 12,
-    color: "#555",
-  },
-  libraryValue: {
-    fontSize: 14,
-    marginBottom: 4,
-    backgroundColor: "#FFD4A3",
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  libraryDetailsButton: {
-    marginTop: 8,
-    backgroundColor: "#007AFF",
-    paddingVertical: 10,
-    borderRadius: 6,
+  homeContentWrapper: {
+    flex: 1,
+    position: "relative",
+    zIndex: 10,
+    width: "100%",
+    paddingHorizontal: 24,
     alignItems: "center",
   },
-  libraryDetailsButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  libraryModalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+  homeRocketContainer: {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: 118,
+    height: 118,
+    marginLeft: -59,
+    marginTop: -59,
+    alignItems: "center",
     justifyContent: "center",
+    zIndex: 20,
+  },
+  buttonsWrap: {
+    position: "absolute",
+    left: "50%",
+    width: 360,
+    marginLeft: -180,
+    paddingHorizontal: 24,
     alignItems: "center",
+    zIndex: 20,
+    gap: 12,
   },
-  libraryModalCard: {
-    width: "85%",
-    maxHeight: "80%",
-    backgroundColor: "#F5F5F5",
-    borderRadius: 12,
-    padding: 16,
+  titleBlock: {
+    alignItems: "center",
+    marginBottom: 4,
   },
-  libraryModalHeader: {
+  homeTitle: {
+    fontSize: 40,
+    fontWeight: "800",
+    color: ui.colors.text,
+    textShadowColor: "rgba(6,182,212,0.6)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 22,
+    marginBottom: 6,
+    letterSpacing: 0.4,
+  },
+  subtitle: {
+    color: ui.colors.muted,
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  secondaryWrap: {
+    width: "100%",
+    maxWidth: 360,
+    gap: 12,
+  },
+  guestWrap: {
+    width: "100%",
+    maxWidth: 360,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  guestTitle: {
+    color: ui.colors.text,
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  guestText: {
+    color: ui.colors.muted,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  portalStage: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    width: 360,
+    height: 360,
+    marginLeft: -180,
+    marginTop: -180,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  portalAura: {
+    position: "absolute",
+    width: 340,
+    height: 340,
+    borderRadius: 170,
+    backgroundColor: "rgba(6,182,212,0.16)",
+  },
+  portalMistLeft: {
+    position: "absolute",
+    left: -88,
+    width: 170,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(6,182,212,0.55)",
+    shadowColor: ui.colors.secondary,
+    shadowOpacity: 0.85,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  portalMistRight: {
+    position: "absolute",
+    right: -88,
+    width: 170,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(124,58,237,0.52)",
+    shadowColor: ui.colors.primary,
+    shadowOpacity: 0.85,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  spark: {
+    position: "absolute",
+    borderRadius: 999,
+    backgroundColor: ui.colors.secondary,
+  },
+  sparkLeft: {
+    left: 12,
+  },
+  sparkRight: {
+    right: 12,
+    backgroundColor: ui.colors.primary,
+  },
+  portalRingWide: {
+    position: "absolute",
+    width: 226,
+    height: 226,
+    borderRadius: 113,
+    borderWidth: 10,
+    borderColor: "rgba(84,244,255,0.26)",
+    shadowColor: "#54F4FF",
+    shadowOpacity: 1,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  portalRingOuter: {
+    position: "absolute",
+    width: 204,
+    height: 204,
+    borderRadius: 102,
+    borderWidth: 4,
+    borderColor: "rgba(197,255,255,0.95)",
+    shadowColor: "#7DF9FF",
+    shadowOpacity: 1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  portalRingInner: {
+    position: "absolute",
+    width: 188,
+    height: 188,
+    borderRadius: 94,
+    borderWidth: 3,
+    borderColor: "rgba(84,244,255,0.9)",
+    shadowColor: "#54F4FF",
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  portalCoreGlow: {
+    position: "absolute",
+    width: 164,
+    height: 164,
+    borderRadius: 82,
+    backgroundColor: "rgba(0, 229, 255, 0.15)",
+  },
+  portalCore: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: "rgba(3, 12, 20, 0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.04)",
+  },
+  actionBtn: {
+    overflow: "hidden",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    justifyContent: "center",
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
   },
-  libraryModalTitle: {
-    marginLeft: 12,
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  libraryKeyImage: {
-    width: "100%",
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  libraryNotesInput: {
-    minHeight: 60,
+  glassBtn: {
+    backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    backgroundColor: "#fff",
-    marginBottom: 12,
+    borderColor: "rgba(255,255,255,0.13)",
   },
-  libraryPrimaryButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    borderRadius: 8,
+  secondaryBtn: {
+    backgroundColor: "rgba(6,182,212,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(6,182,212,0.38)",
+  },
+  logoutBtn: {
+    backgroundColor: "rgba(239,68,68,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.32)",
+  },
+  actionGlow: {
+    position: "absolute",
+    inset: 0,
+  },
+  primaryGlow: {
+    backgroundColor: "rgba(124,58,237,0.16)",
+  },
+  secondaryGlow: {
+    backgroundColor: "rgba(6,182,212,0.16)",
+  },
+  logoutGlow: {
+    backgroundColor: "rgba(239,68,68,0.14)",
+  },
+  actionBtnText: {
+    color: ui.colors.text,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  secondaryBtnText: {
+    color: ui.colors.secondary,
+  },
+  logoutBtnText: {
+    color: "#FCA5A5",
+  },
+
+  // ProfileButton
+  profileWrap: {
+    position: "absolute",
+    top: 24,
+    right: 24,
+    zIndex: 50,
+    borderRadius: 999,
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
-    marginBottom: 8,
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(153,255,255,0.3)",
+    overflow: "hidden",
   },
-  libraryPrimaryButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  profileGlow: {
+    position: "absolute",
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 999,
+    backgroundColor: "rgba(84,244,255,0.2)",
   },
-  librarySecondaryButton: {
-    backgroundColor: "#005BBB",
-    paddingVertical: 12,
-    borderRadius: 8,
+  profileCore: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: "center",
-    marginBottom: 8,
+    justifyContent: "center",
+    backgroundColor: "rgba(6,16,24,0.65)",
   },
-  librarySecondaryButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+
+  // RocketButton
+  rocketBtnContainer: {
+    alignItems: "center",
   },
-  libraryHistoryList: {
-    marginTop: 8,
+  rocketPressable: {
+    alignItems: "center",
   },
-  libraryHistoryItem: {
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  libraryHistoryDate: {
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  libraryHistoryText: {
-    fontSize: 12,
+  rocketMain: {
+    width: 118,
+    height: 118,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
-
