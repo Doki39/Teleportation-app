@@ -10,7 +10,7 @@ export default function AppStack() {
   return (
     <Stack.Navigator initialRouteName="Home">
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Registration" component={RegistrationPage} />
       <Stack.Screen name="Library" component={LibraryScreen} />
       <Stack.Screen name="PromptSelection" component={PromptSelectionScreen} />
