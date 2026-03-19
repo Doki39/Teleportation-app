@@ -9,11 +9,11 @@ const Stack = createNativeStackNavigator();
 export default function AppStack() {
   return (
     <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Registration" component={RegistrationPage} />
-      <Stack.Screen name="Library" component={LibraryScreen} />
-      <Stack.Screen name="PromptSelection" component={PromptSelectionScreen} />
+      <Stack.Screen name="Registration" component={RegistrationPage} options={{ headerShown: false }} />
+      <Stack.Screen name="Library" component={LibraryScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="PromptSelection" component={PromptSelectionScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
