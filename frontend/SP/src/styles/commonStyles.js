@@ -1,7 +1,22 @@
 import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
 
+// Reusable base styles
+const flexCenter = { flex: 1, justifyContent: "center", alignItems: "center" };
+const centerContent = { alignItems: "center", justifyContent: "center" };
+const glassBorder = { borderWidth: 1, borderColor: ui.colors.glassBorder };
+const iconButtonBase = { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" };
+const textMuted = { color: ui.colors.muted, fontSize: 14 };
+const textBold = { color: ui.colors.text, fontWeight: "600" };
+
 export const commonStyles = StyleSheet.create({
+  // Shared bases (use via array: [commonStyles.flexCenter, ...])
+  flexCenter,
+  centerContent,
+  glassBorder,
+  iconButtonBase,
+  textMuted,
+  textBold,
   // Auth / form (Settings-style: dark, glass boxes, rounded-xl)
   container: {
     padding: 20,
@@ -30,28 +45,22 @@ export const commonStyles = StyleSheet.create({
   authField: {
     gap: 8,
   },
-  authLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: ui.colors.muted,
-  },
+  authLabel: { ...textMuted, fontWeight: "500" },
   authInput: {
+    ...glassBorder,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: ui.colors.glass,
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
     color: ui.colors.text,
     fontSize: 16,
   },
   authPrimaryButton: {
+    ...centerContent,
     width: "100%",
     paddingVertical: 16,
     borderRadius: 12,
     backgroundColor: ui.colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 8,
   },
   authPrimaryButtonText: {
@@ -60,21 +69,15 @@ export const commonStyles = StyleSheet.create({
     fontWeight: "600",
   },
   authSecondaryButton: {
+    ...centerContent,
     width: "100%",
     paddingVertical: 16,
     borderRadius: 12,
     backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
-    alignItems: "center",
-    justifyContent: "center",
+    ...glassBorder,
     marginTop: 12,
   },
-  authSecondaryButtonText: {
-    color: ui.colors.muted,
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  authSecondaryButtonText: { ...textMuted, fontWeight: "600" },
   authError: {
     color: "#FCA5A5",
     fontSize: 14,
@@ -131,12 +134,11 @@ export const commonStyles = StyleSheet.create({
     fontWeight: "bold",
   },
   libraryProfileCircle: {
+    ...centerContent,
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: "#007AFF",
-    justifyContent: "center",
-    alignItems: "center",
   },
   libraryProfileInitial: {
     color: "#fff",
@@ -159,34 +161,19 @@ export const commonStyles = StyleSheet.create({
     marginRight: 12,
   },
 
-  // Cloud upload loading 
-  uploadOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(5,11,26,0.85)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // Cloud upload loading
+  uploadOverlay: { ...flexCenter, backgroundColor: "rgba(5,11,26,0.85)" },
   uploadCard: {
+    ...centerContent,
     backgroundColor: ui.colors.glass,
     borderRadius: 24,
     padding: 40,
-    alignItems: "center",
-    justifyContent: "center",
     borderWidth: 1,
     borderColor: "rgba(124,58,237,0.3)",
     minWidth: 260,
   },
-  uploadText: {
-    color: ui.colors.text,
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 20,
-  },
-  uploadSubtext: {
-    color: ui.colors.muted,
-    fontSize: 14,
-    marginTop: 8,
-  },
+  uploadText: { ...textBold, fontSize: 18, marginTop: 20 },
+  uploadSubtext: { ...textMuted, marginTop: 8 },
 
    // Home screen
   homeRoot: {
@@ -268,6 +255,7 @@ export const commonStyles = StyleSheet.create({
     lineHeight: 20,
   },
   portalStage: {
+    ...centerContent,
     position: "absolute",
     top: "50%",
     left: "50%",
@@ -275,8 +263,6 @@ export const commonStyles = StyleSheet.create({
     height: 360,
     marginLeft: -180,
     marginTop: -180,
-    alignItems: "center",
-    justifyContent: "center",
   },
   portalAura: {
     position: "absolute",
@@ -373,20 +359,15 @@ export const commonStyles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.04)",
   },
   actionBtn: {
+    ...centerContent,
     overflow: "hidden",
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     gap: 12,
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 16,
   },
-  glassBtn: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.13)",
-  },
+  glassBtn: { backgroundColor: "rgba(255,255,255,0.06)", ...glassBorder },
   secondaryBtn: {
     backgroundColor: "rgba(6,182,212,0.12)",
     borderWidth: 1,
@@ -410,11 +391,7 @@ export const commonStyles = StyleSheet.create({
   logoutGlow: {
     backgroundColor: "rgba(239,68,68,0.14)",
   },
-  actionBtnText: {
-    color: ui.colors.text,
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  actionBtnText: { ...textBold, fontSize: 14 },
   secondaryBtnText: {
     color: ui.colors.secondary,
   },
@@ -451,11 +428,10 @@ export const commonStyles = StyleSheet.create({
     backgroundColor: "rgba(84,244,255,0.2)",
   },
   profileCore: {
+    ...centerContent,
     width: 28,
     height: 28,
     borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "rgba(6,16,24,0.65)",
   },
 
@@ -476,14 +452,9 @@ export const commonStyles = StyleSheet.create({
     gap: 16,
   },
   promptBackBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    ...iconButtonBase,
     backgroundColor: ui.colors.glass,
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
-    alignItems: "center",
-    justifyContent: "center",
+    ...glassBorder,
   },
   promptHeaderText: {
     flex: 1,
@@ -570,24 +541,14 @@ export const commonStyles = StyleSheet.create({
     zIndex: 30,
   },
   promptNavArrow: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    ...iconButtonBase,
     backgroundColor: ui.colors.glass,
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
-    alignItems: "center",
-    justifyContent: "center",
+    ...glassBorder,
     zIndex: 20,
   },
   promptNavLeft: {},
   promptNavRight: {},
-  promptCylinder: {
-    width: 360,
-    height: 380,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  promptCylinder: { ...centerContent, width: 360, height: 380 },
   promptDestInfo: {
     marginTop: 32,
     alignItems: "center",
@@ -600,22 +561,12 @@ export const commonStyles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  promptDestSubtitle: {
-    fontSize: 12,
-    color: ui.colors.muted,
-    marginTop: 8,
-  },
+  promptDestSubtitle: { ...textMuted, fontSize: 12, marginTop: 8 },
   promptDestSubtitleSelected: {
     color: ui.colors.primary,
     fontWeight: "600",
   },
-  promptDots: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  promptDots: { ...centerContent, flexDirection: "row", gap: 8, marginTop: 16 },
   promptDot: {
     width: 8,
     height: 8,
@@ -663,6 +614,7 @@ export const commonStyles = StyleSheet.create({
     fontWeight: "600",
   },
   promptSelectedCheck: {
+    ...centerContent,
     position: "absolute",
     top: 12,
     right: 12,
@@ -670,8 +622,6 @@ export const commonStyles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: ui.colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   // RocketButton
@@ -681,10 +631,5 @@ export const commonStyles = StyleSheet.create({
   rocketPressable: {
     alignItems: "center",
   },
-  rocketMain: {
-    width: 118,
-    height: 118,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  rocketMain: { ...centerContent, width: 118, height: 118 },
 });
