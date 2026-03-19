@@ -1,31 +1,12 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { commonStyles } from "../styles/commonStyles";
-import { API_BASE_URL } from "../config/api";
 import { ui } from "../theme/ui";
+import { handleLogin } from "../services/authServices";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
-      console.log("Login response:", res.data);
-      await AsyncStorage.setItem("token", res.data.token);
-      navigation.replace("Home");
-    } catch (err) {
-      const data = err.response?.data;
-      const message =
-        data?.message ||
-        (data?.errors?.length ? data.errors.map((e) => e.msg).join("\n") : null) ||
-        err.message ||
-        "Something went wrong";
-      Alert.alert("Login Failed", message);
-    }
-  };
 
   return (
     <View style={commonStyles.authScreen}>
@@ -59,7 +40,7 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            <TouchableOpacity style={commonStyles.authPrimaryButton} onPress={handleLogin}>
+            <TouchableOpacity style={commonStyles.authPrimaryButton} onPress={() => handleLogin({ email, password, navigation })}>
               <Text style={commonStyles.authPrimaryButtonText}>Log In</Text>
             </TouchableOpacity>
 
