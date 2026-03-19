@@ -3,6 +3,46 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { Alert } from "react-native";
 
+export const handleRegistration = async ({
+  first_name,
+  last_name,
+  email,
+  phone_number,
+  password,
+  confirmPassword,
+  navigation,
+}) => {
+  if (password.length < 8) {
+    return { success: false, error: "Password must be at least 8 characters" };
+  }
+  if (password !== confirmPassword) {
+    return { success: false, error: "Passwords do not match" };
+  }
+
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+      first_name,
+      last_name,
+      email,
+      phone_number,
+      password,
+    });
+
+    if (res.data.token && res.data.user) {
+      await AsyncStorage.setItem("token", res.data.token);
+      await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
+      navigation.replace("Home");
+      return { success: true };
+    }
+    Alert.alert("Registration failed", res.data.message || "Something went wrong");
+    return { success: false };
+  } catch (err) {
+    const message = err.response?.data?.message || "Something went wrong";
+    Alert.alert("Registration failed", message);
+    return { success: false };
+  }
+};
+
 export const handleLogin = async ({ email, password, navigation }) => {
   try {
     const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });

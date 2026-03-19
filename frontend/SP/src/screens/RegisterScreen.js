@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { commonStyles } from "../styles/commonStyles";
-import { API_BASE_URL } from "../config/api";
 import { ui } from "../theme/ui";
+import { handleRegistration } from "../services/authServices";
 
 export default function RegisterScreen({ navigation }) {
   const [first_name, setFirst_name] = useState("");
@@ -15,43 +13,22 @@ export default function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegistration = async () => {
+  const onRegister = async () => {
     setError("");
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        first_name,
-        last_name,
-        email,
-        phone_number,
-        password,
-      });
-
-      console.log(res.data);
-
-      if (res.data.token && res.data.user) {
-        await AsyncStorage.setItem("token", res.data.token);
-        await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
-        navigation.replace("Home");
-      } else {
-        Alert.alert("Registration failed", res.data.message || "Something went wrong");
-      }
-    } catch (err) {
-      console.log(err.response?.data);
-      Alert.alert("Registration failed", err.response?.data?.message || "Something went wrong");
+    const result = await handleRegistration({
+      first_name,
+      last_name,
+      email,
+      phone_number,
+      password,
+      confirmPassword,
+      navigation,
+    });
+    if (!result.success && result.error) {
+      setError(result.error);
     }
   };
-
+  
   return (
     <View style={commonStyles.authScreen}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
@@ -132,7 +109,7 @@ export default function RegisterScreen({ navigation }) {
               />
             </View>
 
-            <TouchableOpacity style={commonStyles.authPrimaryButton} onPress={handleRegistration}>
+            <TouchableOpacity style={commonStyles.authPrimaryButton} onPress={onRegister}>
               <Text style={commonStyles.authPrimaryButtonText}>Register</Text>
             </TouchableOpacity>
 
