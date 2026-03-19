@@ -2,11 +2,83 @@ import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
 
 export const commonStyles = StyleSheet.create({
-  // Auth / form
+  // Auth / form (Settings-style: dark, glass boxes, rounded-xl)
   container: {
     padding: 20,
     flex: 1,
     justifyContent: "center",
+  },
+  authScreen: {
+    flex: 1,
+    backgroundColor: ui.colors.background,
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+    justifyContent: "center",
+  },
+  authForm: {
+    maxWidth: 400,
+    alignSelf: "center",
+    width: "100%",
+    gap: 24,
+  },
+  authTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: ui.colors.text,
+    textAlign: "center",
+  },
+  authField: {
+    gap: 8,
+  },
+  authLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: ui.colors.muted,
+  },
+  authInput: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: ui.colors.glass,
+    borderWidth: 1,
+    borderColor: ui.colors.glassBorder,
+    color: ui.colors.text,
+    fontSize: 16,
+  },
+  authPrimaryButton: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: ui.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  authPrimaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  authSecondaryButton: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: ui.colors.glassBorder,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  authSecondaryButtonText: {
+    color: ui.colors.muted,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  authError: {
+    color: "#FCA5A5",
+    fontSize: 14,
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
