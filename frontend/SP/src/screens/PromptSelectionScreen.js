@@ -54,15 +54,13 @@ export default function PromptSelectionScreen({ route, navigation }) {
   }, []);
 
   const goNext = () => {
-    if (currentIndex < prompts.length - 1) {
-      snapToIndex(currentIndex + 1);
-    }
+    if (prompts.length === 0) return;
+    snapToIndex((currentIndex + 1) % prompts.length);
   };
 
   const goPrev = () => {
-    if (currentIndex > 0) {
-      snapToIndex(currentIndex - 1);
-    }
+    if (prompts.length === 0) return;
+    snapToIndex((currentIndex - 1 + prompts.length) % prompts.length);
   };
 
   const snapToIndex = useCallback((index) => {
@@ -208,14 +206,14 @@ export default function PromptSelectionScreen({ route, navigation }) {
           <TouchableOpacity
             style={[commonStyles.promptNavArrow, commonStyles.promptNavLeft]}
             onPress={goPrev}
-            disabled={currentIndex === 0}
+            disabled={prompts.length === 0}
           >
             <Ionicons name="chevron-back" size={20} color={ui.colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity
             style={[commonStyles.promptNavArrow, commonStyles.promptNavRight]}
             onPress={goNext}
-            disabled={currentIndex === prompts.length - 1 || prompts.length === 0}
+            disabled={prompts.length === 0}
           >
             <Ionicons name="chevron-forward" size={20} color={ui.colors.primary} />
           </TouchableOpacity>
