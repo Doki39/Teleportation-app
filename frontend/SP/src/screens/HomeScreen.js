@@ -124,11 +124,11 @@ export default function HomeScreen({ navigation }) {
     <View style={commonStyles.homeRoot}>
       {isUploading && (
         <Modal visible transparent animationType="fade">
-          <View style={styles.uploadOverlay}>
-            <View style={styles.uploadCard}>
+          <View style={commonStyles.uploadOverlay}>
+            <View style={commonStyles.uploadCard}>
               <ActivityIndicator size="large" color={ui.colors.primary} />
-              <Text style={styles.uploadText}>Uploading to cloud...</Text>
-              <Text style={styles.uploadSubtext}>Preparing your photo for teleportation</Text>
+              <Text style={commonStyles.uploadText}>Uploading to cloud...</Text>
+              <Text style={commonStyles.uploadSubtext}>Preparing your photo for teleportation</Text>
             </View>
           </View>
         </Modal>
@@ -295,33 +295,3 @@ function ActionButton({ icon, label, onPress, variant = "glass" }) {
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  uploadOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(5,11,26,0.85)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  uploadCard: {
-    backgroundColor: ui.colors.glass,
-    borderRadius: 24,
-    padding: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.3)",
-    minWidth: 260,
-  },
-  uploadText: {
-    color: ui.colors.text,
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 20,
-  },
-  uploadSubtext: {
-    color: ui.colors.muted,
-    fontSize: 14,
-    marginTop: 8,
-  },
-});

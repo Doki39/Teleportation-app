@@ -159,7 +159,36 @@ export const commonStyles = StyleSheet.create({
     marginRight: 12,
   },
 
-  // Home screen
+  // Cloud upload loading 
+  uploadOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(5,11,26,0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadCard: {
+    backgroundColor: ui.colors.glass,
+    borderRadius: 24,
+    padding: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.3)",
+    minWidth: 260,
+  },
+  uploadText: {
+    color: ui.colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 20,
+  },
+  uploadSubtext: {
+    color: ui.colors.muted,
+    fontSize: 14,
+    marginTop: 8,
+  },
+
+   // Home screen
   homeRoot: {
     flex: 1,
     backgroundColor: ui.colors.background,
