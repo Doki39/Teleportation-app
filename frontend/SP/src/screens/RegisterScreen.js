@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -38,7 +38,7 @@ export default function RegisterScreen({ navigation }) {
 
     console.log(res.data); 
 
-    if (res.data.token) {
+    if (res.data.token && res.data.user) {
       await AsyncStorage.setItem("token", res.data.token);
       await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
       navigation.replace("Home");
@@ -60,8 +60,14 @@ export default function RegisterScreen({ navigation }) {
       <TextInput placeholder="Email" style={commonStyles.input} value={email} onChangeText={setEmail} />
       <TextInput placeholder="Phone number" style={commonStyles.input} value={phone_number} onChangeText={setPhone_number} />
       {error !== "" && <Text style={commonStyles.error}>{error}</Text>}
-      <TextInput placeholder="Password" style={commonStyles.input} secureTextEntry={password} onChangeText={setPassword} />
-      <TextInput placeholder="Confirm password" style={commonStyles.input} secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
+      <TextInput placeholder="Password" style={commonStyles.input} value={password} secureTextEntry onChangeText={setPassword} />
+      <TextInput
+        placeholder="Confirm password"
+        style={commonStyles.input}
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
       <TouchableOpacity style={commonStyles.button} onPress={handleRegistration}>
         <Text style={commonStyles.buttonText}>Register</Text>
       </TouchableOpacity>

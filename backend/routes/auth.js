@@ -52,7 +52,19 @@ router.post(
     try {
       const { rows } = await pool.query(insertQuery, values);
       const user = rows[0];
-      return res.status(201).json({ message: "User registered!", user });
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        console.error("JWT_SECRET is not set in .env");
+        return res.status(500).json({ message: "Server misconfiguration" });
+      }
+
+      const token = jwt.sign(
+        { uid: user.uid, email: user.email },
+        secret,
+        { expiresIn: "14d" }
+      );
+
+      return res.status(201).json({ message: "User registered!", token, user });
     } catch (err) {
       console.error("Error inserting user:", err);
       return res.status(500).json({ message: "Registration failed" });
