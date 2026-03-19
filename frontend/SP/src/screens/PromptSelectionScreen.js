@@ -55,13 +55,13 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
   const goNext = () => {
     if (currentIndex < prompts.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      snapToIndex(currentIndex + 1);
     }
   };
 
   const goPrev = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      snapToIndex(currentIndex - 1);
     }
   };
 
@@ -112,27 +112,34 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const getEmoji = useCallback((item) => item.emoji || "✨", []);
 
   const wheelScrollRef = useRef(null);
-  const isWheelScrolling = useRef(false);
+  const isWheelProgrammatic = useRef(false);
+  const lastChangeFromWheel = useRef(false);
 
   useEffect(() => {
     if (Platform.OS === "web" || prompts.length === 0) return;
-    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
-    if (wheelScrollRef.current && !isWheelScrolling.current) {
-      wheelScrollRef.current.scrollTo({
-        x: currentIndex * itemWidth,
-        animated: true,
-      });
+    if (lastChangeFromWheel.current) {
+      lastChangeFromWheel.current = false;
+      return;
     }
+    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
+    if (!wheelScrollRef.current) return;
+    isWheelProgrammatic.current = true;
+    wheelScrollRef.current.scrollTo({
+      x: currentIndex * itemWidth,
+      animated: true,
+    });
+    const t = setTimeout(() => { isWheelProgrammatic.current = false; }, 800);
+    return () => clearTimeout(t);
   }, [currentIndex, prompts.length]);
 
   const handleWheelScrollEnd = useCallback((e) => {
+    if (isWheelProgrammatic.current) return;
     const offset = e.nativeEvent.contentOffset.x;
     const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
     const index = Math.round(offset / itemWidth);
     if (index >= 0 && index < prompts.length && index !== currentIndex) {
-      isWheelScrolling.current = true;
+      lastChangeFromWheel.current = true;
       snapToIndex(index);
-      setTimeout(() => { isWheelScrolling.current = false; }, 150);
     }
   }, [prompts.length, currentIndex, snapToIndex]);
 
@@ -259,11 +266,11 @@ export default function PromptSelectionScreen({ route, navigation }) {
               horizontal
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={handleWheelScrollEnd}
-              onScrollEndDrag={handleWheelScrollEnd}
               scrollEventThrottle={16}
-              snapToInterval={WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP}
+              snapToOffsets={prompts.map((_, i) => i * (WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP))}
               snapToAlignment="center"
               decelerationRate="fast"
+              disableIntervalMomentum
               contentContainerStyle={[
                 styles.scrollWheelContent,
                 { paddingHorizontal: (SCREEN_WIDTH - WHEEL_ITEM_SIZE - WHEEL_ITEM_GAP) / 2 },

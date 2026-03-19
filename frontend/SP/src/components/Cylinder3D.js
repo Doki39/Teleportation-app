@@ -329,7 +329,7 @@ function WebCylinder({
   );
 }
 
-function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji, commonStyles }) {
+const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji, commonStyles }) {
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(scrollX.value - index * SCREEN_WIDTH);
     const scale = interpolate(distance, [0, SCREEN_WIDTH * 0.5], [1, 0.88], Extrapolation.CLAMP);
@@ -378,7 +378,7 @@ function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelec
       </TouchableOpacity>
     </Animated.View>
   );
-}
+});
 
 function NativeCarousel({
   prompts,
@@ -393,30 +393,22 @@ function NativeCarousel({
 }) {
   const scrollRef = useAnimatedRef();
   const scrollX = useSharedValue(0);
-  const isScrolling = useRef(false);
+  const isProgrammaticScroll = useRef(false);
 
   React.useEffect(() => {
-    if (scrollRef.current && !isScrolling.current) {
-      scrollRef.current.scrollTo({ x: currentIndex * SCREEN_WIDTH, animated: true });
-      scrollX.value = currentIndex * SCREEN_WIDTH;
-    }
+    if (!scrollRef.current) return;
+    isProgrammaticScroll.current = true;
+    scrollRef.current.scrollTo({ x: currentIndex * SCREEN_WIDTH, animated: true });
+    scrollX.value = currentIndex * SCREEN_WIDTH;
+    const t = setTimeout(() => { isProgrammaticScroll.current = false; }, 400);
+    return () => clearTimeout(t);
   }, [currentIndex]);
 
-  const handleScroll = (e) => {
-    const offset = e.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / SCREEN_WIDTH);
-    if (index >= 0 && index < prompts.length && index !== currentIndex) {
-      isScrolling.current = true;
-      onSnapToIndex(index);
-      setTimeout(() => { isScrolling.current = false; }, 100);
-    }
-  };
-
   const handleMomentumScrollEnd = (e) => {
+    if (isProgrammaticScroll.current) return;
     const offset = e.nativeEvent.contentOffset.x;
     const index = Math.round(offset / SCREEN_WIDTH);
     if (index >= 0 && index < prompts.length) onSnapToIndex(index);
-    isScrolling.current = false;
   };
 
   return (
@@ -425,9 +417,8 @@ function NativeCarousel({
       horizontal
       pagingEnabled
       showsHorizontalScrollIndicator={false}
-      onScroll={handleScroll}
       onMomentumScrollEnd={handleMomentumScrollEnd}
-      scrollEventThrottle={16}
+      scrollEventThrottle={32}
       scrollViewOffset={scrollX}
       contentContainerStyle={{ width: SCREEN_WIDTH * prompts.length }}
       style={{ width: SCREEN_WIDTH, flexGrow: 0 }}
