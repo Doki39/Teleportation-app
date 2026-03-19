@@ -186,11 +186,13 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {!loggedIn && (
-          <View style={commonStyles.guestWrap}>
-            <Text style={commonStyles.guestTitle}>Login required</Text>
-            <Text style={commonStyles.guestText}>You need to log in first to access camera, upload, and library features.</Text>
+          <>
+            <View style={{ flex: 0.8 }} />
+            <View style={commonStyles.guestWrap}>
+              <Text style={commonStyles.guestTitle}>Login required</Text>
+              <Text style={commonStyles.guestText}>You need to log in first to access camera, upload, and library features.</Text>
 
-            <View style={commonStyles.secondaryWrap}>
+              <View style={commonStyles.secondaryWrap}>
               <ActionButton
                 icon={<Ionicons name="log-in-outline" size={20} color={ui.colors.secondary} />}
                 label="Log In"
@@ -202,8 +204,10 @@ export default function HomeScreen({ navigation }) {
                 label="Register"
                 onPress={() => navigation.replace("Registration")}
               />
+              </View>
             </View>
-          </View>
+            <View style={{ flex: 1 }} />
+          </>
         )}
       </View>
     </View>
