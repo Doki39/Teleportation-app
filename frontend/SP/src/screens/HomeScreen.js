@@ -7,6 +7,8 @@ import {
   Alert,
   Dimensions,
   StyleSheet,
+  ActivityIndicator,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +21,7 @@ import { handleLogout } from "../services/authServices";
 
 export default function HomeScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const portalSpin = useRef(new Animated.Value(0)).current;
   const portalReverseSpin = useRef(new Animated.Value(0)).current;
   const portalPulse = useRef(new Animated.Value(0)).current;
@@ -98,8 +101,16 @@ export default function HomeScreen({ navigation }) {
   const pulseOpacity = portalPulse.interpolate({ inputRange: [0, 1], outputRange: [0.22, 0.55] });
   const driftX = portalDrift.interpolate({ inputRange: [0, 1], outputRange: [-12, 12] });
 
-  const handleUpload = () => handlePhotoFlow(openLibrary, navigation);
-  const handleCamera = () => handlePhotoFlow(openCamera, navigation);
+  const handleUpload = () =>
+    handlePhotoFlow(openLibrary, navigation, {
+      onUploadStart: () => setIsUploading(true),
+      onUploadEnd: () => setIsUploading(false),
+    });
+  const handleCamera = () =>
+    handlePhotoFlow(openCamera, navigation, {
+      onUploadStart: () => setIsUploading(true),
+      onUploadEnd: () => setIsUploading(false),
+    });
   const onLogout = async () => {
     await handleLogout();
     setLoggedIn(false);
@@ -111,6 +122,17 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={commonStyles.homeRoot}>
+      {isUploading && (
+        <Modal visible transparent animationType="fade">
+          <View style={styles.uploadOverlay}>
+            <View style={styles.uploadCard}>
+              <ActivityIndicator size="large" color={ui.colors.primary} />
+              <Text style={styles.uploadText}>Uploading to cloud...</Text>
+              <Text style={styles.uploadSubtext}>Preparing your photo for teleportation</Text>
+            </View>
+          </View>
+        </Modal>
+      )}
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
         <View style={commonStyles.portalStage}>
           <Animated.View style={[commonStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
@@ -273,3 +295,33 @@ function ActionButton({ icon, label, onPress, variant = "glass" }) {
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  uploadOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(5,11,26,0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadCard: {
+    backgroundColor: ui.colors.glass,
+    borderRadius: 24,
+    padding: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.3)",
+    minWidth: 260,
+  },
+  uploadText: {
+    color: ui.colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 20,
+  },
+  uploadSubtext: {
+    color: ui.colors.muted,
+    fontSize: 14,
+    marginTop: 8,
+  },
+});

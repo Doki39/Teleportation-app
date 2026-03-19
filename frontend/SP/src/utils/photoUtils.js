@@ -2,16 +2,22 @@ import * as ImagePicker from "expo-image-picker";
 import { Platform, Alert } from "react-native";
 import { uploadPhotoToDrive } from "../services/photoServices";
 
-export async function handlePhotoFlow(getPayload, navigation) {
+export async function handlePhotoFlow(getPayload, navigation, { onUploadStart, onUploadEnd } = {}) {
   try {
     const payload = await getPayload();
     if (!payload) return;
 
-    const { imageUrl } = await uploadPhotoToDrive(payload);
-    navigation.replace("PromptSelection", {
-      imageUrl,
-    });
+    onUploadStart?.();
+    try {
+      const { imageUrl } = await uploadPhotoToDrive(payload);
+      navigation.replace("PromptSelection", {
+        imageUrl,
+      });
+    } finally {
+      onUploadEnd?.();
+    }
   } catch (err) {
+    onUploadEnd?.();
     console.log(err);
     Alert.alert("Error", err.message);
   }
