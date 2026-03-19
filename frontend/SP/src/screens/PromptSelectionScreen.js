@@ -7,6 +7,9 @@ import {
   Dimensions,
   ActivityIndicator,
   Platform,
+  ScrollView,
+  Image,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { commonStyles } from "../styles/commonStyles";
@@ -18,6 +21,8 @@ import ProfileButton from "../components/ProfileButton";
 import Cylinder3D from "../components/Cylinder3D";
 
 const CARD_WIDTH = 300;
+const WHEEL_ITEM_SIZE = 56;
+const WHEEL_ITEM_GAP = 12;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function PromptSelectionScreen({ route, navigation }) {
@@ -105,6 +110,31 @@ export default function PromptSelectionScreen({ route, navigation }) {
   }, []);
 
   const getEmoji = useCallback((item) => item.emoji || "✨", []);
+
+  const wheelScrollRef = useRef(null);
+  const isWheelScrolling = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS === "web" || prompts.length === 0) return;
+    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
+    if (wheelScrollRef.current && !isWheelScrolling.current) {
+      wheelScrollRef.current.scrollTo({
+        x: currentIndex * itemWidth,
+        animated: true,
+      });
+    }
+  }, [currentIndex, prompts.length]);
+
+  const handleWheelScrollEnd = useCallback((e) => {
+    const offset = e.nativeEvent.contentOffset.x;
+    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
+    const index = Math.round(offset / itemWidth);
+    if (index >= 0 && index < prompts.length && index !== currentIndex) {
+      isWheelScrolling.current = true;
+      snapToIndex(index);
+      setTimeout(() => { isWheelScrolling.current = false; }, 150);
+    }
+  }, [prompts.length, currentIndex, snapToIndex]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -222,7 +252,56 @@ export default function PromptSelectionScreen({ route, navigation }) {
             </Text>
           </View>
         )}
-        {prompts.length > 0 && (
+        {prompts.length > 0 && Platform.OS !== "web" && (
+          <View style={styles.scrollWheelWrap}>
+            <ScrollView
+              ref={wheelScrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleWheelScrollEnd}
+              onScrollEndDrag={handleWheelScrollEnd}
+              scrollEventThrottle={16}
+              snapToInterval={WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP}
+              snapToAlignment="center"
+              decelerationRate="fast"
+              contentContainerStyle={[
+                styles.scrollWheelContent,
+                { paddingHorizontal: (SCREEN_WIDTH - WHEEL_ITEM_SIZE - WHEEL_ITEM_GAP) / 2 },
+              ]}
+              style={styles.scrollWheel}
+            >
+              {prompts.map((p, i) => {
+                const uri = getImageUri(p);
+                const isActive = i === currentIndex;
+                return (
+                  <TouchableOpacity
+                    key={p.id}
+                    onPress={() => snapToIndex(i)}
+                    style={[
+                      styles.scrollWheelItem,
+                      isActive && styles.scrollWheelItemActive,
+                      selectedId === p.id && styles.scrollWheelItemSelected,
+                    ]}
+                  >
+                    {uri ? (
+                      <Image source={{ uri }} style={styles.scrollWheelThumb} resizeMode="cover" />
+                    ) : (
+                      <View style={[styles.scrollWheelThumb, styles.scrollWheelThumbPlaceholder]}>
+                        <Text style={styles.scrollWheelEmoji}>{getEmoji(p)}</Text>
+                      </View>
+                    )}
+                    {uri && (
+                      <View style={styles.scrollWheelEmojiBadge}>
+                        <Text style={styles.scrollWheelEmojiBadgeText}>{getEmoji(p)}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+        {prompts.length > 0 && Platform.OS === "web" && (
           <View style={commonStyles.promptDots}>
             {prompts.map((p, i) => (
               <TouchableOpacity
@@ -265,3 +344,56 @@ export default function PromptSelectionScreen({ route, navigation }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollWheelWrap: {
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  scrollWheel: {
+    maxHeight: WHEEL_ITEM_SIZE + 16,
+  },
+  scrollWheelContent: {
+    alignItems: "center",
+  },
+  scrollWheelItem: {
+    width: WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP,
+    height: WHEEL_ITEM_SIZE + 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scrollWheelItemActive: {
+    transform: [{ scale: 1.08 }],
+  },
+  scrollWheelItemSelected: {
+    borderWidth: 2,
+    borderColor: ui.colors.primary,
+    borderRadius: 14,
+  },
+  scrollWheelThumb: {
+    width: WHEEL_ITEM_SIZE,
+    height: WHEEL_ITEM_SIZE,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  scrollWheelThumbPlaceholder: {
+    backgroundColor: ui.colors.glass,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scrollWheelEmoji: {
+    fontSize: 24,
+  },
+  scrollWheelEmojiBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  scrollWheelEmojiBadgeText: {
+    fontSize: 14,
+  },
+});

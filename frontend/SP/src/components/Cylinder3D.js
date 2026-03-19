@@ -7,10 +7,16 @@ import {
   StyleSheet,
   Platform,
   PanResponder,
-  ScrollView,
   Dimensions,
 } from "react-native";
-import { useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  withSpring,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  useAnimatedRef,
+} from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { ui } from "../theme/ui";
@@ -323,6 +329,57 @@ function WebCylinder({
   );
 }
 
+function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji, commonStyles }) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const distance = Math.abs(scrollX.value - index * SCREEN_WIDTH);
+    const scale = interpolate(distance, [0, SCREEN_WIDTH * 0.5], [1, 0.88], Extrapolation.CLAMP);
+    const opacity = interpolate(distance, [0, SCREEN_WIDTH * 0.6], [1, 0.65], Extrapolation.CLAMP);
+    return { transform: [{ scale }], opacity };
+  });
+
+  return (
+    <Animated.View style={[{ width: SCREEN_WIDTH, alignItems: "center", justifyContent: "center" }, animatedStyle]}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          if (isFront) {
+            onSelect(isSelected ? null : item.id);
+          } else {
+            onSnapToIndex(index);
+          }
+        }}
+        style={[
+          commonStyles.promptCard,
+          isSelected && isFront && commonStyles.promptCardSelected,
+        ]}
+      >
+        {getImageUri(item) ? (
+          <Image source={{ uri: getImageUri(item) }} style={commonStyles.promptCardImage} resizeMode="contain" />
+        ) : (
+          <View style={[commonStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
+        )}
+        <LinearGradient
+          colors={["rgba(5,11,26,0.85)", "rgba(5,11,26,0.2)", "transparent"]}
+          locations={[0, 0.4, 0.6]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
+          <ScanlineOverlay />
+        </View>
+        <View style={commonStyles.promptCardLabel}>
+          <Text style={commonStyles.promptCardEmoji}>{getEmoji(item)}</Text>
+          <Text style={commonStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
+        </View>
+        {isSelected && isFront && (
+          <View style={commonStyles.promptSelectedCheck}>
+            <Ionicons name="checkmark" size={16} color="#fff" />
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 function NativeCarousel({
   prompts,
   currentIndex,
@@ -334,12 +391,14 @@ function NativeCarousel({
   getEmoji,
   commonStyles,
 }) {
-  const scrollRef = useRef(null);
+  const scrollRef = useAnimatedRef();
+  const scrollX = useSharedValue(0);
   const isScrolling = useRef(false);
 
   React.useEffect(() => {
     if (scrollRef.current && !isScrolling.current) {
       scrollRef.current.scrollTo({ x: currentIndex * SCREEN_WIDTH, animated: true });
+      scrollX.value = currentIndex * SCREEN_WIDTH;
     }
   }, [currentIndex]);
 
@@ -361,7 +420,7 @@ function NativeCarousel({
   };
 
   return (
-    <ScrollView
+    <Animated.ScrollView
       ref={scrollRef}
       horizontal
       pagingEnabled
@@ -369,57 +428,27 @@ function NativeCarousel({
       onScroll={handleScroll}
       onMomentumScrollEnd={handleMomentumScrollEnd}
       scrollEventThrottle={16}
+      scrollViewOffset={scrollX}
       contentContainerStyle={{ width: SCREEN_WIDTH * prompts.length }}
       style={{ width: SCREEN_WIDTH, flexGrow: 0 }}
     >
-      {prompts.map((item, index) => {
-        const isSelected = item.id === selectedId;
-        const isFront = index === currentIndex;
-        const imageUri = getImageUri(item);
-
-        return (
-          <View key={item.id} style={{ width: SCREEN_WIDTH, alignItems: "center", justifyContent: "center" }}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                if (isFront) {
-                  onSelect(isSelected ? null : item.id);
-                } else {
-                  onSnapToIndex(index);
-                }
-              }}
-              style={[
-                commonStyles.promptCard,
-                isSelected && isFront && commonStyles.promptCardSelected,
-              ]}
-            >
-              {imageUri ? (
-                <Image source={{ uri: imageUri }} style={commonStyles.promptCardImage} resizeMode="contain" />
-              ) : (
-                <View style={[commonStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
-              )}
-              <LinearGradient
-                colors={["rgba(5,11,26,0.85)", "rgba(5,11,26,0.2)", "transparent"]}
-                locations={[0, 0.4, 0.6]}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
-                <ScanlineOverlay />
-              </View>
-              <View style={commonStyles.promptCardLabel}>
-                <Text style={commonStyles.promptCardEmoji}>{getEmoji(item)}</Text>
-                <Text style={commonStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
-              </View>
-              {isSelected && isFront && (
-                <View style={commonStyles.promptSelectedCheck}>
-                  <Ionicons name="checkmark" size={16} color="#fff" />
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-        );
-      })}
-    </ScrollView>
+      {prompts.map((item, index) => (
+        <NativeCarouselCard
+          key={item.id}
+          item={item}
+          index={index}
+          scrollX={scrollX}
+          isSelected={item.id === selectedId}
+          isFront={index === currentIndex}
+          onSelect={onSelect}
+          onSnapToIndex={onSnapToIndex}
+          getImageUri={getImageUri}
+          getLabel={getLabel}
+          getEmoji={getEmoji}
+          commonStyles={commonStyles}
+        />
+      ))}
+    </Animated.ScrollView>
   );
 }
 
