@@ -2,12 +2,8 @@ import React from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 
 const DEFAULT_DOT = "rgba(124,58,237,0.3)";
-/** Softer dots on light backgrounds (e.g. library sky blue). */
 export const BACKGROUND_PARTICLES_SOFT_DOT = "rgba(124,58,237,0.22)";
 
-/**
- * Full-screen decorative particle field. Safe to stack behind content (`pointerEvents="none"`).
- */
 export default function BackgroundParticles({
   width,
   height,

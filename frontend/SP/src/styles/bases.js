@@ -1,6 +1,5 @@
 import { ui } from "../theme/ui";
 
-/** Plain style fragments — compose inside feature `StyleSheet.create` */
 export const flexCenter = { flex: 1, justifyContent: "center", alignItems: "center" };
 export const centerContent = { alignItems: "center", justifyContent: "center" };
 export const glassBorder = { borderWidth: 1, borderColor: ui.colors.glassBorder };

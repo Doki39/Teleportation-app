@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
 import { centerContent, glassBorder, iconButtonBase, textBold, textMuted } from "./bases";
 
-/** Native horizontal thumbnail wheel on PromptSelection */
 export const PROMPT_WHEEL_ITEM_SIZE = 56;
 export const PROMPT_WHEEL_ITEM_GAP = 12;
 
