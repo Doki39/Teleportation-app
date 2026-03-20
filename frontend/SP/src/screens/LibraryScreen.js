@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Dimensions,
+} from "react-native";
+import BackgroundParticles, {
+  BACKGROUND_PARTICLES_SOFT_DOT,
+} from "../components/BackgroundParticles";
 import { Ionicons } from "@expo/vector-icons";
 import { getGeneratedPhotos } from "../services/libraryServices";
 import { API_BASE_URL } from "../config/api";
@@ -19,8 +30,15 @@ export default function LibraryScreen({ navigation }) {
     })();
   }, []);
 
+  const { width: libraryW, height: libraryH } = Dimensions.get("window");
+
   return (
     <View style={libraryStyles.libraryScreen}>
+      <BackgroundParticles
+        width={libraryW}
+        height={libraryH}
+        dotColor={BACKGROUND_PARTICLES_SOFT_DOT}
+      />
       <View style={libraryStyles.libraryHeader}>
         <TouchableOpacity onPress={() => navigation.replace("Home")}>
           <Ionicons name="arrow-back" size={24} color="#000" />

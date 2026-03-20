@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileButton from "../components/ProfileButton";
 import RocketButton from "../components/RocketButton";
+import BackgroundParticles from "../components/BackgroundParticles";
 import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
@@ -116,12 +117,13 @@ export default function HomeScreen({ navigation }) {
     setLoggedIn(false);
   };
 
-  const { height } = Dimensions.get("window");
+  const { width: windowWidth, height } = Dimensions.get("window");
   const ROCKET_SIZE = 118;
   const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24;
 
   return (
     <View style={homeStyles.homeRoot}>
+      <BackgroundParticles width={windowWidth} height={height} />
       {isUploading && (
         <Modal visible transparent animationType="fade">
           <View style={homeStyles.uploadOverlay}>

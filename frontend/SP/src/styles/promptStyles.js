@@ -32,14 +32,6 @@ export const promptStyles = StyleSheet.create({
   },
   promptHeaderTitle: { ...textBold, fontSize: 18 },
   promptHeaderSubtitle: { ...textMuted, fontSize: 12, marginTop: 2 },
-  promptParticles: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
   promptCarouselWrap: {
     ...centerContent,
     flex: 1,
@@ -186,13 +178,6 @@ export const promptStyles = StyleSheet.create({
     backgroundColor: ui.colors.primary,
   },
 
-  promptParticleDot: {
-    position: "absolute",
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "rgba(124,58,237,0.3)",
-  },
   promptPortalCarouselGlow: {
     position: "absolute",
     borderRadius: 999,
