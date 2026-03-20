@@ -22,6 +22,7 @@ import { getPromptSelection } from "../services/promptServices";
 import { API_BASE_URL } from "../config/api";
 import ProfileButton from "../components/ProfileButton";
 import Cylinder3D from "../components/Cylinder3D";
+import { getPromptDisplayTitle } from "../utils/promptDisplay";
 
 const CARD_WIDTH = 300;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -93,10 +94,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
     return url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
   }, []);
 
-  const getLabel = useCallback((item) => {
-    const p = item.prompt || "";
-    return p.length > 40 ? p.slice(0, 40) + "..." : p;
-  }, []);
+  const getTitle = useCallback((item) => getPromptDisplayTitle(item), []);
 
   const getEmoji = useCallback((item) => item.emoji || "✨", []);
 
@@ -213,14 +211,14 @@ export default function PromptSelectionScreen({ route, navigation }) {
             onSelect={handleSelect}
             onSnapToIndex={snapToIndex}
             getImageUri={getImageUri}
-            getLabel={getLabel}
+            getTitle={getTitle}
             getEmoji={getEmoji}
           />
         )}
         {prompts.length > 0 && (
           <View style={promptStyles.promptDestInfo}>
             <Text style={promptStyles.promptDestTitle}>
-              {getEmoji(prompts[currentIndex])} {getLabel(prompts[currentIndex])}
+              {getEmoji(prompts[currentIndex])} {getTitle(prompts[currentIndex])}
             </Text>
             <Text
               style={[

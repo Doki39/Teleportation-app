@@ -53,7 +53,7 @@ export default function Cylinder3D({
   onSelect,
   onSnapToIndex,
   getImageUri,
-  getLabel,
+  getTitle,
   getEmoji,
 }) {
   const COUNT = Math.max(prompts.length, 1);
@@ -134,7 +134,7 @@ export default function Cylinder3D({
           onSelect={onSelect}
           onSnapToIndex={onSnapToIndex}
           getImageUri={getImageUri}
-          getLabel={getLabel}
+          getTitle={getTitle}
           getEmoji={getEmoji}
           ANGLE_STEP={ANGLE_STEP}
           radius={radius}
@@ -147,7 +147,7 @@ export default function Cylinder3D({
           onSelect={onSelect}
           onSnapToIndex={onSnapToIndex}
           getImageUri={getImageUri}
-          getLabel={getLabel}
+          getTitle={getTitle}
           getEmoji={getEmoji}
         />
       )}
@@ -163,7 +163,7 @@ function WebCylinder({
   onSelect,
   onSnapToIndex,
   getImageUri,
-  getLabel,
+  getTitle,
   getEmoji,
   ANGLE_STEP,
   radius,
@@ -250,7 +250,7 @@ function WebCylinder({
                 {imageUri ? (
                   <img
                     src={imageUri}
-                    alt={getLabel(item)}
+                    alt={getTitle(item)}
                     style={{
                       position: "absolute",
                       top: 0,
@@ -299,7 +299,7 @@ function WebCylinder({
                   }}
                 >
                   <span style={{ fontSize: 18, display: "block", marginBottom: 4 }}>{getEmoji(item)}</span>
-                  <p style={{ fontSize: 14, fontWeight: "bold", color: ui.colors.text, margin: 0 }}>{getLabel(item)}</p>
+                  <p style={{ fontSize: 14, fontWeight: "bold", color: ui.colors.text, margin: 0 }}>{getTitle(item)}</p>
                 </div>
                 {isSelected && isFront && (
                   <div
@@ -328,7 +328,7 @@ function WebCylinder({
   );
 }
 
-const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji }) {
+const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getTitle, getEmoji }) {
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(scrollX.value - index * SCREEN_WIDTH);
     const scale = interpolate(distance, [0, SCREEN_WIDTH * 0.5], [1, 0.88], Extrapolation.CLAMP);
@@ -367,7 +367,7 @@ const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index,
         </View>
         <View style={promptStyles.promptCardLabel}>
           <Text style={promptStyles.promptCardEmoji}>{getEmoji(item)}</Text>
-          <Text style={promptStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
+          <Text style={promptStyles.promptCardTitle} numberOfLines={2}>{getTitle(item)}</Text>
         </View>
         {isSelected && isFront && (
           <View style={promptStyles.promptSelectedCheck}>
@@ -386,7 +386,7 @@ function NativeCarousel({
   onSelect,
   onSnapToIndex,
   getImageUri,
-  getLabel,
+  getTitle,
   getEmoji,
 }) {
   const scrollRef = useAnimatedRef();
@@ -461,7 +461,7 @@ function NativeCarousel({
             onSelect={onSelect}
             onSnapToIndex={() => onSnapToIndex(realIndex)}
             getImageUri={getImageUri}
-            getLabel={getLabel}
+            getTitle={getTitle}
             getEmoji={getEmoji}
           />
         );
