@@ -1,0 +1,256 @@
+import { StyleSheet } from "react-native";
+import { ui } from "../theme/ui";
+import { centerContent, glassBorder, iconButtonBase, textBold, textMuted } from "./bases";
+
+/** Native horizontal thumbnail wheel on PromptSelection */
+export const PROMPT_WHEEL_ITEM_SIZE = 56;
+export const PROMPT_WHEEL_ITEM_GAP = 12;
+
+export const promptStyles = StyleSheet.create({
+  promptScreen: {
+    flex: 1,
+    backgroundColor: ui.colors.background,
+    paddingBottom: 112,
+  },
+  promptHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: ui.colors.glass,
+    borderBottomWidth: 1,
+    borderBottomColor: ui.colors.glassBorder,
+    gap: 16,
+  },
+  promptBackBtn: {
+    ...iconButtonBase,
+    backgroundColor: ui.colors.glass,
+    ...glassBorder,
+  },
+  promptHeaderText: {
+    flex: 1,
+  },
+  promptHeaderTitle: { ...textBold, fontSize: 18 },
+  promptHeaderSubtitle: { ...textMuted, fontSize: 12, marginTop: 2 },
+  promptParticles: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  promptCarouselWrap: {
+    ...centerContent,
+    flex: 1,
+    paddingHorizontal: 16,
+    position: "relative",
+    zIndex: 10,
+    overflow: "visible",
+  },
+  promptCard: {
+    width: 300,
+    height: 360,
+    borderRadius: 24,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+  },
+  promptCardSelected: {
+    borderWidth: 2,
+    borderColor: ui.colors.primary,
+    shadowColor: ui.colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  promptCardImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  promptCardLabel: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+  },
+  promptCardEmoji: {
+    fontSize: 18,
+    marginBottom: 4,
+    color: ui.colors.text,
+  },
+  promptCardTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: ui.colors.text,
+  },
+  promptNavArrowRow: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: "50%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: -20,
+    zIndex: 30,
+  },
+  promptNavArrow: {
+    ...iconButtonBase,
+    backgroundColor: ui.colors.glass,
+    ...glassBorder,
+    zIndex: 20,
+  },
+  promptNavLeft: {},
+  promptNavRight: {},
+  promptCylinder: { ...centerContent, width: 360, height: 380 },
+  promptDestInfo: {
+    marginTop: 32,
+    alignItems: "center",
+  },
+  promptDestTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: ui.colors.text,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  promptDestSubtitle: { ...textMuted, fontSize: 12, marginTop: 8 },
+  promptDestSubtitleSelected: {
+    color: ui.colors.primary,
+    fontWeight: "600",
+  },
+  promptDots: { ...centerContent, flexDirection: "row", gap: 8, marginTop: 16 },
+  promptDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(234,240,255,0.3)",
+  },
+  promptDotActive: {
+    width: 24,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: ui.colors.primary,
+  },
+  promptDotSelected: {
+    backgroundColor: "rgba(124,58,237,0.6)",
+  },
+  promptConfirmBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: ui.colors.glass,
+    borderTopWidth: 1,
+    borderTopColor: ui.colors.glassBorder,
+  },
+  promptConfirmBtn: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: ui.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  promptConfirmBtnDisabled: {
+    backgroundColor: ui.colors.glass,
+  },
+  promptConfirmBtnTextDisabled: {
+    color: ui.colors.muted,
+  },
+  promptConfirmBtnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  promptSelectedCheck: {
+    ...centerContent,
+    position: "absolute",
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: ui.colors.primary,
+  },
+
+  promptParticleDot: {
+    position: "absolute",
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(124,58,237,0.3)",
+  },
+  promptPortalCarouselGlow: {
+    position: "absolute",
+    borderRadius: 999,
+    opacity: 0.3,
+    shadowColor: ui.colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 60,
+    elevation: 20,
+  },
+  promptCylinderMutedText: textMuted,
+  promptCylinderLoadingText: { ...textMuted, marginTop: 12 },
+  promptScrollWheelWrap: {
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  promptScrollWheel: {
+    maxHeight: PROMPT_WHEEL_ITEM_SIZE + 16,
+  },
+  promptScrollWheelContent: {
+    alignItems: "center",
+  },
+  promptScrollWheelItem: {
+    ...centerContent,
+    width: PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP,
+    height: PROMPT_WHEEL_ITEM_SIZE + 8,
+  },
+  promptScrollWheelItemActive: {
+    transform: [{ scale: 1.08 }],
+  },
+  promptScrollWheelItemSelected: {
+    borderWidth: 2,
+    borderColor: ui.colors.primary,
+    borderRadius: 14,
+  },
+  promptScrollWheelThumb: {
+    width: PROMPT_WHEEL_ITEM_SIZE,
+    height: PROMPT_WHEEL_ITEM_SIZE,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  promptScrollWheelThumbPlaceholder: {
+    ...centerContent,
+    backgroundColor: ui.colors.glass,
+  },
+  promptScrollWheelEmoji: {
+    fontSize: 24,
+  },
+  promptScrollWheelEmojiBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  promptScrollWheelEmojiBadgeText: {
+    fontSize: 14,
+  },
+});

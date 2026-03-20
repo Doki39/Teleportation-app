@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { commonStyles } from "../styles/commonStyles";
+import { authStyles } from "../styles/authStyles";
 import { ui } from "../theme/ui";
 import { handleLogin } from "../services/authServices";
 
@@ -9,18 +9,18 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState("");
 
   return (
-    <View style={commonStyles.authScreen}>
+    <View style={authStyles.authScreen}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }} keyboardShouldPersistTaps="handled">
-          <View style={commonStyles.authForm}>
-            <Text style={commonStyles.authTitle}>Login</Text>
+          <View style={authStyles.authForm}>
+            <Text style={authStyles.authTitle}>Login</Text>
 
-            <View style={commonStyles.authField}>
-              <Text style={commonStyles.authLabel}>Email</Text>
+            <View style={authStyles.authField}>
+              <Text style={authStyles.authLabel}>Email</Text>
               <TextInput
                 placeholder="Email"
                 placeholderTextColor={ui.colors.muted}
-                style={commonStyles.authInput}
+                style={authStyles.authInput}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -28,24 +28,24 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            <View style={commonStyles.authField}>
-              <Text style={commonStyles.authLabel}>Password</Text>
+            <View style={authStyles.authField}>
+              <Text style={authStyles.authLabel}>Password</Text>
               <TextInput
                 placeholder="Password"
                 placeholderTextColor={ui.colors.muted}
-                style={commonStyles.authInput}
+                style={authStyles.authInput}
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
               />
             </View>
 
-            <TouchableOpacity style={commonStyles.authPrimaryButton} onPress={() => handleLogin({ email, password, navigation })}>
-              <Text style={commonStyles.authPrimaryButtonText}>Log In</Text>
+            <TouchableOpacity style={authStyles.authPrimaryButton} onPress={() => handleLogin({ email, password, navigation })}>
+              <Text style={authStyles.authPrimaryButtonText}>Log In</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={commonStyles.authSecondaryButton} onPress={() => navigation.replace("Registration")}>
-              <Text style={commonStyles.authSecondaryButtonText}>Don't have an account?</Text>
+            <TouchableOpacity style={authStyles.authSecondaryButton} onPress={() => navigation.replace("Registration")}>
+              <Text style={authStyles.authSecondaryButtonText}>Don't have an account?</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

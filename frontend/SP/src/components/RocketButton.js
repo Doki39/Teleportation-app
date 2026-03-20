@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { commonStyles } from "../styles/commonStyles";
+import { rocketStyles } from "../styles/rocketStyles";
 
 export default function RocketButton({ onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -26,7 +26,7 @@ export default function RocketButton({ onPress }) {
   };
 
   return (
-    <Animated.View style={[commonStyles.rocketBtnContainer, { transform: [{ scale }, { translateY: pressY }] }]}>
+    <Animated.View style={[rocketStyles.rocketBtnContainer, { transform: [{ scale }, { translateY: pressY }] }]}>
       <Pressable
         onPress={onPress}
         onHoverIn={() => {
@@ -41,9 +41,9 @@ export default function RocketButton({ onPress }) {
         onPressOut={() => {
           animateTo(hovered.current ? 1.08 : 1, hovered.current ? -6 : 0);
         }}
-        style={commonStyles.rocketPressable}
+        style={rocketStyles.rocketPressable}
       >
-        <View style={commonStyles.rocketMain}>
+        <View style={rocketStyles.rocketMain}>
           <Animated.View style={{ transform: [{ translateY: floatY }] }}>
             <Ionicons name="rocket" size={42} color="#9AFBFF" style={{ transform: [{ rotate: "-45deg" }] }} />
           </Animated.View>

@@ -9,10 +9,13 @@ import {
   Platform,
   ScrollView,
   Image,
-  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { commonStyles } from "../styles/commonStyles";
+import {
+  promptStyles,
+  PROMPT_WHEEL_ITEM_SIZE,
+  PROMPT_WHEEL_ITEM_GAP,
+} from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { sendPhotoToGenerate } from "../services/photoServices";
 import { getPromptSelection } from "../services/promptServices";
@@ -21,8 +24,6 @@ import ProfileButton from "../components/ProfileButton";
 import Cylinder3D from "../components/Cylinder3D";
 
 const CARD_WIDTH = 300;
-const WHEEL_ITEM_SIZE = 56;
-const WHEEL_ITEM_GAP = 12;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function PromptSelectionScreen({ route, navigation }) {
@@ -35,7 +36,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const COUNT = Math.max(prompts.length, 1);
-  const ANGLE_STEP = 360 / COUNT;
   const radius = prompts.length > 0 ? CARD_WIDTH / (2 * Math.tan(Math.PI / COUNT)) : 200;
 
   useEffect(() => {
@@ -70,15 +70,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const handleSelect = useCallback((id) => {
     setSelectedId(id);
   }, []);
-
-  const handleCardPress = (item, index) => {
-    const isFront = index === currentIndex;
-    if (isFront) {
-      setSelectedId(selectedId === item.id ? null : item.id);
-    } else {
-      snapToIndex(index);
-    }
-  };
 
   async function handleConfirm() {
     if (!selectedId) return;
@@ -119,7 +110,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
       lastChangeFromWheel.current = false;
       return;
     }
-    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
+    const itemWidth = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
     if (!wheelScrollRef.current) return;
     isWheelProgrammatic.current = true;
     wheelScrollRef.current.scrollTo({
@@ -133,7 +124,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
   const handleWheelScrollEnd = useCallback((e) => {
     if (isWheelProgrammatic.current) return;
     const offset = e.nativeEvent.contentOffset.x;
-    const itemWidth = WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP;
+    const itemWidth = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
     const index = Math.round(offset / itemWidth);
     if (index >= 0 && index < prompts.length && index !== currentIndex) {
       lastChangeFromWheel.current = true;
@@ -155,63 +146,50 @@ export default function PromptSelectionScreen({ route, navigation }) {
   }, [currentIndex, selectedId, prompts]);
 
   return (
-    <View style={commonStyles.promptScreen}>
+    <View style={promptStyles.promptScreen}>
       <ProfileButton onPress={() => Alert.alert("Not implemented", "Settings screen is not implemented yet.")} />
-      <View style={commonStyles.promptHeader}>
-        <TouchableOpacity style={commonStyles.promptBackBtn} onPress={() => navigation.goBack()}>
+      <View style={promptStyles.promptHeader}>
+        <TouchableOpacity style={promptStyles.promptBackBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
         </TouchableOpacity>
-        <View style={commonStyles.promptHeaderText}>
-          <Text style={commonStyles.promptHeaderTitle}>Select Destination</Text>
-          <Text style={commonStyles.promptHeaderSubtitle}>Spin the portal wheel to choose</Text>
+        <View style={promptStyles.promptHeaderText}>
+          <Text style={promptStyles.promptHeaderTitle}>Select Destination</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>Spin the portal wheel to choose</Text>
         </View>
-        <View style={commonStyles.promptBackBtn}>
+        <View style={promptStyles.promptBackBtn}>
           <Ionicons name="sparkles" size={20} color={ui.colors.primary} />
         </View>
       </View>
-      <View style={commonStyles.promptParticles} pointerEvents="none">
+      <View style={promptStyles.promptParticles} pointerEvents="none">
         {Array.from({ length: 20 }).map((_, i) => (
           <View
             key={i}
-            style={{
-              position: "absolute",
-              left: (i * 137) % SCREEN_WIDTH,
-              top: (i * 97) % SCREEN_HEIGHT,
-              width: 4,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: "rgba(124,58,237,0.3)",
-            }}
+            style={[
+              promptStyles.promptParticleDot,
+              { left: (i * 137) % SCREEN_WIDTH, top: (i * 97) % SCREEN_HEIGHT },
+            ]}
           />
         ))}
       </View>
-      <View style={commonStyles.promptCarouselWrap}>
+      <View style={promptStyles.promptCarouselWrap}>
         {prompts.length > 0 && (
           <View
-            style={{
-              position: "absolute",
-              width: radius * 2.5,
-              height: radius * 1.2,
-              borderRadius: 999,
-              opacity: 0.3,
-              shadowColor: ui.colors.primary,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.4,
-              shadowRadius: 60,
-              elevation: 20,
-            }}
+            style={[
+              promptStyles.promptPortalCarouselGlow,
+              { width: radius * 2.5, height: radius * 1.2 },
+            ]}
           />
         )}
-        <View style={commonStyles.promptNavArrowRow}>
+        <View style={promptStyles.promptNavArrowRow}>
           <TouchableOpacity
-            style={[commonStyles.promptNavArrow, commonStyles.promptNavLeft]}
+            style={[promptStyles.promptNavArrow, promptStyles.promptNavLeft]}
             onPress={goPrev}
             disabled={prompts.length === 0}
           >
             <Ionicons name="chevron-back" size={20} color={ui.colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[commonStyles.promptNavArrow, commonStyles.promptNavRight]}
+            style={[promptStyles.promptNavArrow, promptStyles.promptNavRight]}
             onPress={goNext}
             disabled={prompts.length === 0}
           >
@@ -219,13 +197,13 @@ export default function PromptSelectionScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
         {loading ? (
-          <View style={commonStyles.promptCylinder}>
+          <View style={promptStyles.promptCylinder}>
             <ActivityIndicator size="large" color={ui.colors.primary} />
-            <Text style={{ color: ui.colors.muted, marginTop: 12 }}>Loading prompts...</Text>
+            <Text style={promptStyles.promptCylinderLoadingText}>Loading prompts...</Text>
           </View>
         ) : prompts.length === 0 ? (
-          <View style={commonStyles.promptCylinder}>
-            <Text style={{ color: ui.colors.muted }}>No prompts available</Text>
+          <View style={promptStyles.promptCylinder}>
+            <Text style={promptStyles.promptCylinderMutedText}>No prompts available</Text>
           </View>
         ) : (
           <Cylinder3D
@@ -237,18 +215,17 @@ export default function PromptSelectionScreen({ route, navigation }) {
             getImageUri={getImageUri}
             getLabel={getLabel}
             getEmoji={getEmoji}
-            commonStyles={commonStyles}
           />
         )}
         {prompts.length > 0 && (
-          <View style={commonStyles.promptDestInfo}>
-            <Text style={commonStyles.promptDestTitle}>
+          <View style={promptStyles.promptDestInfo}>
+            <Text style={promptStyles.promptDestTitle}>
               {getEmoji(prompts[currentIndex])} {getLabel(prompts[currentIndex])}
             </Text>
             <Text
               style={[
-                commonStyles.promptDestSubtitle,
-                selectedId === prompts[currentIndex]?.id && commonStyles.promptDestSubtitleSelected,
+                promptStyles.promptDestSubtitle,
+                selectedId === prompts[currentIndex]?.id && promptStyles.promptDestSubtitleSelected,
               ]}
             >
               {selectedId === prompts[currentIndex]?.id
@@ -258,22 +235,27 @@ export default function PromptSelectionScreen({ route, navigation }) {
           </View>
         )}
         {prompts.length > 0 && Platform.OS !== "web" && (
-          <View style={styles.scrollWheelWrap}>
+          <View style={promptStyles.promptScrollWheelWrap}>
             <ScrollView
               ref={wheelScrollRef}
               horizontal
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={handleWheelScrollEnd}
               scrollEventThrottle={16}
-              snapToOffsets={prompts.map((_, i) => i * (WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP))}
+              snapToOffsets={prompts.map(
+                (_, i) => i * (PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP)
+              )}
               snapToAlignment="center"
               decelerationRate="fast"
               disableIntervalMomentum
               contentContainerStyle={[
-                styles.scrollWheelContent,
-                { paddingHorizontal: (SCREEN_WIDTH - WHEEL_ITEM_SIZE - WHEEL_ITEM_GAP) / 2 },
+                promptStyles.promptScrollWheelContent,
+                {
+                  paddingHorizontal:
+                    (SCREEN_WIDTH - PROMPT_WHEEL_ITEM_SIZE - PROMPT_WHEEL_ITEM_GAP) / 2,
+                },
               ]}
-              style={styles.scrollWheel}
+              style={promptStyles.promptScrollWheel}
             >
               {prompts.map((p, i) => {
                 const uri = getImageUri(p);
@@ -283,21 +265,32 @@ export default function PromptSelectionScreen({ route, navigation }) {
                     key={p.id}
                     onPress={() => snapToIndex(i)}
                     style={[
-                      styles.scrollWheelItem,
-                      isActive && styles.scrollWheelItemActive,
-                      selectedId === p.id && styles.scrollWheelItemSelected,
+                      promptStyles.promptScrollWheelItem,
+                      isActive && promptStyles.promptScrollWheelItemActive,
+                      selectedId === p.id && promptStyles.promptScrollWheelItemSelected,
                     ]}
                   >
                     {uri ? (
-                      <Image source={{ uri }} style={styles.scrollWheelThumb} resizeMode="cover" />
+                      <Image
+                        source={{ uri }}
+                        style={promptStyles.promptScrollWheelThumb}
+                        resizeMode="cover"
+                      />
                     ) : (
-                      <View style={[styles.scrollWheelThumb, styles.scrollWheelThumbPlaceholder]}>
-                        <Text style={styles.scrollWheelEmoji}>{getEmoji(p)}</Text>
+                      <View
+                        style={[
+                          promptStyles.promptScrollWheelThumb,
+                          promptStyles.promptScrollWheelThumbPlaceholder,
+                        ]}
+                      >
+                        <Text style={promptStyles.promptScrollWheelEmoji}>{getEmoji(p)}</Text>
                       </View>
                     )}
                     {uri && (
-                      <View style={styles.scrollWheelEmojiBadge}>
-                        <Text style={styles.scrollWheelEmojiBadgeText}>{getEmoji(p)}</Text>
+                      <View style={promptStyles.promptScrollWheelEmojiBadge}>
+                        <Text style={promptStyles.promptScrollWheelEmojiBadgeText}>
+                          {getEmoji(p)}
+                        </Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -307,26 +300,26 @@ export default function PromptSelectionScreen({ route, navigation }) {
           </View>
         )}
         {prompts.length > 0 && Platform.OS === "web" && (
-          <View style={commonStyles.promptDots}>
+          <View style={promptStyles.promptDots}>
             {prompts.map((p, i) => (
               <TouchableOpacity
                 key={p.id}
                 onPress={() => snapToIndex(i)}
                 style={[
-                  commonStyles.promptDot,
-                  i === currentIndex && commonStyles.promptDotActive,
-                  selectedId === p.id && i !== currentIndex && commonStyles.promptDotSelected,
+                  promptStyles.promptDot,
+                  i === currentIndex && promptStyles.promptDotActive,
+                  selectedId === p.id && i !== currentIndex && promptStyles.promptDotSelected,
                 ]}
               />
             ))}
           </View>
         )}
       </View>
-      <View style={commonStyles.promptConfirmBar}>
+      <View style={promptStyles.promptConfirmBar}>
         <TouchableOpacity
           style={[
-            commonStyles.promptConfirmBtn,
-            (!selectedId || isProcessing) && commonStyles.promptConfirmBtnDisabled,
+            promptStyles.promptConfirmBtn,
+            (!selectedId || isProcessing) && promptStyles.promptConfirmBtnDisabled,
           ]}
           onPress={handleConfirm}
           disabled={!selectedId || isProcessing}
@@ -334,12 +327,12 @@ export default function PromptSelectionScreen({ route, navigation }) {
           {isProcessing ? (
             <>
               <ActivityIndicator size="small" color="#fff" />
-              <Text style={commonStyles.promptConfirmBtnText}>Teleporting...</Text>
+              <Text style={promptStyles.promptConfirmBtnText}>Teleporting...</Text>
             </>
           ) : (
             <>
               <Ionicons name="flash" size={20} color={selectedId ? "#fff" : ui.colors.muted} />
-              <Text style={[commonStyles.promptConfirmBtnText, !selectedId && commonStyles.promptConfirmBtnTextDisabled]}>
+              <Text style={[promptStyles.promptConfirmBtnText, !selectedId && promptStyles.promptConfirmBtnTextDisabled]}>
                 Confirm Teleportation
               </Text>
             </>
@@ -349,56 +342,3 @@ export default function PromptSelectionScreen({ route, navigation }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollWheelWrap: {
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  scrollWheel: {
-    maxHeight: WHEEL_ITEM_SIZE + 16,
-  },
-  scrollWheelContent: {
-    alignItems: "center",
-  },
-  scrollWheelItem: {
-    width: WHEEL_ITEM_SIZE + WHEEL_ITEM_GAP,
-    height: WHEEL_ITEM_SIZE + 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scrollWheelItemActive: {
-    transform: [{ scale: 1.08 }],
-  },
-  scrollWheelItemSelected: {
-    borderWidth: 2,
-    borderColor: ui.colors.primary,
-    borderRadius: 14,
-  },
-  scrollWheelThumb: {
-    width: WHEEL_ITEM_SIZE,
-    height: WHEEL_ITEM_SIZE,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  scrollWheelThumbPlaceholder: {
-    backgroundColor: ui.colors.glass,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scrollWheelEmoji: {
-    fontSize: 24,
-  },
-  scrollWheelEmojiBadge: {
-    position: "absolute",
-    bottom: 2,
-    right: 2,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  scrollWheelEmojiBadgeText: {
-    fontSize: 14,
-  },
-});

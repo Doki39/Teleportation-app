@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileButton from "../components/ProfileButton";
 import RocketButton from "../components/RocketButton";
-import { commonStyles } from "../styles/commonStyles";
+import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { handleLogout } from "../services/authServices";
@@ -121,30 +121,30 @@ export default function HomeScreen({ navigation }) {
   const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24;
 
   return (
-    <View style={commonStyles.homeRoot}>
+    <View style={homeStyles.homeRoot}>
       {isUploading && (
         <Modal visible transparent animationType="fade">
-          <View style={commonStyles.uploadOverlay}>
-            <View style={commonStyles.uploadCard}>
+          <View style={homeStyles.uploadOverlay}>
+            <View style={homeStyles.uploadCard}>
               <ActivityIndicator size="large" color={ui.colors.primary} />
-              <Text style={commonStyles.uploadText}>Uploading to cloud...</Text>
-              <Text style={commonStyles.uploadSubtext}>Preparing your photo for teleportation</Text>
+              <Text style={homeStyles.uploadText}>Uploading to cloud...</Text>
+              <Text style={homeStyles.uploadSubtext}>Preparing your photo for teleportation</Text>
             </View>
           </View>
         </Modal>
       )}
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-        <View style={commonStyles.portalStage}>
-          <Animated.View style={[commonStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
-          <Animated.View style={[commonStyles.portalMistLeft, { transform: [{ translateX: driftX }] }]} />
-          <Animated.View style={[commonStyles.portalMistRight, { transform: [{ translateX: Animated.multiply(driftX, -1) }] }]} />
+        <View style={homeStyles.portalStage}>
+          <Animated.View style={[homeStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
+          <Animated.View style={[homeStyles.portalMistLeft, { transform: [{ translateX: driftX }] }]} />
+          <Animated.View style={[homeStyles.portalMistRight, { transform: [{ translateX: Animated.multiply(driftX, -1) }] }]} />
 
           {sparks.map((spark) => (
             <View
               key={spark.key}
               style={[
-                commonStyles.spark,
-                spark.side === "left" ? commonStyles.sparkLeft : commonStyles.sparkRight,
+                homeStyles.spark,
+                spark.side === "left" ? homeStyles.sparkLeft : homeStyles.sparkRight,
                 {
                   top: spark.top,
                   width: spark.size,
@@ -155,11 +155,11 @@ export default function HomeScreen({ navigation }) {
             />
           ))}
 
-          <Animated.View style={[commonStyles.portalRingWide, { transform: [{ rotate: spin }, { scale: pulseScale }] }]} />
-          <Animated.View style={[commonStyles.portalRingOuter, { transform: [{ rotate: reverseSpin }] }]} />
-          <Animated.View style={[commonStyles.portalRingInner, { transform: [{ rotate: spin }] }]} />
-          <View style={commonStyles.portalCoreGlow} />
-          <View style={commonStyles.portalCore} />
+          <Animated.View style={[homeStyles.portalRingWide, { transform: [{ rotate: spin }, { scale: pulseScale }] }]} />
+          <Animated.View style={[homeStyles.portalRingOuter, { transform: [{ rotate: reverseSpin }] }]} />
+          <Animated.View style={[homeStyles.portalRingInner, { transform: [{ rotate: spin }] }]} />
+          <View style={homeStyles.portalCoreGlow} />
+          <View style={homeStyles.portalCore} />
         </View>
       </View>
 
@@ -170,13 +170,13 @@ export default function HomeScreen({ navigation }) {
       />
 
       {loggedIn && (
-        <View style={commonStyles.homeRocketContainer} pointerEvents="box-none">
+        <View style={homeStyles.homeRocketContainer} pointerEvents="box-none">
           <RocketButton onPress={handleCamera} />
         </View>
       )}
 
       {loggedIn && (
-        <View style={[commonStyles.buttonsWrap, { top: BUTTONS_TOP }]}>
+        <View style={[homeStyles.buttonsWrap, { top: BUTTONS_TOP }]}>
               <ActionButton
                 icon={<Ionicons name="cloud-upload-outline" size={20} color={ui.colors.primary} />}
                 label="Upload from Library"
@@ -202,20 +202,20 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      <View style={commonStyles.homeContentWrapper} pointerEvents={loggedIn ? "box-none" : "auto"}>
-        <View style={commonStyles.titleBlock}>
-          <Text style={commonStyles.homeTitle}>Teleport</Text>
-          <Text style={commonStyles.subtitle}>Be anywhere in seconds</Text>
+      <View style={homeStyles.homeContentWrapper} pointerEvents={loggedIn ? "box-none" : "auto"}>
+        <View style={homeStyles.titleBlock}>
+          <Text style={homeStyles.homeTitle}>Teleport</Text>
+          <Text style={homeStyles.subtitle}>Be anywhere in seconds</Text>
         </View>
 
         {!loggedIn && (
           <>
             <View style={{ flex: 0.8 }} />
-            <View style={commonStyles.guestWrap}>
-              <Text style={commonStyles.guestTitle}>Login required</Text>
-              <Text style={commonStyles.guestText}>You need to log in first to access camera, upload, and library features.</Text>
+            <View style={homeStyles.guestWrap}>
+              <Text style={homeStyles.guestTitle}>Login required</Text>
+              <Text style={homeStyles.guestText}>You need to log in first to access camera, upload, and library features.</Text>
 
-              <View style={commonStyles.secondaryWrap}>
+              <View style={homeStyles.secondaryWrap}>
               <ActionButton
                 icon={<Ionicons name="log-in-outline" size={20} color={ui.colors.secondary} />}
                 label="Log In"
@@ -268,25 +268,25 @@ function ActionButton({ icon, label, onPress, variant = "glass" }) {
           animateTo(hovered.current ? 1.03 : 1, hovered.current ? -4 : 0, hovered.current ? 1 : 0);
         }}
         style={({ pressed }) => [
-          commonStyles.actionBtn,
-          variant === "secondary" ? commonStyles.secondaryBtn : variant === "logout" ? commonStyles.logoutBtn : commonStyles.glassBtn,
+          homeStyles.actionBtn,
+          variant === "secondary" ? homeStyles.secondaryBtn : variant === "logout" ? homeStyles.logoutBtn : homeStyles.glassBtn,
           pressed && { opacity: 0.96 },
         ]}
       >
         <Animated.View
           pointerEvents="none"
           style={[
-            commonStyles.actionGlow,
-            variant === "secondary" ? commonStyles.secondaryGlow : variant === "logout" ? commonStyles.logoutGlow : commonStyles.primaryGlow,
+            homeStyles.actionGlow,
+            variant === "secondary" ? homeStyles.secondaryGlow : variant === "logout" ? homeStyles.logoutGlow : homeStyles.primaryGlow,
             { opacity: glow },
           ]}
         />
         {icon}
         <Text
           style={[
-            commonStyles.actionBtnText,
-            variant === "secondary" && commonStyles.secondaryBtnText,
-            variant === "logout" && commonStyles.logoutBtnText,
+            homeStyles.actionBtnText,
+            variant === "secondary" && homeStyles.secondaryBtnText,
+            variant === "logout" && homeStyles.logoutBtnText,
           ]}
         >
           {label}
