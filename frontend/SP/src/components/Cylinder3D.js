@@ -20,6 +20,7 @@ import Animated, {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { ui } from "../theme/ui";
+import { promptStyles } from "../styles/promptStyles";
 
 const CARD_WIDTH = 300;
 const CARD_HEIGHT = 360;
@@ -54,7 +55,6 @@ export default function Cylinder3D({
   getImageUri,
   getLabel,
   getEmoji,
-  commonStyles,
 }) {
   const COUNT = Math.max(prompts.length, 1);
   const ANGLE_STEP = 360 / COUNT;
@@ -149,7 +149,6 @@ export default function Cylinder3D({
           getImageUri={getImageUri}
           getLabel={getLabel}
           getEmoji={getEmoji}
-          commonStyles={commonStyles}
         />
       )}
     </View>
@@ -329,7 +328,7 @@ function WebCylinder({
   );
 }
 
-const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji, commonStyles }) {
+const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getLabel, getEmoji }) {
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(scrollX.value - index * SCREEN_WIDTH);
     const scale = interpolate(distance, [0, SCREEN_WIDTH * 0.5], [1, 0.88], Extrapolation.CLAMP);
@@ -349,14 +348,14 @@ const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index,
           }
         }}
         style={[
-          commonStyles.promptCard,
-          isSelected && isFront && commonStyles.promptCardSelected,
+          promptStyles.promptCard,
+          isSelected && isFront && promptStyles.promptCardSelected,
         ]}
       >
         {getImageUri(item) ? (
-          <Image source={{ uri: getImageUri(item) }} style={commonStyles.promptCardImage} resizeMode="contain" />
+          <Image source={{ uri: getImageUri(item) }} style={promptStyles.promptCardImage} resizeMode="contain" />
         ) : (
-          <View style={[commonStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
+          <View style={[promptStyles.promptCardImage, { backgroundColor: ui.colors.glass }]} />
         )}
         <LinearGradient
           colors={["rgba(5,11,26,0.85)", "rgba(5,11,26,0.2)", "transparent"]}
@@ -366,12 +365,12 @@ const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index,
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
           <ScanlineOverlay />
         </View>
-        <View style={commonStyles.promptCardLabel}>
-          <Text style={commonStyles.promptCardEmoji}>{getEmoji(item)}</Text>
-          <Text style={commonStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
+        <View style={promptStyles.promptCardLabel}>
+          <Text style={promptStyles.promptCardEmoji}>{getEmoji(item)}</Text>
+          <Text style={promptStyles.promptCardTitle} numberOfLines={2}>{getLabel(item)}</Text>
         </View>
         {isSelected && isFront && (
-          <View style={commonStyles.promptSelectedCheck}>
+          <View style={promptStyles.promptSelectedCheck}>
             <Ionicons name="checkmark" size={16} color="#fff" />
           </View>
         )}
@@ -389,7 +388,6 @@ function NativeCarousel({
   getImageUri,
   getLabel,
   getEmoji,
-  commonStyles,
 }) {
   const scrollRef = useAnimatedRef();
   const scrollX = useSharedValue(0);
@@ -465,7 +463,6 @@ function NativeCarousel({
             getImageUri={getImageUri}
             getLabel={getLabel}
             getEmoji={getEmoji}
-            commonStyles={commonStyles}
           />
         );
       })}

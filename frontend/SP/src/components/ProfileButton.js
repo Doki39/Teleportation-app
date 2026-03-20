@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { commonStyles } from "../styles/commonStyles";
+import { profileStyles } from "../styles/profileStyles";
 
 export default function ProfileButton({ onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -35,7 +35,7 @@ export default function ProfileButton({ onPress }) {
   );
 
   return (
-    <Animated.View style={[commonStyles.profileWrap, shadowStyle, { transform: [{ scale }] }]}>
+    <Animated.View style={[profileStyles.profileWrap, shadowStyle, { transform: [{ scale }] }]}>
       <Pressable
         onPress={onPress}
         onHoverIn={() => {
@@ -48,10 +48,10 @@ export default function ProfileButton({ onPress }) {
         }}
         onPressIn={() => animateTo(0.96, 1)}
         onPressOut={() => animateTo(hovered.current ? 1.12 : 1, hovered.current ? 1 : 0)}
-        style={({ pressed }) => [commonStyles.profileButton, pressed && { opacity: 0.95 }]}
+        style={({ pressed }) => [profileStyles.profileButton, pressed && { opacity: 0.95 }]}
       >
-        <Animated.View pointerEvents="none" style={[commonStyles.profileGlow, { opacity: glow }]} />
-        <View style={commonStyles.profileCore}>
+        <Animated.View pointerEvents="none" style={[profileStyles.profileGlow, { opacity: glow }]} />
+        <View style={profileStyles.profileCore}>
           <Ionicons name="person" size={18} color="#9AFBFF" />
         </View>
       </Pressable>
