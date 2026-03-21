@@ -3,7 +3,9 @@ import LoginScreen from "../screens/LoginScreen";
 import HomeScreen from "../screens/HomeScreen";
 import RegistrationPage from "../screens/RegisterScreen";
 import LibraryScreen from "../screens/LibraryScreen";
-import PromptSelectionScreen from "../screens/PromptSelectionScreen"
+import PromptSelectionScreen from "../screens/PromptSelectionScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
@@ -14,6 +16,7 @@ export default function AppStack() {
       <Stack.Screen name="Registration" component={RegistrationPage} options={{ headerShown: false }} />
       <Stack.Screen name="Library" component={LibraryScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PromptSelection" component={PromptSelectionScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
