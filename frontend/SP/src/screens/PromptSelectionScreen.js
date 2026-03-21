@@ -17,6 +17,7 @@ import PromptThumbnailWheel from "../components/PromptThumbnailWheel";
 import BackgroundParticles from "../components/BackgroundParticles";
 import { usePromptSelectionScreen } from "../hooks/usePromptSelectionScreen";
 import { getPortalGlowSize } from "../utils/promptSelectionHelpers";
+import { goBackOrHome } from "../utils/navigationHelpers";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -47,7 +48,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
       <ProfileMenuButton onLogout={() => signOut({ navigation })} />
 
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity style={promptStyles.promptBackBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={promptStyles.promptBackBtn} onPress={() => goBackOrHome(navigation)}>
           <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
         </TouchableOpacity>
         <View style={promptStyles.promptHeaderText}>

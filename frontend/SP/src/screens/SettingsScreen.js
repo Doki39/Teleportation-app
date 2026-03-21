@@ -5,6 +5,7 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
+import { goBackOrHome } from "../utils/navigationHelpers";
 
 export default function SettingsScreen({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -16,7 +17,7 @@ export default function SettingsScreen({ navigation }) {
       <View style={promptStyles.promptHeader}>
         <TouchableOpacity
           style={promptStyles.promptBackBtn}
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation)}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >

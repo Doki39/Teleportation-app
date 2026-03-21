@@ -16,6 +16,7 @@ import ProfileMenuButton from "../components/ProfileMenuButton";
 import ImagePreviewModal from "../components/ImagePreviewModal";
 import { getGeneratedPhotos } from "../services/libraryServices";
 import { signOut } from "../services/authServices";
+import { goBackOrHome } from "../utils/navigationHelpers";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
@@ -109,7 +110,7 @@ export default function LibraryScreen({ navigation }) {
       <View style={promptStyles.promptHeader}>
         <TouchableOpacity
           style={promptStyles.promptBackBtn}
-          onPress={() => navigation.replace("Home")}
+          onPress={() => goBackOrHome(navigation)}
           accessibilityRole="button"
           accessibilityLabel="Back to home"
         >
