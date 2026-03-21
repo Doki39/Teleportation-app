@@ -6,6 +6,7 @@ import {
   Animated,
   Alert,
   Dimensions,
+  Platform,
   StyleSheet,
   ActivityIndicator,
   Modal,
@@ -14,7 +15,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import ProfileButton from "../components/ProfileButton";
+import ProfileMenuButton from "../components/ProfileMenuButton";
 import RocketButton from "../components/RocketButton";
 import BackgroundParticles from "../components/BackgroundParticles";
 import { homeStyles } from "../styles/homeStyles";
@@ -24,9 +25,10 @@ import { getPhotosForSlide } from "../services/libraryServices";
 import { handleLogout } from "../services/authServices";
 
 const ROCKET_SIZE = 118;
-const SLIDE_WIDTH = 330;
-const SLIDE_HEIGHT = 186;
-const SLIDE_BORDER_RADIUS = 20;
+const SLIDE_LAYOUT = Platform.OS === "web" ? { width: 330, height: 186, borderRadius: 20 } : { width: 248, height: 140, borderRadius: 15 };
+const SLIDE_WIDTH = SLIDE_LAYOUT.width;
+const SLIDE_HEIGHT = SLIDE_LAYOUT.height;
+const SLIDE_BORDER_RADIUS = SLIDE_LAYOUT.borderRadius;
 const SLIDE_ROTATE_MS = 3500;
 
 export default function HomeScreen({ navigation }) {
@@ -140,6 +142,8 @@ export default function HomeScreen({ navigation }) {
 
   const renderSlideItem = useCallback(({ item }) => {
     const uri = buildImageUri(item);
+    const locationLabel =
+      typeof item?.location === "string" ? item.location.trim() : item?.location != null ? String(item.location).trim() : "";
     return (
       <View style={[homeStyles.slidePage, { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }]}>
         {uri ? (
@@ -147,6 +151,13 @@ export default function HomeScreen({ navigation }) {
         ) : (
           <View style={[homeStyles.slideImage, { backgroundColor: "rgba(255,255,255,0.06)" }]} />
         )}
+        {locationLabel ? (
+          <View style={homeStyles.slideLocationOverlay} pointerEvents="none">
+            <Text style={homeStyles.slideLocationText} numberOfLines={2}>
+              {locationLabel}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   }, []);
@@ -175,7 +186,8 @@ export default function HomeScreen({ navigation }) {
     setLoggedIn(false);
   };
 
-  const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24;
+  /** Vertical position of Upload / Library / Add Prompt (below rocket) */
+  const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24 + 40;
 
   return (
     <View style={homeStyles.homeRoot}>
@@ -221,10 +233,12 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      <ProfileButton
-        onPress={() => {
+      <ProfileMenuButton
+        showLogout={loggedIn}
+        onSettings={() => {
           Alert.alert("Not implemented", "Settings screen is not implemented yet.");
         }}
+        onLogout={onLogout}
       />
 
       {loggedIn && (
@@ -251,19 +265,12 @@ export default function HomeScreen({ navigation }) {
                 onPress={() => Alert.alert("Admin", "Add Prompt screen not implemented yet.")}
                 variant="secondary"
               />
-              <ActionButton
-                icon={<Ionicons name="log-out-outline" size={20} color="#FCA5A5" />}
-                label="Log Out"
-                onPress={onLogout}
-                variant="logout"
-              />
         </View>
       )}
 
       <View style={homeStyles.homeContentWrapper} pointerEvents={loggedIn ? "box-none" : "auto"}>
         <View style={homeStyles.titleBlock}>
           <Text style={homeStyles.homeTitle}>Teleport</Text>
-          <Text style={homeStyles.subtitle}>Be anywhere in seconds</Text>
         </View>
 
         <View style={[homeStyles.slideShowSection, { width: SLIDE_WIDTH }]}>

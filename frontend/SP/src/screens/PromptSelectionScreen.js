@@ -11,7 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
-import ProfileButton from "../components/ProfileButton";
+import ProfileMenuButton from "../components/ProfileMenuButton";
+import { handleLogout } from "../services/authServices";
 import Cylinder3D from "../components/Cylinder3D";
 import PromptThumbnailWheel from "../components/PromptThumbnailWheel";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -44,10 +45,14 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
   return (
     <View style={promptStyles.promptScreen}>
-      <ProfileButton
-        onPress={() =>
+      <ProfileMenuButton
+        onSettings={() =>
           Alert.alert("Not implemented", "Settings screen is not implemented yet.")
         }
+        onLogout={async () => {
+          await handleLogout();
+          navigation.replace("Home");
+        }}
       />
 
       <View style={promptStyles.promptHeader}>

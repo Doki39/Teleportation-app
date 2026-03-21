@@ -66,11 +66,6 @@ export const homeStyles = StyleSheet.create({
     marginBottom: 6,
     letterSpacing: 0.4,
   },
-  subtitle: {
-    color: ui.colors.muted,
-    fontSize: 13,
-    letterSpacing: 0.5,
-  },
   slideShowSection: {
     alignSelf: "center",
     marginTop: 12,
@@ -99,6 +94,27 @@ export const homeStyles = StyleSheet.create({
   slideImage: {
     width: "100%",
     height: "100%",
+  },
+  slideLocationOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(5, 8, 18, 0.5)",
+  },
+  slideLocationText: {
+    color: "rgba(255,255,255,0.95)",
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
+    letterSpacing: 0.2,
+    textShadowColor: "rgba(0,0,0,0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   slideShowLoading: {
     ...centerContent,

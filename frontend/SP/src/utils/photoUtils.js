@@ -71,7 +71,7 @@ export async function openCamera() {
       const payload = await handlePhoto(asset);
       return payload;
   }};
-  
+
 export function buildImageUri(item) {
   if (!item || typeof item !== "object") return null;
   const path =
