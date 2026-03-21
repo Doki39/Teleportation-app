@@ -1,43 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Animated,
-  Alert,
-  Dimensions,
-  Platform,
-  StyleSheet,
-  ActivityIndicator,
-  Modal,
-  FlatList,
-  Image,
-} from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {View,Text,Pressable,Animated,Alert,Dimensions,StyleSheet,ActivityIndicator,Modal} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileMenuButton from "../components/ProfileMenuButton";
 import RocketButton from "../components/RocketButton";
 import BackgroundParticles from "../components/BackgroundParticles";
+import SlideShow from "../components/SlideShow";
 import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
-import { openLibrary, openCamera, handlePhotoFlow, buildImageUri } from "../utils/photoUtils";
-import { getPhotosForSlide } from "../services/libraryServices";
+import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { handleLogout } from "../services/authServices";
 
 const ROCKET_SIZE = 118;
-const SLIDE_LAYOUT = Platform.OS === "web" ? { width: 330, height: 186, borderRadius: 20 } : { width: 248, height: 140, borderRadius: 15 };
-const SLIDE_WIDTH = SLIDE_LAYOUT.width;
-const SLIDE_HEIGHT = SLIDE_LAYOUT.height;
-const SLIDE_BORDER_RADIUS = SLIDE_LAYOUT.borderRadius;
-const SLIDE_ROTATE_MS = 3500;
 
 export default function HomeScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [slidePhotos, setSlidePhotos] = useState([]);
-  const [slideLoading, setSlideLoading] = useState(true);
-  const slideListRef = useRef(null);
-  const slideIndexRef = useRef(0);
   const portalSpin = useRef(new Animated.Value(0)).current;
   const portalReverseSpin = useRef(new Animated.Value(0)).current;
   const portalPulse = useRef(new Animated.Value(0)).current;
@@ -110,58 +88,6 @@ export default function HomeScreen({ navigation }) {
     ).start();
   }, [portalDrift, portalPulse, portalReverseSpin, portalSpin]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await getPhotosForSlide();
-        if (!cancelled) setSlidePhotos(Array.isArray(data) ? data : []);
-      } catch {
-        if (!cancelled) setSlidePhotos([]);
-      } finally {
-        if (!cancelled) setSlideLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (slidePhotos.length <= 1) return undefined;
-    const id = setInterval(() => {
-      const next = (slideIndexRef.current + 1) % slidePhotos.length;
-      slideIndexRef.current = next;
-      slideListRef.current?.scrollToOffset({
-        offset: next * SLIDE_WIDTH,
-        animated: true,
-      });
-    }, SLIDE_ROTATE_MS);
-    return () => clearInterval(id);
-  }, [slidePhotos.length]);
-
-  const renderSlideItem = useCallback(({ item }) => {
-    const uri = buildImageUri(item);
-    const locationLabel =
-      typeof item?.location === "string" ? item.location.trim() : item?.location != null ? String(item.location).trim() : "";
-    return (
-      <View style={[homeStyles.slidePage, { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }]}>
-        {uri ? (
-          <Image source={{ uri }} style={homeStyles.slideImage} resizeMode="cover" />
-        ) : (
-          <View style={[homeStyles.slideImage, { backgroundColor: "rgba(255,255,255,0.06)" }]} />
-        )}
-        {locationLabel ? (
-          <View style={homeStyles.slideLocationOverlay} pointerEvents="none">
-            <Text style={homeStyles.slideLocationText} numberOfLines={2}>
-              {locationLabel}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-    );
-  }, []);
-
   const spin = portalSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
   const reverseSpin = portalReverseSpin.interpolate({
     inputRange: [0, 1],
@@ -186,7 +112,6 @@ export default function HomeScreen({ navigation }) {
     setLoggedIn(false);
   };
 
-  /** Vertical position of Upload / Library / Add Prompt (below rocket) */
   const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24 + 40;
 
   return (
@@ -273,60 +198,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={homeStyles.homeTitle}>Teleport</Text>
         </View>
 
-        <View style={[homeStyles.slideShowSection, { width: SLIDE_WIDTH }]}>
-          <Text style={homeStyles.slideShowSectionTitle}>Where people went with us</Text>
-          <View
-            style={[
-              homeStyles.slideShowContainer,
-              {
-                width: SLIDE_WIDTH,
-                height: SLIDE_HEIGHT,
-                borderRadius: SLIDE_BORDER_RADIUS,
-              },
-            ]}
-          >
-            {slideLoading ? (
-              <View style={[homeStyles.slideShowLoading, { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }]}>
-                <ActivityIndicator size="large" color={ui.colors.primary} />
-              </View>
-            ) : slidePhotos.length > 0 ? (
-              <FlatList
-                ref={slideListRef}
-                data={slidePhotos}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                style={{ width: SLIDE_WIDTH, height: SLIDE_HEIGHT }}
-                decelerationRate="fast"
-                keyExtractor={(item, index) => String(item?.id ?? index)}
-                getItemLayout={(_, index) => ({
-                  length: SLIDE_WIDTH,
-                  offset: SLIDE_WIDTH * index,
-                  index,
-                })}
-                onMomentumScrollEnd={(e) => {
-                  const x = e.nativeEvent.contentOffset.x;
-                  const idx = Math.round(x / SLIDE_WIDTH);
-                  slideIndexRef.current = Math.max(0, Math.min(idx, slidePhotos.length - 1));
-                }}
-                onScrollToIndexFailed={(info) => {
-                  setTimeout(() => {
-                    slideListRef.current?.scrollToOffset({
-                      offset: info.index * SLIDE_WIDTH,
-                      animated: true,
-                    });
-                  }, 300);
-                }}
-                renderItem={renderSlideItem}
-              />
-            ) : (
-              <View style={[homeStyles.slideShowEmpty, { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }]}>
-                <Ionicons name="images-outline" size={36} color={ui.colors.muted} />
-                <Text style={homeStyles.slideShowEmptyText}>No previews</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        <SlideShow title="Where people went with us" />
 
         {!loggedIn && (
           <>

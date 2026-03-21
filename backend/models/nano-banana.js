@@ -112,7 +112,7 @@ export async function generatePicture(imageUrl, prompt) {
 
   const api = new NanoBananaAPI(apiKey);
 
-  const taskId = await api.generateImage(imageUrl, prompt); // 
+  const taskId = await api.generateImage(imageUrl, prompt);
 
   const result = await api.waitForCompletion(taskId);
 
