@@ -1,6 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import { Platform, Alert } from "react-native";
 import { uploadPhotoToDrive } from "../services/photoServices";
+import { API_BASE_URL } from "../config/api";
 
 export async function handlePhotoFlow(getPayload, navigation, { onUploadStart, onUploadEnd } = {}) {
   try {
@@ -70,5 +71,22 @@ export async function openCamera() {
       const payload = await handlePhoto(asset);
       return payload;
   }};
+  
+export function buildImageUri(item) {
+  if (!item || typeof item !== "object") return null;
+  const path =
+    item.processed_uri ??
+    item.processed_image_uri ??
+    item.image_url ??
+    item.uri ??
+    item.url ??
+    item.path;
+  if (path == null || path === "") return null;
+  const s = String(path).trim();
+  if (!s) return null;
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  const withSlash = s.startsWith("/") ? s : `/${s}`;
+  return `${API_BASE_URL}${withSlash}`;
+}
 
   

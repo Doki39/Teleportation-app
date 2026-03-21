@@ -71,6 +71,47 @@ export const homeStyles = StyleSheet.create({
     fontSize: 13,
     letterSpacing: 0.5,
   },
+  slideShowSection: {
+    alignSelf: "center",
+    marginTop: 12,
+  },
+  slideShowSectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+    textAlign: "center",
+    color: ui.colors.text,
+    marginBottom: 10,
+  },
+  slideShowContainer: {
+    marginTop: 0,
+    alignSelf: "center",
+    overflow: "hidden",
+    backgroundColor: "rgba(5,11,26,0.45)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.35)",
+  },
+  slidePage: {
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  slideImage: {
+    width: "100%",
+    height: "100%",
+  },
+  slideShowLoading: {
+    ...centerContent,
+  },
+  slideShowEmpty: {
+    ...centerContent,
+    padding: 10,
+  },
+  slideShowEmptyText: {
+    ...textMuted,
+    fontSize: 12,
+    textAlign: "center",
+  },
   secondaryWrap: {
     width: "100%",
     maxWidth: 360,

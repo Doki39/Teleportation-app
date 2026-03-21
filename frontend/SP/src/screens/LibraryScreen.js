@@ -16,7 +16,7 @@ import { getGeneratedPhotos } from "../services/libraryServices";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
-import { buildProcessedUri } from "../utils/photoUtils";
+import { buildImageUri } from "../utils/photoUtils";
 
 const LIST_HORIZONTAL_PAD = 16;
 const TILE_GAP = 10;
@@ -52,7 +52,7 @@ export default function LibraryScreen({ navigation }) {
   }, []);
 
   const openPreview = useCallback((item) => {
-    const uri = buildProcessedUri(item);
+    const uri = buildImageUri(item);
     if (!uri) return;
     setPreviewUri(uri);
     const id = item?.id != null ? String(item.id) : "photo";
@@ -66,7 +66,7 @@ export default function LibraryScreen({ navigation }) {
 
   const renderItem = useCallback(
     ({ item }) => {
-      const uri = buildProcessedUri(item);
+      const uri = buildImageUri(item);
       return (
         <TouchableOpacity
           style={[libraryStyles.libraryTile, { width: tileWidth }]}
