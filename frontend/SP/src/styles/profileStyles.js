@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { platformShadow } from "../utils/platformStyles";
 import { centerContent, iconButtonBase } from "./bases";
 
 export const profileStyles = StyleSheet.create({
@@ -51,11 +52,13 @@ export const profileStyles = StyleSheet.create({
     borderColor: "rgba(124,58,237,0.35)",
     borderRadius: 14,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
+    ...platformShadow({
+      shadowColor: "#000",
+      shadowOpacity: 0.35,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 12,
+    }),
   },
   profileMenuRow: {
     flexDirection: "row",

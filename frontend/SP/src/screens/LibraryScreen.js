@@ -120,9 +120,6 @@ export default function LibraryScreen({ navigation }) {
           <Text style={promptStyles.promptHeaderTitle}>Library</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Tap a photo to preview or download</Text>
         </View>
-        <View style={promptStyles.promptBackBtn}>
-          <Ionicons name="images" size={20} color={ui.colors.primary} />
-        </View>
       </View>
 
       {loading ? (

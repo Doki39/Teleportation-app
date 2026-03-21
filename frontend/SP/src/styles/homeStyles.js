@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
+import { platformShadow, platformTextShadow } from "../utils/platformStyles";
 import { centerContent, flexCenter, glassBorder, textBold, textMuted } from "./bases";
 
 export const homeStyles = StyleSheet.create({
@@ -60,11 +61,13 @@ export const homeStyles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "800",
     color: ui.colors.text,
-    textShadowColor: "rgba(6,182,212,0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 22,
     marginBottom: 6,
     letterSpacing: 0.4,
+    ...platformTextShadow({
+      textShadowColor: "rgba(6,182,212,0.6)",
+      textShadowOffset: { width: 0, height: 0 },
+      textShadowRadius: 22,
+    }),
   },
   slideShowSection: {
     alignSelf: "center",
@@ -112,9 +115,11 @@ export const homeStyles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     letterSpacing: 0.2,
-    textShadowColor: "rgba(0,0,0,0.75)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    ...platformTextShadow({
+      textShadowColor: "rgba(0,0,0,0.75)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
+    }),
   },
   slideShowLoading: {
     ...centerContent,
@@ -170,10 +175,12 @@ export const homeStyles = StyleSheet.create({
     height: 10,
     borderRadius: 999,
     backgroundColor: "rgba(6,182,212,0.55)",
-    shadowColor: ui.colors.secondary,
-    shadowOpacity: 0.85,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 0 },
+    ...platformShadow({
+      shadowColor: ui.colors.secondary,
+      shadowOpacity: 0.85,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 0 },
+    }),
   },
   portalMistRight: {
     position: "absolute",
@@ -182,10 +189,12 @@ export const homeStyles = StyleSheet.create({
     height: 10,
     borderRadius: 999,
     backgroundColor: "rgba(124,58,237,0.52)",
-    shadowColor: ui.colors.primary,
-    shadowOpacity: 0.85,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 0 },
+    ...platformShadow({
+      shadowColor: ui.colors.primary,
+      shadowOpacity: 0.85,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 0 },
+    }),
   },
   spark: {
     position: "absolute",
@@ -206,10 +215,12 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 113,
     borderWidth: 10,
     borderColor: "rgba(84,244,255,0.26)",
-    shadowColor: "#54F4FF",
-    shadowOpacity: 1,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 0 },
+    ...platformShadow({
+      shadowColor: "#54F4FF",
+      shadowOpacity: 1,
+      shadowRadius: 28,
+      shadowOffset: { width: 0, height: 0 },
+    }),
   },
   portalRingOuter: {
     position: "absolute",
@@ -218,10 +229,12 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 102,
     borderWidth: 4,
     borderColor: "rgba(197,255,255,0.95)",
-    shadowColor: "#7DF9FF",
-    shadowOpacity: 1,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
+    ...platformShadow({
+      shadowColor: "#7DF9FF",
+      shadowOpacity: 1,
+      shadowRadius: 22,
+      shadowOffset: { width: 0, height: 0 },
+    }),
   },
   portalRingInner: {
     position: "absolute",
@@ -230,10 +243,12 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 94,
     borderWidth: 3,
     borderColor: "rgba(84,244,255,0.9)",
-    shadowColor: "#54F4FF",
-    shadowOpacity: 1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
+    ...platformShadow({
+      shadowColor: "#54F4FF",
+      shadowOpacity: 1,
+      shadowRadius: 18,
+      shadowOffset: { width: 0, height: 0 },
+    }),
   },
   portalCoreGlow: {
     position: "absolute",

@@ -19,7 +19,7 @@ export default function BackgroundParticles({
   const H = height ?? h;
 
   return (
-    <View style={[styles.container, { zIndex }]} pointerEvents="none">
+    <View style={[styles.container, { zIndex, pointerEvents: "none" }]}>
       {Array.from({ length: count }).map((_, i) => (
         <View
           key={i}

@@ -81,7 +81,7 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
           accessibilityLabel="Close preview"
         />
 
-        <View style={[styles.card, { width: maxW, maxHeight: usableH }]} pointerEvents="box-none">
+        <View style={[styles.card, { width: maxW, maxHeight: usableH, pointerEvents: "box-none" }]}>
           <View style={styles.toolbar}>
             <TouchableOpacity
               style={[promptStyles.promptBackBtn, styles.toolBtn]}
