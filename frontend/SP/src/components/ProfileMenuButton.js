@@ -29,7 +29,7 @@ export default function ProfileMenuButton({ onLogout, showLogout = true }) {
       <Modal visible={open} transparent animationType="fade" onRequestClose={close}>
         <View style={profileStyles.profileMenuRoot}>
           <Pressable style={profileStyles.profileMenuBackdrop} onPress={close} accessibilityLabel="Close menu" />
-          <View style={profileStyles.profileMenuAnchor} pointerEvents="box-none">
+          <View style={[profileStyles.profileMenuAnchor, { pointerEvents: "box-none" }]}>
             <View style={profileStyles.profileMenuCard} accessibilityRole="menu">
               <Pressable
                 style={({ pressed }) => [profileStyles.profileMenuRow, pressed && { opacity: 0.85 }]}

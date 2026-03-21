@@ -43,7 +43,9 @@ function ScanlineOverlay() {
       />
     );
   }
-  return <View style={StyleSheet.absoluteFill} pointerEvents="none">{lines}</View>;
+  return (
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>{lines}</View>
+  );
 }
 
 export default function Cylinder3D({

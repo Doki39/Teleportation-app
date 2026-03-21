@@ -10,6 +10,7 @@ import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { signOut } from "../services/authServices";
+import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 
 const ROCKET_SIZE = 118;
 
@@ -45,7 +46,7 @@ export default function HomeScreen({ navigation }) {
       Animated.timing(portalSpin, {
         toValue: 1,
         duration: 18000,
-        useNativeDriver: true,
+        useNativeDriver: USE_NATIVE_DRIVER,
       })
     ).start();
 
@@ -53,7 +54,7 @@ export default function HomeScreen({ navigation }) {
       Animated.timing(portalReverseSpin, {
         toValue: 1,
         duration: 9000,
-        useNativeDriver: true,
+        useNativeDriver: USE_NATIVE_DRIVER,
       })
     ).start();
 
@@ -62,12 +63,12 @@ export default function HomeScreen({ navigation }) {
         Animated.timing(portalPulse, {
           toValue: 1,
           duration: 1800,
-          useNativeDriver: true,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
         Animated.timing(portalPulse, {
           toValue: 0,
           duration: 1800,
-          useNativeDriver: true,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
       ])
     ).start();
@@ -77,12 +78,12 @@ export default function HomeScreen({ navigation }) {
         Animated.timing(portalDrift, {
           toValue: 1,
           duration: 3200,
-          useNativeDriver: true,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
         Animated.timing(portalDrift, {
           toValue: 0,
           duration: 3200,
-          useNativeDriver: true,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
       ])
     ).start();
@@ -124,7 +125,7 @@ export default function HomeScreen({ navigation }) {
           </View>
         </Modal>
       )}
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
+      <View style={[StyleSheet.absoluteFill, { zIndex: 1, pointerEvents: "none" }]}>
         <View style={homeStyles.portalStage}>
           <Animated.View style={[homeStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
           <Animated.View style={[homeStyles.portalMistLeft, { transform: [{ translateX: driftX }] }]} />
@@ -157,7 +158,7 @@ export default function HomeScreen({ navigation }) {
       <ProfileMenuButton showLogout={loggedIn} onLogout={() => signOut({ setLoggedIn })} />
 
       {loggedIn && (
-        <View style={homeStyles.homeRocketContainer} pointerEvents="box-none">
+        <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>
           <RocketButton onPress={handleCamera} />
         </View>
       )}
@@ -183,7 +184,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      <View style={homeStyles.homeContentWrapper} pointerEvents={loggedIn ? "box-none" : "auto"}>
+      <View style={[homeStyles.homeContentWrapper, { pointerEvents: loggedIn ? "box-none" : "auto" }]}>
         <View style={homeStyles.titleBlock}>
           <Text style={homeStyles.homeTitle}>Teleport</Text>
         </View>
@@ -227,9 +228,9 @@ function ActionButton({ icon, label, onPress, variant = "glass" }) {
 
   const animateTo = (toScale, toLift, toGlow) => {
     Animated.parallel([
-      Animated.spring(scale, { toValue: toScale, useNativeDriver: true, friction: 7, tension: 170 }),
-      Animated.spring(lift, { toValue: toLift, useNativeDriver: true, friction: 8, tension: 170 }),
-      Animated.timing(glow, { toValue: toGlow, duration: 180, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: toScale, useNativeDriver: USE_NATIVE_DRIVER, friction: 7, tension: 170 }),
+      Animated.spring(lift, { toValue: toLift, useNativeDriver: USE_NATIVE_DRIVER, friction: 8, tension: 170 }),
+      Animated.timing(glow, { toValue: toGlow, duration: 180, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
   };
 
@@ -256,9 +257,9 @@ function ActionButton({ icon, label, onPress, variant = "glass" }) {
         ]}
       >
         <Animated.View
-          pointerEvents="none"
           style={[
             homeStyles.actionGlow,
+            { pointerEvents: "none" },
             variant === "secondary" ? homeStyles.secondaryGlow : variant === "logout" ? homeStyles.logoutGlow : homeStyles.primaryGlow,
             { opacity: glow },
           ]}

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
+import { platformShadow } from "../utils/platformStyles";
 import { centerContent, glassBorder, iconButtonBase, textBold, textMuted } from "./bases";
 
 export const PROMPT_WHEEL_ITEM_SIZE = 56;
@@ -50,11 +51,13 @@ export const promptStyles = StyleSheet.create({
   promptCardSelected: {
     borderWidth: 2,
     borderColor: ui.colors.primary,
-    shadowColor: ui.colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
+    ...platformShadow({
+      shadowColor: ui.colors.primary,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 12,
+      elevation: 8,
+    }),
   },
   promptCardImage: {
     width: "100%",
@@ -181,11 +184,13 @@ export const promptStyles = StyleSheet.create({
     position: "absolute",
     borderRadius: 999,
     opacity: 0.3,
-    shadowColor: ui.colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 60,
-    elevation: 20,
+    ...platformShadow({
+      shadowColor: ui.colors.primary,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.4,
+      shadowRadius: 60,
+      elevation: 20,
+    }),
   },
   promptCylinderMutedText: textMuted,
   promptCylinderLoadingText: { ...textMuted, marginTop: 12 },

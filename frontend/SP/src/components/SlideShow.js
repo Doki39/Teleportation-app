@@ -78,7 +78,7 @@ export default function SlideShow({
           <View style={[homeStyles.slideImage, { backgroundColor: "rgba(255,255,255,0.06)" }]} />
         )}
         {locationLabel ? (
-          <View style={homeStyles.slideLocationOverlay} pointerEvents="none">
+          <View style={[homeStyles.slideLocationOverlay, { pointerEvents: "none" }]}>
             <Text style={homeStyles.slideLocationText} numberOfLines={2}>
               {locationLabel}
             </Text>

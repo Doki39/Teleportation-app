@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { rocketStyles } from "../styles/rocketStyles";
+import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 
 export default function RocketButton({ onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -12,16 +13,16 @@ export default function RocketButton({ onPress }) {
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(floatY, { toValue: -8, duration: 1100, useNativeDriver: true }),
-        Animated.timing(floatY, { toValue: 0, duration: 1100, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: -8, duration: 1100, useNativeDriver: USE_NATIVE_DRIVER }),
+        Animated.timing(floatY, { toValue: 0, duration: 1100, useNativeDriver: USE_NATIVE_DRIVER }),
       ])
     ).start();
   }, [floatY]);
 
   const animateTo = (toScale, toY) => {
     Animated.parallel([
-      Animated.spring(scale, { toValue: toScale, useNativeDriver: true, friction: 6, tension: 170 }),
-      Animated.spring(pressY, { toValue: toY, useNativeDriver: true, friction: 7, tension: 180 }),
+      Animated.spring(scale, { toValue: toScale, useNativeDriver: USE_NATIVE_DRIVER, friction: 6, tension: 170 }),
+      Animated.spring(pressY, { toValue: toY, useNativeDriver: USE_NATIVE_DRIVER, friction: 7, tension: 180 }),
     ]).start();
   };
 

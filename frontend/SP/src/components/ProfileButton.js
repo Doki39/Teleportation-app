@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { profileStyles } from "../styles/profileStyles";
+import { platformShadow, USE_NATIVE_DRIVER } from "../utils/platformStyles";
 
 export default function ProfileButton({ onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -12,25 +13,26 @@ export default function ProfileButton({ onPress }) {
     Animated.parallel([
       Animated.spring(scale, {
         toValue: toScale,
-        useNativeDriver: true,
+        useNativeDriver: USE_NATIVE_DRIVER,
         friction: 6,
         tension: 170,
       }),
       Animated.timing(glow, {
         toValue: toGlow,
         duration: 180,
-        useNativeDriver: true,
+        useNativeDriver: USE_NATIVE_DRIVER,
       }),
     ]).start();
   };
 
   const shadowStyle = useMemo(
-    () => ({
-      shadowColor: "#54F4FF",
-      shadowOpacity: 0.75,
-      shadowRadius: 18,
-      shadowOffset: { width: 0, height: 0 },
-    }),
+    () =>
+      platformShadow({
+        shadowColor: "#54F4FF",
+        shadowOpacity: 0.75,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 0 },
+      }),
     []
   );
 
@@ -50,7 +52,7 @@ export default function ProfileButton({ onPress }) {
         onPressOut={() => animateTo(hovered.current ? 1.12 : 1, hovered.current ? 1 : 0)}
         style={({ pressed }) => [profileStyles.profileButton, pressed && { opacity: 0.95 }]}
       >
-        <Animated.View pointerEvents="none" style={[profileStyles.profileGlow, { opacity: glow }]} />
+        <Animated.View style={[profileStyles.profileGlow, { opacity: glow, pointerEvents: "none" }]} />
         <View style={profileStyles.profileCore}>
           <Ionicons name="person" size={18} color="#9AFBFF" />
         </View>
