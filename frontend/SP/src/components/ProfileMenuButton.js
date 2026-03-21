@@ -1,18 +1,20 @@
 import React, { useCallback, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileButton from "./ProfileButton";
 import { profileStyles } from "../styles/profileStyles";
 import { ui } from "../theme/ui";
 
-export default function ProfileMenuButton({ onSettings, onLogout, showLogout = true }) {
+export default function ProfileMenuButton({ onLogout, showLogout = true }) {
+  const navigation = useNavigation();
   const [open, setOpen] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
 
   const handleSettings = () => {
     close();
-    onSettings?.();
+    navigation.navigate("Settings");
   };
 
   const handleLogout = async () => {

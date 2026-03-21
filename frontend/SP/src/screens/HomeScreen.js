@@ -9,7 +9,7 @@ import SlideShow from "../components/SlideShow";
 import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
-import { handleLogout } from "../services/authServices";
+import { signOut } from "../services/authServices";
 
 const ROCKET_SIZE = 118;
 
@@ -107,10 +107,6 @@ export default function HomeScreen({ navigation }) {
       onUploadStart: () => setIsUploading(true),
       onUploadEnd: () => setIsUploading(false),
     });
-  const onLogout = async () => {
-    await handleLogout();
-    setLoggedIn(false);
-  };
 
   const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24 + 40;
 
@@ -158,13 +154,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      <ProfileMenuButton
-        showLogout={loggedIn}
-        onSettings={() => {
-          Alert.alert("Not implemented", "Settings screen is not implemented yet.");
-        }}
-        onLogout={onLogout}
-      />
+      <ProfileMenuButton showLogout={loggedIn} onLogout={() => signOut({ setLoggedIn })} />
 
       {loggedIn && (
         <View style={homeStyles.homeRocketContainer} pointerEvents="box-none">

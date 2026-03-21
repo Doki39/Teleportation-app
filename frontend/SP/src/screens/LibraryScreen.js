@@ -9,10 +9,13 @@ import {
   useWindowDimensions,
   ActivityIndicator,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
+import ProfileMenuButton from "../components/ProfileMenuButton";
 import ImagePreviewModal from "../components/ImagePreviewModal";
 import { getGeneratedPhotos } from "../services/libraryServices";
+import { signOut } from "../services/authServices";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
@@ -26,10 +29,19 @@ export default function LibraryScreen({ navigation }) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const tileWidth =
     (windowWidth - LIST_HORIZONTAL_PAD * 2 - TILE_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
+  const [loggedIn, setLoggedIn] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewUri, setPreviewUri] = useState(null);
   const [previewName, setPreviewName] = useState(null);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) setLoggedIn(true);
+    };
+    checkLogin();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +103,8 @@ export default function LibraryScreen({ navigation }) {
   return (
     <View style={libraryStyles.libraryScreen}>
       <BackgroundParticles width={windowWidth} height={windowHeight} />
+
+      <ProfileMenuButton showLogout={loggedIn} onLogout={() => signOut({ navigation })} />
 
       <View style={promptStyles.promptHeader}>
         <TouchableOpacity

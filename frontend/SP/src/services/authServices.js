@@ -46,6 +46,13 @@ export const handleRegistration = async ({
 export const handleLogout = async () => {
   await AsyncStorage.multiRemove(["token", "user"]);
 };
+export async function signOut({ setLoggedIn, navigation } = {}) {
+  await handleLogout();
+  setLoggedIn?.(false);
+  if (navigation) {
+    navigation.replace("Home");
+  }
+}
 
 export const handleLogin = async ({ email, password, navigation }) => {
   try {

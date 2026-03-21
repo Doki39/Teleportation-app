@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   Dimensions,
   ActivityIndicator,
   Platform,
@@ -12,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import ProfileMenuButton from "../components/ProfileMenuButton";
-import { handleLogout } from "../services/authServices";
+import { signOut } from "../services/authServices";
 import Cylinder3D from "../components/Cylinder3D";
 import PromptThumbnailWheel from "../components/PromptThumbnailWheel";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -45,15 +44,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
   return (
     <View style={promptStyles.promptScreen}>
-      <ProfileMenuButton
-        onSettings={() =>
-          Alert.alert("Not implemented", "Settings screen is not implemented yet.")
-        }
-        onLogout={async () => {
-          await handleLogout();
-          navigation.replace("Home");
-        }}
-      />
+      <ProfileMenuButton onLogout={() => signOut({ navigation })} />
 
       <View style={promptStyles.promptHeader}>
         <TouchableOpacity style={promptStyles.promptBackBtn} onPress={() => navigation.goBack()}>
@@ -62,9 +53,6 @@ export default function PromptSelectionScreen({ route, navigation }) {
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Select Destination</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Spin the portal wheel to choose</Text>
-        </View>
-        <View style={promptStyles.promptBackBtn}>
-          <Ionicons name="sparkles" size={20} color={ui.colors.primary} />
         </View>
       </View>
 
