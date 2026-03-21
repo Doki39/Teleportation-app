@@ -12,3 +12,16 @@ export async function getGeneratedPhotos() {
 
   return response.json();
 }
+
+export async function getPhotosForSlide() {
+  const response = await fetch(`${API_BASE_URL}/api/photos/slide`, {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Server responded with ${response.status}: ${text}`);
+  }
+
+  return response.json();
+}
