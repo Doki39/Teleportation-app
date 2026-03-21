@@ -41,13 +41,11 @@ router.get("/", async (_req, res) => {
 
 router.get("/slides", async (_req, res) => {
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM photo_rotation"
-    );
+    const { rows } = await pool.query("SELECT * FROM photo_rotation");
     return res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to fetch photos" });
+    res.status(500).json({ message: "Failed to fetch slide photos" });
   }
 });
 

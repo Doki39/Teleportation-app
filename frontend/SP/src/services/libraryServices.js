@@ -14,7 +14,7 @@ export async function getGeneratedPhotos() {
 }
 
 export async function getPhotosForSlide() {
-  const response = await fetch(`${API_BASE_URL}/api/photos/slide`, {
+  const response = await fetch(`${API_BASE_URL}/api/photos/slides`, {
     method: "GET",
   });
 

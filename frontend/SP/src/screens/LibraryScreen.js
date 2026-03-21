@@ -13,16 +13,10 @@ import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
 import ImagePreviewModal from "../components/ImagePreviewModal";
 import { getGeneratedPhotos } from "../services/libraryServices";
-import { API_BASE_URL } from "../config/api";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
-
-function buildProcessedUri(item) {
-  const path = item?.processed_uri;
-  if (!path) return null;
-  return path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-}
+import { buildProcessedUri } from "../utils/photoUtils";
 
 const LIST_HORIZONTAL_PAD = 16;
 const TILE_GAP = 10;
