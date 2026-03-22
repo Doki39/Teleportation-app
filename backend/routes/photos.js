@@ -10,20 +10,8 @@ import { uploadImage } from "../services/uploadService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
-const UNPROCESSED_DIR = path.join(UPLOADS_DIR, "unprocessed");
 const PROCESSED_DIR = path.join(UPLOADS_DIR, "processed");
 
-const unprocessedStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, UNPROCESSED_DIR);
-  },
-  filename: (_req, file, cb) => {
-    const ext = (file.mimetype && file.mimetype.split("/")[1]) || "jpg";
-    cb(null, `${nanoid()}.${ext}`);
-  },
-});
-
-const uploadUnprocessed = multer({ storage: unprocessedStorage });
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
