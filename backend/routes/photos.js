@@ -7,6 +7,8 @@ import { nanoid } from "nanoid";
 import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage } from "../services/uploadService.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import { requireAdmin } from "../middleware/requireAdmin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
@@ -51,6 +53,34 @@ router.post("/upload", uploadToDrive.single("image"), async (req, res) => {
   }
 });
 
+router.post(
+  "/upload-local",
+  requireAuth,
+  requireAdmin,
+  uploadToDrive.single("image"),
+  async (req, res) => {
+    try {
+      if (!req.file?.buffer) {
+        return res.status(400).json({ message: "No photo sent" });
+      }
+      const mime = req.file.mimetype || "";
+      let ext = ".jpg";
+      if (mime.includes("png")) ext = ".png";
+      else if (mime.includes("webp")) ext = ".webp";
+      else if (mime.includes("jpeg") || mime.includes("jpg")) ext = ".jpg";
+
+      const filename = `${nanoid()}${ext}`;
+      const dest = path.join(PROCESSED_DIR, filename);
+      await fs.writeFile(dest, req.file.buffer);
+
+      const imageUrl = `/uploads/processed/${filename}`;
+      return res.json({ imageUrl });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: err.message || "Local upload failed" });
+    }
+  }
+);
 
 router.post("/generate", async (req, res) => {
   try {

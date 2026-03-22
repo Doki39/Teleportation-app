@@ -1,16 +1,158 @@
-import React from "react";
-import { View, Text, TouchableOpacity, useWindowDimensions, ActivityIndicator } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackgroundParticles from "../components/BackgroundParticles";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
+import { getPromptSelection, updatePromptSelection } from "../services/promptServices";
+import { formatApiError } from "../services/userServices";
+import { openLibrary, buildImageUri } from "../utils/photoUtils";
+import { uploadPromptImageLocal } from "../services/photoServices";
+
+function PromptRow({ item, onEdit, imageUri }) {
+  return (
+    <TouchableOpacity
+      style={promptStyles.promptMgmtListRow}
+      onPress={() => onEdit(item)}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={`Edit ${item.title || "prompt"}`}
+    >
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} style={promptStyles.promptMgmtListThumb} resizeMode="cover" />
+      ) : (
+        <View style={[promptStyles.promptMgmtListThumb, { justifyContent: "center", alignItems: "center" }]}>
+          <Ionicons name="image-outline" size={22} color={ui.colors.muted} />
+        </View>
+      )}
+      <View style={promptStyles.promptMgmtListTextCol}>
+        <Text style={promptStyles.promptMgmtListTitle} numberOfLines={2}>
+          {item.title?.trim() || "Untitled"}
+        </Text>
+        <Text style={promptStyles.promptMgmtListPrompt} numberOfLines={3} ellipsizeMode="tail">
+          {item.prompt?.trim() || "—"}
+        </Text>
+      </View>
+      <View style={promptStyles.promptMgmtListEditBtn}>
+        <Ionicons name="pencil" size={20} color={ui.colors.secondary} />
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function ManageExistingPromptsScreen({ navigation }) {
   const allowed = useRequireAdmin(navigation);
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
+  const [prompts, setPrompts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftPrompt, setDraftPrompt] = useState("");
+  const [draftImageUrl, setDraftImageUrl] = useState("");
+
+  const loadPrompts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getPromptSelection();
+      setPrompts(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", e.message || "Could not load prompts");
+      setPrompts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (allowed) loadPrompts();
+    }, [allowed, loadPrompts])
+  );
+
+  const openEdit = (item) => {
+    setEditId(item.id);
+    setDraftTitle(String(item.title ?? ""));
+    setDraftPrompt(String(item.prompt ?? ""));
+    setDraftImageUrl(String(item.image_url ?? ""));
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setEditId(null);
+  };
+
+  const pickNewImage = async () => {
+    const payload = await openLibrary();
+    if (!payload) return;
+    setUploadingImage(true);
+    try {
+      const { imageUrl } = await uploadPromptImageLocal(payload);
+      setDraftImageUrl(imageUrl);
+    } catch (e) {
+      Alert.alert("Upload failed", e.message || "Could not upload image");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const saveEdit = async () => {
+    if (editId == null) return;
+    const t = draftTitle.trim();
+    const p = draftPrompt.trim();
+    const img = draftImageUrl.trim();
+    if (!p) {
+      Alert.alert("Validation", "Prompt text cannot be empty.");
+      return;
+    }
+    if (!img) {
+      Alert.alert("Validation", "Image URL is required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updatePromptSelection(editId, {
+        title: t || "Untitled",
+        prompt: p,
+        image_url: img,
+      });
+      await loadPrompts();
+      closeModal();
+    } catch (e) {
+      Alert.alert("Save failed", formatApiError(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const previewUri = buildImageUri({ image_url: draftImageUrl });
 
   if (!allowed) {
     return (
@@ -35,16 +177,131 @@ export default function ManageExistingPromptsScreen({ navigation }) {
         </TouchableOpacity>
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Manage existing prompts</Text>
-          <Text style={promptStyles.promptHeaderSubtitle}>Placeholder</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>
+            {loading ? "Loading…" : `${prompts.length} destination${prompts.length === 1 ? "" : "s"}`}
+          </Text>
         </View>
-        <View style={promptStyles.promptBackBtn} />
+        <TouchableOpacity
+          style={promptStyles.promptBackBtn}
+          onPress={loadPrompts}
+          accessibilityRole="button"
+          accessibilityLabel="Refresh list"
+        >
+          <Ionicons name="refresh" size={20} color={ui.colors.muted} />
+        </TouchableOpacity>
       </View>
 
-      <View style={promptStyles.promptMgmtContentBoard}>
-        <Text style={{ color: ui.colors.muted, fontSize: 15, lineHeight: 22 }}>
-          Manage existing prompts will be implemented later.
-        </Text>
-      </View>
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={ui.colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          style={promptStyles.promptMgmtListScroll}
+          data={prompts}
+          keyExtractor={(item, index) => String(item?.id ?? index)}
+          ListEmptyComponent={
+            <Text style={{ color: ui.colors.muted, paddingVertical: 24, textAlign: "center" }}>
+              No prompts in the database yet.
+            </Text>
+          }
+          renderItem={({ item }) => (
+            <PromptRow item={item} imageUri={buildImageUri(item)} onEdit={openEdit} />
+          )}
+        />
+      )}
+
+      <Modal visible={modalVisible} animationType="slide" transparent statusBarTranslucent onRequestClose={closeModal}>
+        <KeyboardAvoidingView
+          style={[
+            promptStyles.promptMgmtModalBackdrop,
+            {
+              paddingTop: Math.max(insets.top, 12),
+              paddingBottom: Math.max(insets.bottom, 10),
+            },
+          ]}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView
+            style={promptStyles.promptMgmtModalScroll}
+            contentContainerStyle={[promptStyles.promptMgmtModalScrollContent, { paddingBottom: 8 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[promptStyles.promptMgmtModalCard, { maxHeight: height * 0.92 }]}>
+              <Text style={promptStyles.promptMgmtModalTitle}>Edit destination</Text>
+
+              <View style={promptStyles.promptMgmtModalPreviewWrap}>
+                {previewUri ? (
+                  <Image source={{ uri: previewUri }} style={StyleSheet.absoluteFillObject} resizeMode="contain" />
+                ) : (
+                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Ionicons name="image-outline" size={48} color={ui.colors.muted} />
+                    <Text style={{ color: ui.colors.muted, marginTop: 8 }}>No image</Text>
+                  </View>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={promptStyles.promptMgmtChangeImageBtn}
+                onPress={pickNewImage}
+                disabled={uploadingImage || saving}
+              >
+                {uploadingImage ? (
+                  <ActivityIndicator color={ui.colors.text} />
+                ) : (
+                  <>
+                    <Ionicons name="image-outline" size={20} color={ui.colors.primary} />
+                    <Text style={[promptStyles.promptMgmtModalBtnText, { color: ui.colors.text }]}>Change image</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <Text style={promptStyles.promptMgmtLabel}>Title</Text>
+              <TextInput
+                style={promptStyles.promptMgmtInput}
+                value={draftTitle}
+                onChangeText={setDraftTitle}
+                placeholder="Destination title"
+                placeholderTextColor={ui.colors.muted}
+                editable={!saving}
+              />
+
+              <Text style={promptStyles.promptMgmtLabel}>Prompt (Modify)</Text>
+              <TextInput
+                style={[promptStyles.promptMgmtInput, promptStyles.promptMgmtInputMultiline]}
+                value={draftPrompt}
+                onChangeText={setDraftPrompt}
+                placeholder="Text sent as the Modify section"
+                placeholderTextColor={ui.colors.muted}
+                multiline
+                editable={!saving}
+              />
+
+              <View style={promptStyles.promptMgmtModalActions}>
+                <TouchableOpacity
+                  style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnSecondary]}
+                  onPress={closeModal}
+                  disabled={saving}
+                >
+                  <Text style={promptStyles.promptMgmtModalBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnPrimary]}
+                  onPress={saveEdit}
+                  disabled={saving || uploadingImage}
+                >
+                  {saving ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={[promptStyles.promptMgmtModalBtnText, promptStyles.promptMgmtModalBtnTextLight]}>Save</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
