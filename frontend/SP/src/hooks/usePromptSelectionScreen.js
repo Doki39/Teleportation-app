@@ -45,18 +45,18 @@ export function usePromptSelectionScreen({ route, navigation }) {
   }, []);
 
   const goNext = useCallback(() => {
-    setCurrentIndex((idx) => {
-      if (prompts.length === 0) return idx;
-      return (idx + 1) % prompts.length;
-    });
-  }, [prompts.length]);
+    if (prompts.length === 0) return;
+    if (currentIndex < prompts.length - 1) {
+      snapToIndex(currentIndex + 1);
+    }
+  }, [prompts.length, currentIndex, snapToIndex]);
 
   const goPrev = useCallback(() => {
-    setCurrentIndex((idx) => {
-      if (prompts.length === 0) return idx;
-      return (idx - 1 + prompts.length) % prompts.length;
-    });
-  }, [prompts.length]);
+    if (prompts.length === 0) return;
+    if (currentIndex > 0) {
+      snapToIndex(currentIndex - 1);
+    }
+  }, [prompts.length, currentIndex, snapToIndex]);
 
   const handleSelect = useCallback((id) => {
     setSelectedId(id);
@@ -88,28 +88,30 @@ export function usePromptSelectionScreen({ route, navigation }) {
       lastChangeFromWheel.current = false;
       return;
     }
-    const itemWidth = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
+    const stride = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
     if (!wheelScrollRef.current) return;
     isWheelProgrammatic.current = true;
-    wheelScrollRef.current.scrollTo({
-      x: currentIndex * itemWidth,
+    wheelScrollRef.current?.scrollTo?.({
+      x: currentIndex * stride,
+      y: 0,
       animated: true,
     });
     const t = setTimeout(() => {
       isWheelProgrammatic.current = false;
-    }, 800);
+    }, 400);
     return () => clearTimeout(t);
   }, [currentIndex, prompts.length]);
 
   const handleWheelScrollEnd = useCallback(
     (e) => {
       if (isWheelProgrammatic.current) return;
+      const stride = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
       const offset = e.nativeEvent.contentOffset.x;
-      const itemWidth = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
-      const index = Math.round(offset / itemWidth);
-      if (index >= 0 && index < prompts.length && index !== currentIndex) {
+      const index = Math.round(offset / stride);
+      const clamped = Math.max(0, Math.min(prompts.length - 1, index));
+      if (clamped !== currentIndex) {
         lastChangeFromWheel.current = true;
-        snapToIndex(index);
+        snapToIndex(clamped);
       }
     },
     [prompts.length, currentIndex, snapToIndex]

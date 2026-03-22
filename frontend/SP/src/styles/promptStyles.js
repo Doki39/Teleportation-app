@@ -330,6 +330,12 @@ export const promptStyles = StyleSheet.create({
     zIndex: 10,
     overflow: "visible",
   },
+  promptCylinderBlock: {
+    position: "relative",
+    width: "100%",
+    alignItems: "center",
+    minHeight: 380,
+  },
   promptCard: {
     width: 300,
     height: 360,
@@ -472,6 +478,7 @@ export const promptStyles = StyleSheet.create({
 
   promptPortalCarouselGlow: {
     position: "absolute",
+    pointerEvents: "none",
     borderRadius: 999,
     opacity: 0.3,
     ...platformShadow({
@@ -487,11 +494,16 @@ export const promptStyles = StyleSheet.create({
   promptScrollWheelWrap: {
     marginTop: 20,
     marginBottom: 8,
+    alignSelf: "stretch",
+    width: "100%",
   },
   promptScrollWheel: {
+    width: "100%",
+    height: PROMPT_WHEEL_ITEM_SIZE + 16,
     maxHeight: PROMPT_WHEEL_ITEM_SIZE + 16,
   },
   promptScrollWheelContent: {
+    flexDirection: "row",
     alignItems: "center",
   },
   promptScrollWheelItem: {

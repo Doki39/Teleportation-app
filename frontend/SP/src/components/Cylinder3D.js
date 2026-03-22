@@ -330,7 +330,18 @@ function WebCylinder({
   );
 }
 
-const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index, scrollX, isSelected, isFront, onSelect, onSnapToIndex, getImageUri, getTitle, getEmoji }) {
+function NativeCarouselCard({
+  item,
+  index,
+  scrollX,
+  isSelected,
+  isFront,
+  onSelect,
+  onSnapToIndex,
+  getImageUri,
+  getTitle,
+  getEmoji,
+}) {
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(scrollX.value - index * SCREEN_WIDTH);
     const scale = interpolate(distance, [0, SCREEN_WIDTH * 0.5], [1, 0.88], Extrapolation.CLAMP);
@@ -379,7 +390,7 @@ const NativeCarouselCard = React.memo(function NativeCarouselCard({ item, index,
       </TouchableOpacity>
     </Animated.View>
   );
-});
+}
 
 function NativeCarousel({
   prompts,
@@ -395,45 +406,24 @@ function NativeCarousel({
   const scrollX = useSharedValue(0);
   const isProgrammaticScroll = useRef(false);
   const n = prompts.length;
-  const loopItems = n > 1
-    ? [prompts[n - 1], ...prompts, prompts[0]]
-    : prompts;
-  const totalPages = loopItems.length;
-  const scrollPositionForIndex = (idx) => (idx + 1) * SCREEN_WIDTH;
 
   React.useEffect(() => {
     if (!scrollRef.current || n === 0) return;
     isProgrammaticScroll.current = true;
-    const x = n > 1 ? scrollPositionForIndex(currentIndex) : currentIndex * SCREEN_WIDTH;
+    const x = currentIndex * SCREEN_WIDTH;
     scrollRef.current.scrollTo({ x, animated: true });
     scrollX.value = x;
-    const t = setTimeout(() => { isProgrammaticScroll.current = false; }, 400);
+    const t = setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 400);
     return () => clearTimeout(t);
   }, [currentIndex, n]);
 
-  const handleScrollEnd = (e) => {
+  const handleMomentumScrollEnd = (e) => {
     if (isProgrammaticScroll.current) return;
     const offset = e.nativeEvent.contentOffset.x;
-    const page = Math.round(offset / SCREEN_WIDTH);
-    if (n <= 1) {
-      if (page >= 0 && page < n) onSnapToIndex(page);
-      return;
-    }
-    if (page === 0) {
-      isProgrammaticScroll.current = true;
-      scrollRef.current?.scrollTo({ x: n * SCREEN_WIDTH, animated: false });
-      scrollX.value = n * SCREEN_WIDTH;
-      onSnapToIndex(n - 1);
-      setTimeout(() => { isProgrammaticScroll.current = false; }, 50);
-    } else if (page === totalPages - 1) {
-      isProgrammaticScroll.current = true;
-      scrollRef.current?.scrollTo({ x: SCREEN_WIDTH, animated: false });
-      scrollX.value = SCREEN_WIDTH;
-      onSnapToIndex(0);
-      setTimeout(() => { isProgrammaticScroll.current = false; }, 50);
-    } else {
-      onSnapToIndex(page - 1);
-    }
+    const index = Math.round(offset / SCREEN_WIDTH);
+    if (index >= 0 && index < n) onSnapToIndex(index);
   };
 
   return (
@@ -441,33 +431,29 @@ function NativeCarousel({
       ref={scrollRef}
       horizontal
       pagingEnabled
+      nestedScrollEnabled
       showsHorizontalScrollIndicator={false}
-      onMomentumScrollEnd={handleScrollEnd}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
       scrollEventThrottle={32}
       scrollViewOffset={scrollX}
-      contentContainerStyle={{ width: SCREEN_WIDTH * totalPages }}
+      contentContainerStyle={{ width: SCREEN_WIDTH * n }}
       style={{ width: SCREEN_WIDTH, flexGrow: 0 }}
     >
-      {loopItems.map((item, index) => {
-        const realIndex = n > 1
-          ? index === 0 ? n - 1 : index === totalPages - 1 ? 0 : index - 1
-          : index;
-        return (
-          <NativeCarouselCard
-            key={n > 1 ? `${item.id}-${index}` : item.id}
-            item={item}
-            index={index}
-            scrollX={scrollX}
-            isSelected={item.id === selectedId}
-            isFront={realIndex === currentIndex}
-            onSelect={onSelect}
-            onSnapToIndex={() => onSnapToIndex(realIndex)}
-            getImageUri={getImageUri}
-            getTitle={getTitle}
-            getEmoji={getEmoji}
-          />
-        );
-      })}
+      {prompts.map((item, index) => (
+        <NativeCarouselCard
+          key={item.id}
+          item={item}
+          index={index}
+          scrollX={scrollX}
+          isSelected={item.id === selectedId}
+          isFront={index === currentIndex}
+          onSelect={onSelect}
+          onSnapToIndex={() => onSnapToIndex(index)}
+          getImageUri={getImageUri}
+          getTitle={getTitle}
+          getEmoji={getEmoji}
+        />
+      ))}
     </Animated.ScrollView>
   );
 }

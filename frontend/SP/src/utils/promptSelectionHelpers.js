@@ -1,6 +1,15 @@
 import { buildImageUri } from "./photoUtils";
+import {
+  PROMPT_WHEEL_ITEM_GAP,
+  PROMPT_WHEEL_ITEM_SIZE,
+} from "../styles/promptStyles";
 
 export const PROMPT_CARD_WIDTH = 300;
+
+export function getThumbnailWheelEdgePad(screenWidth) {
+  const stride = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
+  return Math.max(16, (screenWidth - stride) / 2);
+}
 
 export function resolvePromptImageUri(item) {
   return buildImageUri(item);

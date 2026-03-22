@@ -110,6 +110,9 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
         {prompts.length > 0 && current && (
           <View style={promptStyles.promptDestInfo}>
+            <Text style={promptStyles.promptDestTitle}>
+              {getEmoji(current)} {getTitle(current)}
+            </Text>
             <Text
               style={[
                 promptStyles.promptDestSubtitle,

@@ -1,10 +1,20 @@
-import React from "react";
-import { View, ScrollView, TouchableOpacity, Image, Text } from "react-native";
+import React, { useMemo } from "react";
+import {
+  View,
+  Pressable,
+  Image,
+  Text,
+  Platform,
+} from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import {
   promptStyles,
   PROMPT_WHEEL_ITEM_GAP,
   PROMPT_WHEEL_ITEM_SIZE,
 } from "../styles/promptStyles";
+import { getThumbnailWheelEdgePad } from "../utils/promptSelectionHelpers";
+
+const ITEM_STRIDE = PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP;
 
 export default function PromptThumbnailWheel({
   prompts,
@@ -17,25 +27,34 @@ export default function PromptThumbnailWheel({
   getEmoji,
   onScrollEnd,
 }) {
+  const edgePad = getThumbnailWheelEdgePad(screenWidth);
+
+  const contentMinWidth = useMemo(() => {
+    const n = Math.max(prompts.length, 1);
+    return edgePad * 2 + n * ITEM_STRIDE;
+  }, [edgePad, prompts.length]);
+
   return (
     <View style={promptStyles.promptScrollWheelWrap}>
       <ScrollView
         ref={scrollRef}
         horizontal
+        scrollEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onScrollEnd}
         scrollEventThrottle={16}
-        snapToOffsets={prompts.map(
-          (_, i) => i * (PROMPT_WHEEL_ITEM_SIZE + PROMPT_WHEEL_ITEM_GAP)
-        )}
-        snapToAlignment="center"
+        snapToInterval={ITEM_STRIDE}
+        snapToAlignment="start"
         decelerationRate="fast"
         disableIntervalMomentum
+        keyboardShouldPersistTaps="handled"
+        onMomentumScrollEnd={onScrollEnd}
+        onScrollEndDrag={onScrollEnd}
         contentContainerStyle={[
           promptStyles.promptScrollWheelContent,
           {
-            paddingHorizontal:
-              (screenWidth - PROMPT_WHEEL_ITEM_SIZE - PROMPT_WHEEL_ITEM_GAP) / 2,
+            paddingLeft: edgePad,
+            paddingRight: edgePad,
+            minWidth: contentMinWidth,
           },
         ]}
         style={promptStyles.promptScrollWheel}
@@ -44,13 +63,17 @@ export default function PromptThumbnailWheel({
           const uri = getImageUri(p);
           const isActive = i === currentIndex;
           return (
-            <TouchableOpacity
+            <Pressable
               key={p.id}
+              delayPressIn={Platform.OS === "android" ? 350 : 280}
               onPress={() => onPickIndex(i)}
-              style={[
+              style={({ pressed }) => [
                 promptStyles.promptScrollWheelItem,
                 isActive && promptStyles.promptScrollWheelItemActive,
-                selectedId === p.id && promptStyles.promptScrollWheelItemSelected,
+                selectedId === p.id &&
+                  i !== currentIndex &&
+                  promptStyles.promptScrollWheelItemSelected,
+                pressed && { opacity: 0.85 },
               ]}
             >
               {uri ? (
@@ -69,14 +92,14 @@ export default function PromptThumbnailWheel({
                   <Text style={promptStyles.promptScrollWheelEmoji}>{getEmoji(p)}</Text>
                 </View>
               )}
-              {uri && (
+              {uri ? (
                 <View style={promptStyles.promptScrollWheelEmojiBadge}>
                   <Text style={promptStyles.promptScrollWheelEmojiBadgeText}>
                     {getEmoji(p)}
                   </Text>
                 </View>
-              )}
-            </TouchableOpacity>
+              ) : null}
+            </Pressable>
           );
         })}
       </ScrollView>
