@@ -69,7 +69,7 @@ export function usePromptSelectionScreen({ route, navigation }) {
 
     setIsProcessing(true);
     try {
-      await sendPhotoToGenerate(imageUrl, selected.prompt);
+      await sendPhotoToGenerate(imageUrl, selected.id);
       navigation.replace("Library");
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to generate image.");

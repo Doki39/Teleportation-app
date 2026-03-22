@@ -54,12 +54,24 @@ router.post("/upload", uploadToDrive.single("image"), async (req, res) => {
 
 router.post("/generate", async (req, res) => {
   try {
-    const { imageUrl, prompt } = req.body;
+    const { imageUrl, promptId } = req.body;
     if (!imageUrl) {
       return res.status(400).json({ message: "No imageUrl provided" });
     }
+    if (promptId === undefined || promptId === null || promptId === "") {
+      return res.status(400).json({ message: "No promptId provided" });
+    }
 
-    const base64 = await generatePicture(imageUrl, prompt);
+    const { rows: promptRows } = await pool.query(
+      "SELECT prompt FROM prompt_selection WHERE id = $1",
+      [promptId]
+    );
+    const modifyText = promptRows[0]?.prompt;
+    if (!modifyText || !String(modifyText).trim()) {
+      return res.status(400).json({ message: "Prompt not found or Modify text is empty" });
+    }
+
+    const base64 = await generatePicture(imageUrl, modifyText);
     const processedFilename = `${nanoid()}.jpg`;
     const processedPath = path.join(PROCESSED_DIR, processedFilename);
 
@@ -69,12 +81,12 @@ router.post("/generate", async (req, res) => {
     const unprocessedImageUri = imageUrl;
     const processedUri = "/uploads/processed/" + processedFilename;
 
-    const { rows } = await pool.query(
+    const { rows: inserted } = await pool.query(
       "INSERT INTO photos (unprocessed_image_uri, processed_uri) VALUES ($1, $2) RETURNING *",
       [unprocessedImageUri, processedUri]
     );
 
-    return res.status(201).json(rows[0]);
+    return res.status(201).json(inserted[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
