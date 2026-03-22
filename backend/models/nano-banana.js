@@ -5,26 +5,41 @@ dotenv.config();
 const BASE_URL = "https://api.nanobananaapi.ai/api/v1/nanobanana";
 
 const STATIC_IMAGE_RULES = `
-
 Use the reference image as the base composition.
 
-Preserve: 
+Preserve:
 - subject identity and facial features (STRICT)
-- subject pose
-- camera angle
-- general lighting
-
-Ensure:
-- realistic perspective and scale
-- natural shadows and lighting
-- photorealistic travel photo
+- subject pose and body position
+- camera angle and framing
 
 STRICT PRESERVE:
 - subject identity must remain exactly the same
 - do not change face, facial features, or expression
 - do not alter skin tone, hairstyle, or facial structure
 - keep original face details exactly as in the reference image
-- no beautification, no stylization, no face retouching`;
+- preserve facial texture and micro-details
+- no beautification, no stylization, no face retouching
+- replace the background so the subject appears in: [Modify]
+- integrate the subject naturally into the environment
+
+Lighting & Integration (CRITICAL):
+- adapt lighting on the subject to match the environment realistically
+- match color temperature between subject and environment
+- adjust exposure and brightness to fit the scene
+- ensure shadows fall naturally according to the scene lighting
+- maintain realistic highlights and contrast
+- avoid cut-out or pasted appearance
+
+Environment:
+- [INSERT ENVIRONMENT DETAILS: time of day, weather, objects, atmosphere]
+- ensure realistic perspective and correct scale of all elements
+- include natural depth of field (subject sharp, background slightly blended if needed)
+
+Quality:
+- photorealistic travel photo
+- high detail
+- natural colors
+- no artificial or overprocessed look`;
 
 function buildNanoBananaPrompt(modifyText) {
   const modify = String(modifyText ?? "").trim();
