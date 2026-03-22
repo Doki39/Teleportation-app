@@ -59,6 +59,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
       <BackgroundParticles width={SCREEN_WIDTH} height={SCREEN_HEIGHT} />
 
+      <View style={promptStyles.promptMainColumn}>
       <View style={promptStyles.promptCarouselWrap}>
         {prompts.length > 0 && (
           <View
@@ -108,11 +109,8 @@ export default function PromptSelectionScreen({ route, navigation }) {
           />
         )}
 
-        {prompts.length > 0 && current && (
+        {prompts.length > 0 && current && Platform.OS !== "web" && (
           <View style={promptStyles.promptDestInfo}>
-            <Text style={promptStyles.promptDestTitle}>
-              {getEmoji(current)} {getTitle(current)}
-            </Text>
             <Text
               style={[
                 promptStyles.promptDestSubtitle,
@@ -139,9 +137,24 @@ export default function PromptSelectionScreen({ route, navigation }) {
             onScrollEnd={handleWheelScrollEnd}
           />
         )}
+      </View>
 
-        {prompts.length > 0 && Platform.OS === "web" && (
-          <View style={promptStyles.promptDots}>
+      {prompts.length > 0 && Platform.OS === "web" && current && (
+        <>
+          <View style={promptStyles.promptDestInfoWeb}>
+            <Text
+              style={[
+                promptStyles.promptDestSubtitle,
+                { marginTop: 0 },
+                selectedId === current.id && promptStyles.promptDestSubtitleSelected,
+              ]}
+            >
+              {selectedId === current.id
+                ? "✓ Locked in — ready to teleport"
+                : "Tap card or press Enter to select"}
+            </Text>
+          </View>
+          <View style={promptStyles.promptDotsWeb}>
             {prompts.map((p, i) => (
               <TouchableOpacity
                 key={p.id}
@@ -154,7 +167,8 @@ export default function PromptSelectionScreen({ route, navigation }) {
               />
             ))}
           </View>
-        )}
+        </>
+      )}
       </View>
 
       <View style={promptStyles.promptConfirmBar}>

@@ -322,6 +322,11 @@ export const promptStyles = StyleSheet.create({
   promptMgmtGeneratePreviewBtnDisabled: {
     opacity: 0.45,
   },
+  promptMainColumn: {
+    flex: 1,
+    width: "100%",
+    minHeight: 0,
+  },
   promptCarouselWrap: {
     ...centerContent,
     flex: 1,
@@ -419,6 +424,20 @@ export const promptStyles = StyleSheet.create({
     fontWeight: "600",
   },
   promptDots: { ...centerContent, flexDirection: "row", gap: 8, marginTop: 16 },
+  promptDestInfoWeb: {
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  promptDotsWeb: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
   promptDot: {
     width: 8,
     height: 8,
