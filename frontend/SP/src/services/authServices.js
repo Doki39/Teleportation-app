@@ -3,6 +3,21 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { Alert } from "react-native";
 
+export function isUserAdmin(user) {
+  const r = user?.role ?? user?.roles;
+  return r === "admin";
+}
+
+export async function getStoredUser() {
+  const raw = await AsyncStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export const handleRegistration = async ({
   first_name,
   last_name,

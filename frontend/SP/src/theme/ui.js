@@ -8,6 +8,18 @@ export const ui = {
     glass: "rgba(255,255,255,0.06)",
     glassBorder: "rgba(255,255,255,0.12)",
     inputBorder: "rgba(124, 58, 237, 0.65)",
+    headerBar: "rgba(14, 22, 48, 0.97)",
+    headerBarBorder: "rgba(124, 58, 237, 0.35)",
+    boardDeep: "rgba(8, 14, 32, 0.94)",
+    boardDeepBorder: "rgba(124, 58, 237, 0.28)",
+    boardViolet: "rgba(124, 58, 237, 0.16)",
+    boardVioletBorder: "rgba(124, 58, 237, 0.5)",
+    boardVioletAccent: "rgba(124, 58, 237, 0.08)",
+    boardCyan: "rgba(6, 182, 212, 0.12)",
+    boardCyanBorder: "rgba(6, 182, 212, 0.45)",
+    boardCyanAccent: "rgba(6, 182, 212, 0.06)",
+    boardContent: "rgba(10, 18, 40, 0.88)",
+    boardContentBorder: "rgba(6, 182, 212, 0.22)",
   },
 };
 
