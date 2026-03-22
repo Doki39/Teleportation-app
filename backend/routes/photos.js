@@ -69,15 +69,6 @@ router.post("/generate", async (req, res) => {
     const unprocessedImageUri = imageUrl;
     const processedUri = "/uploads/processed/" + processedFilename;
 
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS photos (
-        id SERIAL PRIMARY KEY,
-        unprocessed_image_uri TEXT NOT NULL,
-        processed_uri TEXT NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-
     const { rows } = await pool.query(
       "INSERT INTO photos (unprocessed_image_uri, processed_uri) VALUES ($1, $2) RETURNING *",
       [unprocessedImageUri, processedUri]

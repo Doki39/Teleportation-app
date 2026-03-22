@@ -2,7 +2,7 @@ import express from "express";
 import { pool } from "../data/dbconnection.js";
 const router = express.Router();
 
-router.get("/", async (req,res) => {
+router.get("/", async (_req,res) => {
 
 try {
     const { rows } = await pool.query(

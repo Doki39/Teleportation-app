@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 import { pool } from "../data/dbconnection.js";
 import { body, validationResult } from "express-validator";
-import { findUserByEmail, findUserByPhoneNumber } from "../services/userService.js";
+import { findUserByEmail, isPhoneNumberRegistered } from "../services/userService.js";
 
 const router = express.Router();
 
@@ -25,8 +25,8 @@ router.post(
       .notEmpty()
       .withMessage("Phone number is required")
       .custom(async (phone_number) => {
-        const existing = await findUserByPhoneNumber(phone_number);
-        if (existing) throw new Error("Phone number already registered");
+        const taken = await isPhoneNumberRegistered(phone_number);
+        if (taken) throw new Error("Phone number already registered");
       }),
     body("password")
       .isLength({ min: 8 })
