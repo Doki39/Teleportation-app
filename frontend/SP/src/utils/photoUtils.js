@@ -72,6 +72,25 @@ export async function openCamera() {
       return payload;
   }};
 
+export function extractGoogleDriveFileId(url) {
+  if (url == null || typeof url !== "string") return null;
+  const s = url.trim();
+  if (!s.includes("drive.google.com")) return null;
+  const uc = s.match(/[?&]id=([^&]+)/i);
+  if (uc) return decodeURIComponent(uc[1]);
+  const fileD = s.match(/\/file\/d\/([^/]+)/i);
+  if (fileD) return fileD[1];
+  return null;
+}
+
+export function normalizeImageUrlForDisplay(url) {
+  if (url == null || typeof url !== "string") return url;
+  const s = url.trim();
+  const id = extractGoogleDriveFileId(s);
+  if (!id) return s;
+  return `${API_BASE_URL}/api/photos/drive-media/${encodeURIComponent(id)}`;
+}
+
 export function buildImageUri(item) {
   if (!item || typeof item !== "object") return null;
   const path =
@@ -84,9 +103,14 @@ export function buildImageUri(item) {
   if (path == null || path === "") return null;
   const s = String(path).trim();
   if (!s) return null;
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
-  const withSlash = s.startsWith("/") ? s : `/${s}`;
-  return `${API_BASE_URL}${withSlash}`;
+  let resolved;
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    resolved = s;
+  } else {
+    const withSlash = s.startsWith("/") ? s : `/${s}`;
+    resolved = `${API_BASE_URL}${withSlash}`;
+  }
+  return normalizeImageUrlForDisplay(resolved);
 }
 
   

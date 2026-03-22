@@ -1,11 +1,9 @@
-import { API_BASE_URL } from "../config/api";
+import { buildImageUri } from "./photoUtils";
 
 export const PROMPT_CARD_WIDTH = 300;
 
 export function resolvePromptImageUri(item) {
-  const url = item?.image_url;
-  if (!url) return null;
-  return url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
+  return buildImageUri(item);
 }
 
 export function getPortalGlowSize(promptCount) {

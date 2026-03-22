@@ -261,7 +261,7 @@ export default function PromptCreateScreen({ navigation }) {
                     onPress={discardResult}
                     disabled={saving}
                   >
-                    <Text style={promptStyles.promptMgmtModalBtnText}>No — discard</Text>
+                    <Text style={promptStyles.promptMgmtModalBtnText}>Discard</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[promptStyles.promptMgmtCreateBtn, promptStyles.promptMgmtCreateBtnYes]}
@@ -272,7 +272,7 @@ export default function PromptCreateScreen({ navigation }) {
                       <ActivityIndicator color="#fff" />
                     ) : (
                       <Text style={[promptStyles.promptMgmtModalBtnText, promptStyles.promptMgmtModalBtnTextLight]}>
-                        Yes — save
+                        Save
                       </Text>
                     )}
                   </TouchableOpacity>

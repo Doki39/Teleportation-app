@@ -1,8 +1,11 @@
 import { google } from "googleapis";
 import { Readable } from "stream";
 
-export async function uploadImage(file) {
-  const folderId = process.env.DRIVE_UPLOAD_FOLDER_ID
+export async function uploadBufferToDrive(buffer, { filename = "image.jpg", mimeType = "image/jpeg" } = {}) {
+  const folderId = process.env.DRIVE_UPLOAD_FOLDER_ID;
+  if (!folderId) {
+    throw new Error("DRIVE_UPLOAD_FOLDER_ID is not set");
+  }
 
   const auth = new google.auth.GoogleAuth({
     scopes: "https://www.googleapis.com/auth/drive",
@@ -10,13 +13,14 @@ export async function uploadImage(file) {
   const authClient = await auth.getClient();
   const service = google.drive({ version: "v3", auth: authClient });
 
+  const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
   const requestBody = {
-    name: file.originalname || "photo.jpg",
+    name: filename,
     parents: [folderId],
   };
   const media = {
-    mimeType: file.mimetype || "image/jpeg",
-    body: Readable.from(Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer)),
+    mimeType,
+    body: Readable.from(buf),
   };
 
   try {
@@ -44,4 +48,11 @@ export async function uploadImage(file) {
     }
     throw err;
   }
+}
+
+export async function uploadImage(file) {
+  return uploadBufferToDrive(file.buffer, {
+    filename: file.originalname || "photo.jpg",
+    mimeType: file.mimetype || "image/jpeg",
+  });
 }

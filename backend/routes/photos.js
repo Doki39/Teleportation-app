@@ -1,21 +1,31 @@
 import express from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs/promises";
-import { fileURLToPath } from "url";
 import { nanoid } from "nanoid";
 import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
-import { uploadImage } from "../services/uploadService.js";
+import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
+import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
-const PROCESSED_DIR = path.join(UPLOADS_DIR, "processed");
-
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
+
+router.get("/drive-media/:fileId", async (req, res) => {
+  try {
+    const raw = req.params.fileId;
+    const fileId = decodeURIComponent(String(raw ?? "").trim());
+    if (!fileId || fileId.includes("..") || fileId.includes("/") || fileId.length > 128) {
+      return res.status(400).json({ message: "Invalid Drive file id" });
+    }
+    await pipeDriveFileToResponse(fileId, res);
+  } catch (err) {
+    console.error("drive-media:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ message: err.message || "Failed to load image" });
+    }
+  }
+});
 
 function toAbsoluteImageUrl(imageUrl, req) {
   const s = String(imageUrl ?? "").trim();
@@ -81,14 +91,14 @@ router.post(
       else if (mime.includes("jpeg") || mime.includes("jpg")) ext = ".jpg";
 
       const filename = `${nanoid()}${ext}`;
-      const dest = path.join(PROCESSED_DIR, filename);
-      await fs.writeFile(dest, req.file.buffer);
-
-      const imageUrl = `/uploads/processed/${filename}`;
+      const imageUrl = await uploadBufferToDrive(req.file.buffer, {
+        filename,
+        mimeType: mime || "image/jpeg",
+      });
       return res.json({ imageUrl });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: err.message || "Local upload failed" });
+      res.status(500).json({ message: err.message || "Drive upload failed" });
     }
   }
 );
@@ -109,10 +119,10 @@ router.post(
 
       const absoluteInput = toAbsoluteImageUrl(imageUrl, req);
       const base64 = await generatePicture(absoluteInput, String(modifyText).trim());
-      const processedFilename = `${nanoid()}.jpg`;
-      const processedPath = path.join(PROCESSED_DIR, processedFilename);
-      await fs.writeFile(processedPath, Buffer.from(base64, "base64"));
-      const processedUri = `/uploads/processed/${processedFilename}`;
+      const processedUri = await uploadBufferToDrive(Buffer.from(base64, "base64"), {
+        filename: `preview-${nanoid()}.jpg`,
+        mimeType: "image/jpeg",
+      });
       return res.json({ processedUri });
     } catch (err) {
       console.error(err);
@@ -141,14 +151,13 @@ router.post("/generate", async (req, res) => {
     }
 
     const base64 = await generatePicture(imageUrl, modifyText);
-    const processedFilename = `${nanoid()}.jpg`;
-    const processedPath = path.join(PROCESSED_DIR, processedFilename);
-
     const processedBuffer = Buffer.from(base64, "base64");
-    await fs.writeFile(processedPath, processedBuffer);
+    const processedUri = await uploadBufferToDrive(processedBuffer, {
+      filename: `generated-${nanoid()}.jpg`,
+      mimeType: "image/jpeg",
+    });
 
     const unprocessedImageUri = imageUrl;
-    const processedUri = "/uploads/processed/" + processedFilename;
 
     const { rows: inserted } = await pool.query(
       "INSERT INTO photos (unprocessed_image_uri, processed_uri) VALUES ($1, $2) RETURNING *",
