@@ -2,7 +2,9 @@ import { pool } from "../data/dbconnection.js";
 
 export async function findUserByEmail(email) {
   const { rows } = await pool.query(
-    "SELECT uid, email, password_hash, first_name, last_name, phone_number FROM users WHERE email = $1",
+    `SELECT uid, email, password_hash, first_name, last_name, phone_number,
+            COALESCE(role, 'user') AS role
+     FROM users WHERE email = $1`,
     [email]
   );
   return rows[0] ?? null;
@@ -10,7 +12,9 @@ export async function findUserByEmail(email) {
 
 export async function findUserByUid(uid) {
   const { rows } = await pool.query(
-    "SELECT uid, email, first_name, last_name, phone_number FROM users WHERE uid = $1",
+    `SELECT uid, email, first_name, last_name, phone_number,
+            COALESCE(role, 'user') AS role
+     FROM users WHERE uid = $1`,
     [uid]
   );
   return rows[0] ?? null;
@@ -81,7 +85,7 @@ export async function patchUser(uid, rawBody) {
     UPDATE users
     SET ${fragments.join(", ")}
     WHERE uid = $${i}
-    RETURNING uid, first_name, last_name, email, phone_number
+    RETURNING uid, first_name, last_name, email, phone_number, COALESCE(role, 'user') AS role
   `;
   const { rows } = await pool.query(sql, values);
   if (rows.length === 0) {

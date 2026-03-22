@@ -43,9 +43,9 @@ router.post(
     const password_hash = await bcrypt.hash(password, 10);
 
     const insertQuery = `
-      INSERT INTO users (uid, first_name, last_name, email, phone_number, password_hash)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING uid, first_name, last_name, email, phone_number;
+      INSERT INTO users (uid, first_name, last_name, email, phone_number, password_hash, role)
+      VALUES ($1, $2, $3, $4, $5, $6, 'user')
+      RETURNING uid, first_name, last_name, email, phone_number, COALESCE(role, 'user') AS role;
     `;
     const values = [uid, first_name, last_name, email, phone_number, password_hash];
 
@@ -59,7 +59,7 @@ router.post(
       }
 
       const token = jwt.sign(
-        { uid: user.uid, email: user.email },
+        { uid: user.uid, email: user.email, role: user.role },
         secret,
         { expiresIn: "14d" }
       );
@@ -103,7 +103,7 @@ router.post(
     }
 
     const token = jwt.sign(
-      { uid: user.uid, email: user.email },
+      { uid: user.uid, email: user.email, role: user.role },
       secret,
       { expiresIn: "14d" }
     );

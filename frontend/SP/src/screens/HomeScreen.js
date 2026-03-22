@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import {View,Text,Pressable,Animated,Alert,Dimensions,StyleSheet,ActivityIndicator,Modal} from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import {View,Text,Pressable,Animated,Dimensions,StyleSheet,ActivityIndicator,Modal} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileMenuButton from "../components/ProfileMenuButton";
@@ -9,13 +10,15 @@ import SlideShow from "../components/SlideShow";
 import { homeStyles } from "../styles/homeStyles";
 import { ui } from "../theme/ui";
 import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
-import { signOut } from "../services/authServices";
+import { signOut, getStoredUser, isUserAdmin } from "../services/authServices";
+import { fetchCurrentUser } from "../services/userServices";
 import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 
 const ROCKET_SIZE = 118;
 
 export default function HomeScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const portalSpin = useRef(new Animated.Value(0)).current;
   const portalReverseSpin = useRef(new Animated.Value(0)).current;
@@ -37,9 +40,37 @@ export default function HomeScreen({ navigation }) {
     const checkLogin = async () => {
       const token = await AsyncStorage.getItem("token");
       if (token) setLoggedIn(true);
+      const u = await getStoredUser();
+      setIsAdmin(isUserAdmin(u));
     };
     checkLogin();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          setIsAdmin(false);
+          return;
+        }
+        try {
+          const u = await fetchCurrentUser();
+          if (!cancelled) {
+            setIsAdmin(isUserAdmin(u));
+            await AsyncStorage.setItem("user", JSON.stringify(u));
+          }
+        } catch {
+          const u = await getStoredUser();
+          if (!cancelled) setIsAdmin(isUserAdmin(u));
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [loggedIn])
+  );
 
   useEffect(() => {
     Animated.loop(
@@ -175,12 +206,14 @@ export default function HomeScreen({ navigation }) {
                 label="View Library"
                 onPress={() => navigation.replace("Library")}
               />
-              <ActionButton
-                icon={<Ionicons name="add" size={20} color={ui.colors.secondary} />}
-                label="Add Prompt"
-                onPress={() => Alert.alert("Admin", "Add Prompt screen not implemented yet.")}
-                variant="secondary"
-              />
+              {isAdmin && (
+                <ActionButton
+                  icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
+                  label="Prompt management"
+                  onPress={() => navigation.navigate("PromptManagement")}
+                  variant="secondary"
+                />
+              )}
         </View>
       )}
 

@@ -32,11 +32,11 @@ app.use("/api/prompts", promptRoutes);
 app.listen(PORT, () => console.log("Server running on port " + PORT));
 
 app.get("/api/db-health", async (_req, res) => {
-    try {
-      const { rows } = await pool.query("SELECT 1 AS ok");
-      res.json({ ok: true, rows });
-    } catch (err) {
-      console.error("DB health check failed:", err);
-      res.status(500).json({ ok: false, error: err.message });
-    }
-  });
+  try {
+    const { rows } = await pool.query("SELECT 1 AS ok");
+    res.json({ ok: true, rows });
+  } catch (err) {
+    console.error("DB health check failed:", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});

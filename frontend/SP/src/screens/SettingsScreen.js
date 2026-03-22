@@ -37,7 +37,6 @@ export default function SettingsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
-  /** Inline banner — Alert.alert is unreliable on React Native Web */
   const [successMessage, setSuccessMessage] = useState(null);
   const successTimerRef = useRef(null);
 
@@ -80,7 +79,6 @@ export default function SettingsScreen({ navigation }) {
         }
       }
     } catch {
-      /* ignore bad cache */
     }
 
     if (!hasCache) {

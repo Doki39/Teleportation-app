@@ -16,7 +16,11 @@ export function requireAuth(req, res, next) {
     if (!payload.uid) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
-    req.user = { uid: payload.uid, email: payload.email };
+    req.user = {
+      uid: payload.uid,
+      email: payload.email,
+      role: payload.role ?? payload.roles ?? "user",
+    };
     next();
   } catch {
     return res.status(401).json({ message: "Invalid or expired token" });
