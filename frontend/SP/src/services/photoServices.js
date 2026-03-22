@@ -16,16 +16,16 @@ export async function uploadPhotoToDrive({ uri, file }) {
   return data;
 }
 
-export async function uploadPromptImageLocal({ uri, file }) {
-  const formData = await buildFormData({ uri, file });
+export async function generatePromptPreview({ imageUrl, modifyText }) {
   const token = await AsyncStorage.getItem("token");
   if (!token) throw new Error("Not logged in");
-  const response = await fetch(`${API_BASE_URL}/api/photos/upload-local`, {
+  const response = await fetch(`${API_BASE_URL}/api/photos/generate-preview`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
-    body: formData,
+    body: JSON.stringify({ imageUrl, modifyText }),
   });
   if (!response.ok) {
     const text = await response.text();

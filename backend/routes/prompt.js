@@ -7,6 +7,38 @@ const router = express.Router();
 
 const PATCHABLE = ["title", "prompt", "image_url"];
 
+router.post("/", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const title = String(req.body?.title ?? "").trim() || "Untitled";
+    const prompt = String(req.body?.prompt ?? "").trim();
+    const image_url = String(req.body?.image_url ?? "").trim();
+
+    if (!prompt) {
+      return res.status(400).json({ message: "Prompt text is required" });
+    }
+    if (!image_url) {
+      return res.status(400).json({ message: "image_url is required" });
+    }
+
+    const { rows } = await pool.query(
+      `INSERT INTO prompt_selection (title, prompt, image_url)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [title, prompt, image_url]
+    );
+    return res.status(201).json({ prompt: rows[0] });
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({
+        message:
+          "This prompt already exists (same title, text, and image). Change something or use Manage prompts.",
+      });
+    }
+    console.error(err);
+    res.status(500).json({ message: err.message || "Failed to create prompt" });
+  }
+});
+
 router.get("/", async (_req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM prompt_selection");

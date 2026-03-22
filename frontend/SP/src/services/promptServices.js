@@ -31,3 +31,9 @@ export async function updatePromptSelection(id, body) {
   });
   return res.data.prompt;
 }
+
+export async function createPromptSelection(body) {
+  const headers = await authHeaders();
+  const res = await axios.post(`${API_BASE_URL}/api/prompts`, body, { headers });
+  return res.data.prompt;
+}

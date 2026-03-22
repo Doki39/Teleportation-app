@@ -27,7 +27,7 @@ import { useRequireAdmin } from "../hooks/useRequireAdmin";
 import { getPromptSelection, updatePromptSelection } from "../services/promptServices";
 import { formatApiError } from "../services/userServices";
 import { openLibrary, buildImageUri } from "../utils/photoUtils";
-import { uploadPromptImageLocal } from "../services/photoServices";
+import { uploadPhotoToDrive } from "../services/photoServices";
 
 function PromptRow({ item, onEdit, imageUri }) {
   return (
@@ -114,7 +114,7 @@ export default function ManageExistingPromptsScreen({ navigation }) {
     if (!payload) return;
     setUploadingImage(true);
     try {
-      const { imageUrl } = await uploadPromptImageLocal(payload);
+      const { imageUrl } = await uploadPhotoToDrive(payload);
       setDraftImageUrl(imageUrl);
     } catch (e) {
       Alert.alert("Upload failed", e.message || "Could not upload image");

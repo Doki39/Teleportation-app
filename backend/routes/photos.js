@@ -17,6 +17,17 @@ const PROCESSED_DIR = path.join(UPLOADS_DIR, "processed");
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
+function toAbsoluteImageUrl(imageUrl, req) {
+  const s = String(imageUrl ?? "").trim();
+  if (!s) return s;
+  if (/^https?:\/\//i.test(s)) return s;
+  const origin =
+    process.env.PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
+    `${req.protocol}://${req.get("host")}`;
+  const pathPart = s.startsWith("/") ? s : `/${s}`;
+  return `${origin}${pathPart}`;
+}
+
 router.get("/", async (_req, res) => {
   try {
     const { rows } = await pool.query(
@@ -78,6 +89,34 @@ router.post(
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: err.message || "Local upload failed" });
+    }
+  }
+);
+
+router.post(
+  "/generate-preview",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { imageUrl, modifyText } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ message: "No imageUrl provided" });
+      }
+      if (!modifyText || !String(modifyText).trim()) {
+        return res.status(400).json({ message: "No modifyText provided" });
+      }
+
+      const absoluteInput = toAbsoluteImageUrl(imageUrl, req);
+      const base64 = await generatePicture(absoluteInput, String(modifyText).trim());
+      const processedFilename = `${nanoid()}.jpg`;
+      const processedPath = path.join(PROCESSED_DIR, processedFilename);
+      await fs.writeFile(processedPath, Buffer.from(base64, "base64"));
+      const processedUri = `/uploads/processed/${processedFilename}`;
+      return res.json({ processedUri });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message || "Preview generation failed" });
     }
   }
 );

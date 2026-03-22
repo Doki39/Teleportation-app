@@ -100,6 +100,78 @@ export const promptStyles = StyleSheet.create({
   promptMgmtContentBoardCreate: {
     borderTopColor: ui.colors.primary,
   },
+  promptMgmtCreateScroll: {
+    flex: 1,
+  },
+  promptMgmtCreateScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+  promptMgmtFieldBox: {
+    marginBottom: 14,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: ui.colors.boardVioletBorder,
+    backgroundColor: "rgba(8, 14, 32, 0.65)",
+  },
+  promptMgmtHint: {
+    ...textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  promptMgmtFieldBoxLabel: {
+    ...textMuted,
+    fontSize: 11,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  promptMgmtCreatePreviewWrap: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    borderRadius: 16,
+    marginBottom: 10,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderWidth: 2,
+    borderColor: ui.colors.boardCyanBorder,
+    overflow: "hidden",
+  },
+  promptMgmtCreateSectionLabel: {
+    ...textBold,
+    fontSize: 13,
+    marginBottom: 8,
+    marginTop: 4,
+    color: ui.colors.secondary,
+  },
+  promptMgmtCreateConfirmBar: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: ui.colors.primary,
+    backgroundColor: "rgba(124, 58, 237, 0.12)",
+    gap: 10,
+  },
+  promptMgmtCreateConfirmText: { ...textBold, fontSize: 15, textAlign: "center", marginBottom: 4 },
+  promptMgmtCreateBtnRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  promptMgmtCreateBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  promptMgmtCreateBtnYes: {
+    backgroundColor: ui.colors.primary,
+  },
+  promptMgmtCreateBtnNo: {
+    backgroundColor: ui.colors.glass,
+    borderWidth: 1,
+    borderColor: ui.colors.glassBorder,
+  },
   promptMgmtListScroll: {
     flex: 1,
     paddingHorizontal: 14,
@@ -236,6 +308,19 @@ export const promptStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: ui.colors.boardVioletBorder,
     marginBottom: 12,
+  },
+  promptMgmtGeneratePreviewBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: ui.colors.primary,
+    marginBottom: 12,
+  },
+  promptMgmtGeneratePreviewBtnDisabled: {
+    opacity: 0.45,
   },
   promptCarouselWrap: {
     ...centerContent,
