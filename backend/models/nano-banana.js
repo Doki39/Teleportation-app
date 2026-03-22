@@ -112,17 +112,14 @@ async function waitForCompletion(apiKey, taskId, maxWaitTime = 300000) {
     const data = status?.data;
 
     if (!data) {
-      console.log("NanoBanana getTaskStatus response missing data:", status);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       continue;
     }
 
     switch (data.successFlag) {
       case 0:
-        console.log("Task is generating...");
         break;
       case 1:
-        console.log("Generation completed successfully!");
         return data.response;
       case 2:
       case 3:
