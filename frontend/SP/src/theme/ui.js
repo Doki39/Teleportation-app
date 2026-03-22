@@ -7,6 +7,7 @@ export const ui = {
     secondary: "#06B6D4",
     glass: "rgba(255,255,255,0.06)",
     glassBorder: "rgba(255,255,255,0.12)",
+    inputBorder: "rgba(124, 58, 237, 0.65)",
   },
 };
 

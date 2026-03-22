@@ -59,6 +59,9 @@ export const handleLogin = async ({ email, password, navigation }) => {
     const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
     console.log("Login response:", res.data);
     await AsyncStorage.setItem("token", res.data.token);
+    if (res.data.user) {
+      await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
+    }
     navigation.replace("Home");
   } catch (err) {
     const data = err.response?.data;

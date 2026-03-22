@@ -1,7 +1,8 @@
 import express from "express";
+import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
 import { requireAuth } from "../middleware/authMiddleware.js";
-import { patchUser, findUserByUid, emailTakenByOtherUser, phoneTakenByOtherUser} from "../services/userService.js";
+import { patchUser, findUserByUid, findUserPasswordHashByUid, emailTakenByOtherUser, phoneTakenByOtherUser } from "../services/userService.js";
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ router.get("/me", requireAuth, async (req, res) => {
 });
 
 const patchValidators = [
+  body("current_password")
+    .notEmpty()
+    .withMessage("Current password is required to save changes"),
   body("first_name").optional({ values: "null" }).trim().notEmpty().withMessage("First name cannot be empty"),
   body("last_name").optional({ values: "null" }).trim().notEmpty().withMessage("Last name cannot be empty"),
   body("email").optional({ values: "null" }).isEmail().withMessage("Invalid email").normalizeEmail(),
@@ -47,6 +51,15 @@ router.patch("/me", requireAuth, patchValidators, async (req, res) => {
     const existing = await findUserByUid(uid);
     if (!existing) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    const passwordHash = await findUserPasswordHashByUid(uid);
+    if (!passwordHash) {
+      return res.status(500).json({ message: "Could not verify account" });
+    }
+    const passwordOk = await bcrypt.compare(req.body.current_password, passwordHash);
+    if (!passwordOk) {
+      return res.status(403).json({ message: "Invalid password" });
     }
 
     if (req.body.email) {

@@ -16,6 +16,14 @@ export async function findUserByUid(uid) {
   return rows[0] ?? null;
 }
 
+export async function findUserPasswordHashByUid(uid) {
+  const { rows } = await pool.query(
+    "SELECT password_hash FROM users WHERE uid = $1",
+    [uid]
+  );
+  return rows[0]?.password_hash ?? null;
+}
+
 export async function emailTakenByOtherUser(email, excludeUid) {
   const { rows } = await pool.query(
     "SELECT uid FROM users WHERE email = $1 AND uid <> $2",
