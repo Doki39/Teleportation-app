@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "SP",
-    "slug": "SP",
+    "name": "Teleportation-app",
+    "slug": "teleportation-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "SP",
+    "scheme": "teleportation-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
