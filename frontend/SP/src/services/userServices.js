@@ -1,20 +1,15 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { getJsonAuthHeaders } from "../utils/apiAuth";
 
 async function authConfig() {
-  const token = await AsyncStorage.getItem("token");
-  if (!token) {
+  try {
+    return { headers: await getJsonAuthHeaders() };
+  } catch {
     const err = new Error("Not logged in");
     err.code = "NO_TOKEN";
     throw err;
   }
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  };
 }
 
 export async function fetchCurrentUser() {

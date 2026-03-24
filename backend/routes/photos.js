@@ -37,7 +37,7 @@ function toAbsoluteImageUrl(imageUrl, req) {
   return `${origin}${pathPart}`;
 }
 
-router.get("/", async (_req, res) => {
+router.get("/", requireAuth, async (_req, res) => {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM photos ORDER BY created_at DESC"
@@ -60,7 +60,7 @@ router.get("/slides", async (_req, res) => {
 });
 
 
-router.post("/upload", uploadToDrive.single("image"), async (req, res) => {
+router.post("/upload", requireAuth, uploadToDrive.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No photo sent" });
@@ -130,7 +130,7 @@ router.post(
   }
 );
 
-router.post("/generate", async (req, res) => {
+router.post("/generate", requireAuth, async (req, res) => {
   try {
     const { imageUrl, promptId } = req.body;
     if (!imageUrl) {
@@ -159,8 +159,8 @@ router.post("/generate", async (req, res) => {
     const unprocessedImageUri = imageUrl;
 
     const { rows: inserted } = await pool.query(
-      "INSERT INTO photos (unprocessed_image_uri, processed_uri) VALUES ($1, $2) RETURNING *",
-      [unprocessedImageUri, processedUri]
+      "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",
+      [req.user.uid, unprocessedImageUri, processedUri]
     );
 
     return res.status(201).json(inserted[0]);

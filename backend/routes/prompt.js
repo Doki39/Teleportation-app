@@ -38,7 +38,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/", async (_req, res) => {
+router.get("/", requireAuth, async (_req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM prompt_selection");
     return res.json(rows);

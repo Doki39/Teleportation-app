@@ -1,10 +1,12 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { getBearerAuthHeader, getJsonAuthHeaders } from "../utils/apiAuth";
 
 export async function getPromptSelection() {
+  const headers = await getBearerAuthHeader();
   const response = await fetch(`${API_BASE_URL}/api/prompts`, {
     method: "GET",
+    headers,
   });
 
   if (!response.ok) {
@@ -16,12 +18,7 @@ export async function getPromptSelection() {
 }
 
 async function authHeaders() {
-  const token = await AsyncStorage.getItem("token");
-  if (!token) throw new Error("Not logged in");
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+  return getJsonAuthHeaders();
 }
 
 export async function updatePromptSelection(id, body) {

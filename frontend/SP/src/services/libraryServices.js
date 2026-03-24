@@ -1,8 +1,11 @@
 import { API_BASE_URL } from "../config/api";
+import { getBearerAuthHeader } from "../utils/apiAuth";
 
 export async function getGeneratedPhotos() {
+  const headers = await getBearerAuthHeader();
   const response = await fetch(`${API_BASE_URL}/api/photos`, {
     method: "GET",
+    headers,
   });
 
   if (!response.ok) {
