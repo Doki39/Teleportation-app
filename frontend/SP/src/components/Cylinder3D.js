@@ -57,6 +57,7 @@ export default function Cylinder3D({
   getImageUri,
   getTitle,
   getEmoji,
+  webScale = 1,
 }) {
   const COUNT = Math.max(prompts.length, 1);
   const ANGLE_STEP = 360 / COUNT;
@@ -119,7 +120,7 @@ export default function Cylinder3D({
   if (prompts.length === 0) return null;
 
   const wrapperStyle = Platform.OS === "web"
-    ? [styles.cylinderWrapper, containerStyle, { cursor: "grab", userSelect: "none" }]
+    ? [styles.cylinderWrapper, containerStyle, { cursor: "grab", userSelect: "none" }, webScale !== 1 && { transform: [{ scale: webScale }] }]
     : [styles.cylinderWrapper, containerStyle];
 
   return (

@@ -23,7 +23,7 @@ import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { signOut, getStoredUser, isUserAdmin } from "../services/authServices";
 import { fetchCurrentUser } from "../services/userServices";
 import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
-import { getWebHomeScale } from "../utils/webLayout";
+import { getWebHomePortalScale, getWebHomeRocketScale, getWebHomeScale } from "../utils/webLayout";
 
 const ROCKET_SIZE = 118;
 
@@ -47,6 +47,8 @@ export default function HomeScreen({ navigation }) {
 
   const { width: windowWidth, height } = useWindowDimensions();
   const webHomeScale = getWebHomeScale(windowWidth, height);
+  const rocketScale = getWebHomeRocketScale(windowWidth, height);
+  const portalScale = getWebHomePortalScale(windowWidth, height);
   const needsWebScale = Platform.OS === "web" && webHomeScale < 1;
   const canvasW = needsWebScale ? windowWidth / webHomeScale : windowWidth;
   const canvasH = needsWebScale ? height / webHomeScale : height;
@@ -172,7 +174,7 @@ export default function HomeScreen({ navigation }) {
         </Modal>
       )}
       <View style={[StyleSheet.absoluteFill, { zIndex: 1, pointerEvents: "none" }]}>
-        <View style={homeStyles.portalStage}>
+        <View style={[homeStyles.portalStage, portalScale !== 1 && { transform: [{ scale: portalScale }] }]}>
           <Animated.View style={[homeStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
           <Animated.View style={[homeStyles.portalMistLeft, { transform: [{ translateX: driftX }] }]} />
           <Animated.View style={[homeStyles.portalMistRight, { transform: [{ translateX: Animated.multiply(driftX, -1) }] }]} />
@@ -205,7 +207,7 @@ export default function HomeScreen({ navigation }) {
 
       {loggedIn && (
         <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>
-          <RocketButton onPress={handleCamera} />
+          <RocketButton onPress={handleCamera} baseScale={rocketScale} />
         </View>
       )}
 
@@ -270,7 +272,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={homeStyles.homeRoot}>
       {needsWebScale ? (
-        <View style={{ flex: 1, width: windowWidth, overflow: "hidden" }}>
+        <View style={{ flex: 1, width: windowWidth, overflow: "hidden", alignItems: "center" }}>
           <View
             style={{
               width: canvasW,

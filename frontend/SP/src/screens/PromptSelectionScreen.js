@@ -18,6 +18,7 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import { usePromptSelectionScreen } from "../hooks/usePromptSelectionScreen";
 import { getPortalGlowSize } from "../utils/promptSelectionHelpers";
 import { goBackOrHome } from "../utils/navigationHelpers";
+import { getWebCylinderScale } from "../utils/webLayout";
 
 export default function PromptSelectionScreen({ route, navigation }) {
   const {
@@ -39,6 +40,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
   } = usePromptSelectionScreen({ route, navigation });
 
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const cylinderScale = getWebCylinderScale(windowWidth, windowHeight);
   const glow = getPortalGlowSize(prompts.length);
   const current = prompts[currentIndex];
 
@@ -105,6 +107,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
             getImageUri={getImageUri}
             getTitle={getTitle}
             getEmoji={getEmoji}
+            webScale={cylinderScale}
           />
         )}
 
