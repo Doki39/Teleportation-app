@@ -212,12 +212,24 @@ export const promptStyles = StyleSheet.create({
   },
   promptMgmtListTitle: { ...textBold, fontSize: 15 },
   promptMgmtListPrompt: { ...textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 },
+  promptMgmtListRowActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   promptMgmtListEditBtn: {
     padding: 8,
     borderRadius: 10,
     backgroundColor: "rgba(6, 182, 212, 0.12)",
     borderWidth: 1,
     borderColor: ui.colors.boardCyanBorder,
+  },
+  promptMgmtListDeleteBtn: {
+    padding: 8,
+    borderRadius: 10,
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(248, 113, 113, 0.45)",
   },
   promptMgmtModalBackdrop: {
     flex: 1,
@@ -250,6 +262,7 @@ export const promptStyles = StyleSheet.create({
     maxHeight: "92%",
   },
   promptMgmtModalTitle: { ...textBold, fontSize: 19, marginBottom: 16 },
+  promptMgmtModalMessage: { ...textMuted, fontSize: 14, lineHeight: 20, marginBottom: 8 },
   promptMgmtLabel: { ...textMuted, fontSize: 12, marginBottom: 6 },
   promptMgmtInput: {
     borderWidth: 1,

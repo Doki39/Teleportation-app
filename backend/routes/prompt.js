@@ -96,16 +96,17 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-router.delete("/:id", requireAuth, requireAdmin, async (req,res) => {
-  try{
-
+router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
     const { id } = req.params;
-    
-    await pool.query("DELETE FROM prompt_selection WHERE id = $1", [Number(id)]);
-
-  } catch (err){
-  console.error(err);
-  res.status(500).json({message: err.message || "Failed to delete prompt"})
+    const { rowCount } = await pool.query("DELETE FROM prompt_selection WHERE id = $1", [id]);
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Prompt not found" });
+    }
+    return res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message || "Failed to delete prompt" });
   }
 });
 

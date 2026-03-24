@@ -24,39 +24,56 @@ import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
-import { getPromptSelection, updatePromptSelection } from "../services/promptServices";
+import { getPromptSelection, updatePromptSelection, deletePromptSelection } from "../services/promptServices";
 import { formatApiError } from "../services/userServices";
 import { openLibrary, buildImageUri } from "../utils/photoUtils";
 import { uploadPhotoToDrive } from "../services/photoServices";
 
-function PromptRow({ item, onEdit, imageUri }) {
+function PromptRow({ item, onEdit, onDelete, imageUri }) {
   return (
-    <TouchableOpacity
-      style={promptStyles.promptMgmtListRow}
-      onPress={() => onEdit(item)}
-      activeOpacity={0.85}
-      accessibilityRole="button"
-      accessibilityLabel={`Edit ${item.title || "prompt"}`}
-    >
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={promptStyles.promptMgmtListThumb} resizeMode="cover" />
-      ) : (
-        <View style={[promptStyles.promptMgmtListThumb, { justifyContent: "center", alignItems: "center" }]}>
-          <Ionicons name="image-outline" size={22} color={ui.colors.muted} />
+    <View style={promptStyles.promptMgmtListRow}>
+      <TouchableOpacity
+        style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, minWidth: 0 }}
+        onPress={() => onEdit(item)}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={`Edit ${item.title || "prompt"}`}
+      >
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={promptStyles.promptMgmtListThumb} resizeMode="cover" />
+        ) : (
+          <View style={[promptStyles.promptMgmtListThumb, { justifyContent: "center", alignItems: "center" }]}>
+            <Ionicons name="image-outline" size={22} color={ui.colors.muted} />
+          </View>
+        )}
+        <View style={promptStyles.promptMgmtListTextCol}>
+          <Text style={promptStyles.promptMgmtListTitle} numberOfLines={2}>
+            {item.title?.trim() || "Untitled"}
+          </Text>
+          <Text style={promptStyles.promptMgmtListPrompt} numberOfLines={3} ellipsizeMode="tail">
+            {item.prompt?.trim() || "—"}
+          </Text>
         </View>
-      )}
-      <View style={promptStyles.promptMgmtListTextCol}>
-        <Text style={promptStyles.promptMgmtListTitle} numberOfLines={2}>
-          {item.title?.trim() || "Untitled"}
-        </Text>
-        <Text style={promptStyles.promptMgmtListPrompt} numberOfLines={3} ellipsizeMode="tail">
-          {item.prompt?.trim() || "—"}
-        </Text>
+      </TouchableOpacity>
+      <View style={promptStyles.promptMgmtListRowActions}>
+        <TouchableOpacity
+          style={promptStyles.promptMgmtListDeleteBtn}
+          onPress={() => onDelete(item)}
+          accessibilityRole="button"
+          accessibilityLabel="Delete prompt"
+        >
+          <Ionicons name="trash-outline" size={20} color="#F87171" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={promptStyles.promptMgmtListEditBtn}
+          onPress={() => onEdit(item)}
+          accessibilityRole="button"
+          accessibilityLabel="Edit prompt"
+        >
+          <Ionicons name="pencil" size={20} color={ui.colors.secondary} />
+        </TouchableOpacity>
       </View>
-      <View style={promptStyles.promptMgmtListEditBtn}>
-        <Ionicons name="pencil" size={20} color={ui.colors.secondary} />
-      </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -75,6 +92,10 @@ export default function ManageExistingPromptsScreen({ navigation }) {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftPrompt, setDraftPrompt] = useState("");
   const [draftImageUrl, setDraftImageUrl] = useState("");
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deletingPrompt, setDeletingPrompt] = useState(false);
 
   const loadPrompts = useCallback(async () => {
     setLoading(true);
@@ -120,6 +141,34 @@ export default function ManageExistingPromptsScreen({ navigation }) {
       Alert.alert("Upload failed", e.message || "Could not upload image");
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const confirmDelete = (item) => {
+    setPendingDelete(item);
+    setDeleteModalVisible(true);
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingPrompt) return;
+    setDeleteModalVisible(false);
+    setPendingDelete(null);
+  };
+
+  const runConfirmedDelete = async () => {
+    const item = pendingDelete;
+    if (item?.id == null) return;
+    setDeletingPrompt(true);
+    try {
+      await deletePromptSelection(item.id);
+      if (editId === item.id) closeModal();
+      setPrompts((prev) => prev.filter((p) => p.id !== item.id));
+      setDeleteModalVisible(false);
+      setPendingDelete(null);
+    } catch (e) {
+      Alert.alert("Delete failed", formatApiError(e));
+    } finally {
+      setDeletingPrompt(false);
     }
   };
 
@@ -206,7 +255,7 @@ export default function ManageExistingPromptsScreen({ navigation }) {
             </Text>
           }
           renderItem={({ item }) => (
-            <PromptRow item={item} imageUri={buildImageUri(item)} onEdit={openEdit} />
+            <PromptRow item={item} imageUri={buildImageUri(item)} onEdit={openEdit} onDelete={confirmDelete} />
           )}
         />
       )}
@@ -301,6 +350,48 @@ export default function ManageExistingPromptsScreen({ navigation }) {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={closeDeleteModal}
+      >
+        <View style={[promptStyles.promptMgmtModalBackdrop, { justifyContent: "center", paddingTop: 0 }]}>
+          <View style={[promptStyles.promptMgmtModalCard, { maxWidth: 400, maxHeight: undefined }]}>
+            <Text style={promptStyles.promptMgmtModalTitle}>Delete prompt?</Text>
+            <Text style={promptStyles.promptMgmtModalMessage}>
+              Are you sure you want to delete this prompt? This cannot be undone.
+            </Text>
+            {pendingDelete?.title ? (
+              <Text style={[promptStyles.promptMgmtModalMessage, { fontWeight: "600", color: ui.colors.text }]}>
+                {String(pendingDelete.title).trim() || "Untitled"}
+              </Text>
+            ) : null}
+            <View style={promptStyles.promptMgmtModalActions}>
+              <TouchableOpacity
+                style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnSecondary]}
+                onPress={closeDeleteModal}
+                disabled={deletingPrompt}
+              >
+                <Text style={promptStyles.promptMgmtModalBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnDanger]}
+                onPress={runConfirmedDelete}
+                disabled={deletingPrompt}
+              >
+                {deletingPrompt ? (
+                  <ActivityIndicator color={ui.colors.text} />
+                ) : (
+                  <Text style={[promptStyles.promptMgmtModalBtnText, { color: "#FCA5A5" }]}>Delete</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
     </View>
   );
