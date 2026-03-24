@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Dimensions,
   ActivityIndicator,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { promptStyles } from "../styles/promptStyles";
@@ -18,8 +18,6 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import { usePromptSelectionScreen } from "../hooks/usePromptSelectionScreen";
 import { getPortalGlowSize } from "../utils/promptSelectionHelpers";
 import { goBackOrHome } from "../utils/navigationHelpers";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function PromptSelectionScreen({ route, navigation }) {
   const {
@@ -40,6 +38,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
     getEmoji,
   } = usePromptSelectionScreen({ route, navigation });
 
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const glow = getPortalGlowSize(prompts.length);
   const current = prompts[currentIndex];
 
@@ -57,7 +56,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
         </View>
       </View>
 
-      <BackgroundParticles width={SCREEN_WIDTH} height={SCREEN_HEIGHT} />
+      <BackgroundParticles width={windowWidth} height={windowHeight} />
 
       <View style={promptStyles.promptMainColumn}>
       <View style={promptStyles.promptCarouselWrap}>
@@ -127,7 +126,7 @@ export default function PromptSelectionScreen({ route, navigation }) {
         {prompts.length > 0 && Platform.OS !== "web" && (
           <PromptThumbnailWheel
             prompts={prompts}
-            screenWidth={SCREEN_WIDTH}
+            screenWidth={windowWidth}
             scrollRef={wheelScrollRef}
             currentIndex={currentIndex}
             selectedId={selectedId}

@@ -1,6 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import {View,Text,Pressable,Animated,Dimensions,StyleSheet,ActivityIndicator,Modal} from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Animated,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+  Platform,
+  useWindowDimensions,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileMenuButton from "../components/ProfileMenuButton";
@@ -13,6 +23,7 @@ import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { signOut, getStoredUser, isUserAdmin } from "../services/authServices";
 import { fetchCurrentUser } from "../services/userServices";
 import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
+import { getWebHomeScale } from "../utils/webLayout";
 
 const ROCKET_SIZE = 118;
 
@@ -34,7 +45,11 @@ export default function HomeScreen({ navigation }) {
     }));
   }, []);
 
-  const { width: windowWidth, height } = Dimensions.get("window");
+  const { width: windowWidth, height } = useWindowDimensions();
+  const webHomeScale = getWebHomeScale(windowWidth, height);
+  const needsWebScale = Platform.OS === "web" && webHomeScale < 1;
+  const canvasW = needsWebScale ? windowWidth / webHomeScale : windowWidth;
+  const canvasH = needsWebScale ? height / webHomeScale : height;
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -140,11 +155,11 @@ export default function HomeScreen({ navigation }) {
       onUploadEnd: () => setIsUploading(false),
     });
 
-  const BUTTONS_TOP = height / 2 + ROCKET_SIZE / 2 + 24 + 40;
+  const BUTTONS_TOP = canvasH / 2 + ROCKET_SIZE / 2 + 24 + 40;
 
-  return (
-    <View style={homeStyles.homeRoot}>
-      <BackgroundParticles width={windowWidth} height={height} />
+  const mainContent = (
+    <>
+      <BackgroundParticles width={canvasW} height={canvasH} />
       {isUploading && (
         <Modal visible transparent animationType="fade">
           <View style={homeStyles.uploadOverlay}>
@@ -249,6 +264,27 @@ export default function HomeScreen({ navigation }) {
           </>
         )}
       </View>
+    </>
+  );
+
+  return (
+    <View style={homeStyles.homeRoot}>
+      {needsWebScale ? (
+        <View style={{ flex: 1, width: windowWidth, overflow: "hidden" }}>
+          <View
+            style={{
+              width: canvasW,
+              height: canvasH,
+              transform: [{ scale: webHomeScale }],
+              transformOrigin: "top center",
+            }}
+          >
+            {mainContent}
+          </View>
+        </View>
+      ) : (
+        mainContent
+      )}
     </View>
   );
 }
