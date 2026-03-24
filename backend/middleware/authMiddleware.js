@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { pool } from "../data/dbconnection.js";
 
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization;
@@ -24,5 +25,18 @@ export function requireAuth(req, res, next) {
     next();
   } catch {
     return res.status(401).json({ message: "Invalid or expired token" });
+  }
+}
+
+export async function requireAdmin(req, res, next) {
+  try {
+    const { rows } = await pool.query("SELECT role FROM users WHERE uid = $1", [req.user.uid]);
+    if (rows[0]?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    next();
+  } catch (err) {
+    console.error("requireAdmin:", err);
+    return res.status(500).json({ message: "Authorization check failed" });
   }
 }
