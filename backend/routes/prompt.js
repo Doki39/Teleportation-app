@@ -96,4 +96,17 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+router.delete("/:id", requireAuth, requireAdmin, async (req,res) => {
+  try{
+
+    const { id } = req.params;
+    
+    await pool.query("DELETE FROM prompt_selection WHERE id = $1", [Number(id)]);
+
+  } catch (err){
+  console.error(err);
+  res.status(500).json({message: err.message || "Failed to delete prompt"})
+  }
+});
+
 export default router;
