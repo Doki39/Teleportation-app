@@ -15,22 +15,25 @@ fs.mkdirSync(path.join(UPLOADS_DIR, "unprocessed"), { recursive: true });
 const PORT = process.env.PORT || 10000;
 const app = express();
 
-app.get("/", (_req, res) => res.send("Server is live!"));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+function corsOriginFromEnv() {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw || raw === "*") return true;
+  const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return true;
+  return parts.length === 1 ? parts[0] : parts;
+}
 
-
-app.use(cors());
+app.use(
+  cors({
+    origin: corsOriginFromEnv(),
+  })
+);
 app.use(express.json());
 
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-import authRoutes from "./routes/auth.js";
-import photoRoutes from "./routes/photos.js";
-import promptRoutes from "./routes/prompt.js";
-import userRoutes from "./routes/users.js";
+app.get("/", (_req, res) => res.send("Server is live!"));
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
@@ -44,4 +47,8 @@ app.get("/api/db-health", async (_req, res) => {
     console.error("DB health check failed:", err);
     res.status(500).json({ ok: false, error: err.message });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
