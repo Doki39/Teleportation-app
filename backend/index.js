@@ -12,9 +12,10 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 fs.mkdirSync(path.join(UPLOADS_DIR, "processed"), { recursive: true });
 fs.mkdirSync(path.join(UPLOADS_DIR, "unprocessed"), { recursive: true });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const app = express();
 
+app.get("/", (_req, res) => res.send("Server is live!"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
