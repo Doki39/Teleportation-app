@@ -19,14 +19,10 @@ export async function uploadPhotoToDrive({ uri, file }) {
 }
 
 export async function generatePromptPreview({ imageUrl, modifyText }) {
-  const token = await AsyncStorage.getItem("token");
-  if (!token) throw new Error("Not logged in");
+  const headers = await getJsonAuthHeaders();
   const response = await fetch(`${API_BASE_URL}/api/photos/generate-preview`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({ imageUrl, modifyText }),
   });
   if (!response.ok) {
