@@ -138,11 +138,6 @@ export async function generatePicture(imageUrl, modifyText) {
     throw new Error("NANOBANANA_API_KEY is not set in environment");
   }
 
-  const callbackUrl = process.env.NANOBANANA_CALLBACK_URL;
-  if (!callbackUrl) {
-    throw new Error("NANOBANANA_CALLBACK_URL is not set in environment");
-  }
-
   const prompt = buildNanoBananaPrompt(modifyText);
   const taskId = await generateImage(apiKey, imageUrl, prompt);
 
