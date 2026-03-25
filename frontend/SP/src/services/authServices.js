@@ -3,6 +3,15 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { Alert } from "react-native";
 
+function formatApiValidationErrors(data) {
+  const errs = data?.errors;
+  if (Array.isArray(errs) && errs.length > 0) {
+    const lines = errs.map((e) => e?.msg || e?.message || JSON.stringify(e)).filter(Boolean);
+    if (lines.length) return lines.join("\n");
+  }
+  return data?.message || null;
+}
+
 export function isUserAdmin(user) {
   const r = user?.role ?? user?.roles;
   return r === "admin";
@@ -49,12 +58,15 @@ export const handleRegistration = async ({
       navigation.replace("Home");
       return { success: true };
     }
-    Alert.alert("Registration failed", res.data.message || "Something went wrong");
-    return { success: false };
+    const failMsg = formatApiValidationErrors(res.data) || "Something went wrong";
+    Alert.alert("Registration failed", failMsg);
+    return { success: false, error: failMsg };
   } catch (err) {
-    const message = err.response?.data?.message || "Something went wrong";
+    const data = err.response?.data;
+    const message =
+      formatApiValidationErrors(data) || data?.message || err.message || "Something went wrong";
     Alert.alert("Registration failed", message);
-    return { success: false };
+    return { success: false, error: message };
   }
 };
 
@@ -81,10 +93,7 @@ export const handleLogin = async ({ email, password, navigation }) => {
   } catch (err) {
     const data = err.response?.data;
     const message =
-      data?.message ||
-      (data?.errors?.length ? data.errors.map((e) => e.msg).join("\n") : null) ||
-      err.message ||
-      "Something went wrong";
+      formatApiValidationErrors(data) || data?.message || err.message || "Something went wrong";
     Alert.alert("Login Failed", message);
   }
 };
