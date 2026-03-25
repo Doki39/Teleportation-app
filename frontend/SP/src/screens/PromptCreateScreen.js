@@ -113,9 +113,8 @@ export default function PromptCreateScreen({ navigation }) {
         prompt: p,
         image_url: generatedUri.trim(),
       });
-      Alert.alert("Saved", "New destination prompt was added.", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      resetCreateForm();
+      Alert.alert("Saved", "New destination prompt was added.");
     } catch (e) {
       Alert.alert("Save failed", formatApiError(e));
     } finally {
