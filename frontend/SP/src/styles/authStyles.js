@@ -39,6 +39,9 @@ export const authStyles = StyleSheet.create({
     backgroundColor: ui.colors.primary,
     marginTop: 8,
   },
+  authPrimaryButtonDisabled: {
+    opacity: 0.65,
+  },
   authPrimaryButtonText: {
     color: "#fff",
     fontSize: 16,

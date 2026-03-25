@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { authStyles } from "../styles/authStyles";
 import { ui } from "../theme/ui";
 import { handleRegistration } from "../services/authServices";
@@ -12,20 +21,27 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const onRegister = async () => {
+    if (submitting) return;
     setError("");
-    const result = await handleRegistration({
-      first_name,
-      last_name,
-      email,
-      phone_number,
-      password,
-      confirmPassword,
-      navigation,
-    });
-    if (!result.success && result.error) {
-      setError(result.error);
+    setSubmitting(true);
+    try {
+      const result = await handleRegistration({
+        first_name,
+        last_name,
+        email,
+        phone_number,
+        password,
+        confirmPassword,
+        navigation,
+      });
+      if (!result.success && result.error) {
+        setError(result.error);
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
   
@@ -44,6 +60,7 @@ export default function RegisterScreen({ navigation }) {
                 style={authStyles.authInput}
                 value={first_name}
                 onChangeText={setFirst_name}
+                editable={!submitting}
               />
             </View>
 
@@ -55,6 +72,7 @@ export default function RegisterScreen({ navigation }) {
                 style={authStyles.authInput}
                 value={last_name}
                 onChangeText={setLast_name}
+                editable={!submitting}
               />
             </View>
 
@@ -68,6 +86,7 @@ export default function RegisterScreen({ navigation }) {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                editable={!submitting}
               />
             </View>
 
@@ -80,6 +99,7 @@ export default function RegisterScreen({ navigation }) {
                 value={phone_number}
                 onChangeText={setPhone_number}
                 keyboardType="phone-pad"
+                editable={!submitting}
               />
             </View>
 
@@ -94,6 +114,7 @@ export default function RegisterScreen({ navigation }) {
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                editable={!submitting}
               />
             </View>
 
@@ -106,14 +127,27 @@ export default function RegisterScreen({ navigation }) {
                 secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
+                editable={!submitting}
               />
             </View>
 
-            <TouchableOpacity style={authStyles.authPrimaryButton} onPress={onRegister}>
-              <Text style={authStyles.authPrimaryButtonText}>Register</Text>
+            <TouchableOpacity
+              style={[authStyles.authPrimaryButton, submitting && authStyles.authPrimaryButtonDisabled]}
+              onPress={onRegister}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={authStyles.authPrimaryButtonText}>Register</Text>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={authStyles.authSecondaryButton} onPress={() => navigation.replace("Login")}>
+            <TouchableOpacity
+              style={authStyles.authSecondaryButton}
+              onPress={() => navigation.replace("Login")}
+              disabled={submitting}
+            >
               <Text style={authStyles.authSecondaryButtonText}>Already have an account?</Text>
             </TouchableOpacity>
           </View>

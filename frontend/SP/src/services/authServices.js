@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
 import { Alert } from "react-native";
+import { API_BASE_URL } from "../config/api";
 
 function formatApiValidationErrors(data) {
   const errs = data?.errors;
@@ -59,13 +59,11 @@ export const handleRegistration = async ({
       return { success: true };
     }
     const failMsg = formatApiValidationErrors(res.data) || "Something went wrong";
-    Alert.alert("Registration failed", failMsg);
     return { success: false, error: failMsg };
   } catch (err) {
     const data = err.response?.data;
     const message =
       formatApiValidationErrors(data) || data?.message || err.message || "Something went wrong";
-    Alert.alert("Registration failed", message);
     return { success: false, error: message };
   }
 };

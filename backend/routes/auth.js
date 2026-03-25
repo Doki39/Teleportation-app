@@ -67,6 +67,18 @@ router.post(
       return res.status(201).json({ message: "User registered!", token, user });
     } catch (err) {
       console.error("Error inserting user:", err);
+      if (err.code === "23505") {
+        const c = String(err.constraint || "");
+        if (c.includes("email")) {
+          return res.status(409).json({ message: "Email already registered" });
+        }
+        if (c.includes("phone")) {
+          return res.status(409).json({ message: "Phone number already registered" });
+        }
+        return res.status(409).json({
+          message: "An account with this email or phone already exists.",
+        });
+      }
       return res.status(500).json({ message: "Registration failed" });
     }
   }
