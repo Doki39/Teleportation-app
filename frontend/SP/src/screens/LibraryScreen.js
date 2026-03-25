@@ -12,10 +12,10 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
-import ProfileMenuButton from "../components/ProfileMenuButton";
+import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
 import ImagePreviewModal from "../components/ImagePreviewModal";
+import HeaderBackButton from "../components/HeaderBackButton";
 import { getGeneratedPhotos } from "../services/libraryServices";
-import { signOut } from "../services/authServices";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
@@ -105,17 +105,13 @@ export default function LibraryScreen({ navigation }) {
     <View style={libraryStyles.libraryScreen}>
       <BackgroundParticles width={windowWidth} height={windowHeight} />
 
-      <ProfileMenuButton showLogout={loggedIn} onLogout={() => signOut({ navigation })} />
+      <ConnectedProfileMenuButton showLogout={loggedIn} />
 
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity
-          style={promptStyles.promptBackBtn}
+        <HeaderBackButton
           onPress={() => goBackOrHome(navigation)}
-          accessibilityRole="button"
           accessibilityLabel="Back to home"
-        >
-          <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
-        </TouchableOpacity>
+        />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Library</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Tap a photo to preview or download</Text>

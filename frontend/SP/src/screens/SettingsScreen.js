@@ -6,6 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BackgroundParticles from "../components/BackgroundParticles";
+import HeaderBackButton from "../components/HeaderBackButton";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { authStyles } from "../styles/authStyles";
@@ -154,14 +155,7 @@ export default function SettingsScreen({ navigation }) {
       <BackgroundParticles width={width} height={height} />
 
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity
-          style={promptStyles.promptBackBtn}
-          onPress={() => goBackOrHome(navigation)}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
-        </TouchableOpacity>
+        <HeaderBackButton onPress={() => goBackOrHome(navigation)} />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Settings</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Profile & account</Text>

@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, TouchableOpacity, useWindowDimensions, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
+import HeaderBackButton from "../components/HeaderBackButton";
+import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
@@ -24,15 +26,10 @@ export default function PromptManagementScreen({ navigation }) {
     <View style={libraryStyles.libraryScreen}>
       <BackgroundParticles width={width} height={height} />
 
+      <ConnectedProfileMenuButton />
+
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity
-          style={promptStyles.promptBackBtn}
-          onPress={() => goBackOrHome(navigation)}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
-        </TouchableOpacity>
+        <HeaderBackButton onPress={() => goBackOrHome(navigation)} />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Prompt management</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Admin</Text>

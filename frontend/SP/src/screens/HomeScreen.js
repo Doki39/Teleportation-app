@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import ProfileMenuButton from "../components/ProfileMenuButton";
+import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
 import RocketButton from "../components/RocketButton";
 import BackgroundParticles from "../components/BackgroundParticles";
 import SlideShow from "../components/SlideShow";
@@ -203,7 +203,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      <ProfileMenuButton showLogout={loggedIn} onLogout={() => signOut({ setLoggedIn })} />
+      <ConnectedProfileMenuButton showLogout={loggedIn} setLoggedIn={setLoggedIn} replaceToHomeOnLogout={false} />
 
       {loggedIn && (
         <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>

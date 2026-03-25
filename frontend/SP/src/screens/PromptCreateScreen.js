@@ -16,6 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackgroundParticles from "../components/BackgroundParticles";
+import HeaderBackButton from "../components/HeaderBackButton";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
@@ -138,14 +139,7 @@ export default function PromptCreateScreen({ navigation }) {
       <BackgroundParticles width={width} height={height} />
 
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity
-          style={promptStyles.promptBackBtn}
-          onPress={() => goBackOrHome(navigation)}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
-        </TouchableOpacity>
+        <HeaderBackButton onPress={() => goBackOrHome(navigation)} />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Create prompt</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Upload, generate, confirm</Text>

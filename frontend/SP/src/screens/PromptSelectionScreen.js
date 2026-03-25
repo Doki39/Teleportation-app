@@ -10,8 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
-import ProfileMenuButton from "../components/ProfileMenuButton";
-import { signOut } from "../services/authServices";
+import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
+import HeaderBackButton from "../components/HeaderBackButton";
 import Cylinder3D from "../components/Cylinder3D";
 import PromptThumbnailWheel from "../components/PromptThumbnailWheel";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -46,12 +46,10 @@ export default function PromptSelectionScreen({ route, navigation }) {
 
   return (
     <View style={promptStyles.promptScreen}>
-      <ProfileMenuButton onLogout={() => signOut({ navigation })} />
+      <ConnectedProfileMenuButton />
 
       <View style={promptStyles.promptHeader}>
-        <TouchableOpacity style={promptStyles.promptBackBtn} onPress={() => goBackOrHome(navigation)}>
-          <Ionicons name="arrow-back" size={20} color={ui.colors.muted} />
-        </TouchableOpacity>
+        <HeaderBackButton onPress={() => goBackOrHome(navigation)} />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Select Destination</Text>
           <Text style={promptStyles.promptHeaderSubtitle}>Spin the portal wheel to choose</Text>
