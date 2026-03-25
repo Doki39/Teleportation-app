@@ -12,8 +12,15 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 fs.mkdirSync(path.join(UPLOADS_DIR, "processed"), { recursive: true });
 fs.mkdirSync(path.join(UPLOADS_DIR, "unprocessed"), { recursive: true });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const app = express();
+
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+
 app.use(cors());
 app.use(express.json());
 
@@ -28,9 +35,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/prompts", promptRoutes);
-
-app.listen(PORT, () => console.log("Server running on port " + PORT));
-
 app.get("/api/db-health", async (_req, res) => {
   try {
     const { rows } = await pool.query("SELECT 1 AS ok");
