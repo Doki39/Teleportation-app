@@ -149,7 +149,8 @@ router.post("/generate", requireAuth, async (req, res) => {
       return res.status(400).json({ message: "Prompt not found or Modify text is empty" });
     }
 
-    const base64 = await generatePicture(imageUrl, modifyText);
+    const absoluteInput = toAbsoluteImageUrl(imageUrl, req);
+    const base64 = await generatePicture(absoluteInput, modifyText);
     const processedBuffer = Buffer.from(base64, "base64");
     const processedUri = await uploadBufferToDrive(processedBuffer, {
       filename: `generated-${nanoid()}.jpg`,

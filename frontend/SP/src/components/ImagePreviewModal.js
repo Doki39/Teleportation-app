@@ -62,7 +62,7 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
   const maxW = width - EDGE * 2;
   const maxH = Math.max(
     180,
-    usableH - TOOLBAR_APPROX - GAP
+    usableH - TOOLBAR_APPROX - IMAGE_PREVIEW_MODAL_TOOLBAR_GAP
   );
 
   return (

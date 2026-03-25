@@ -5,6 +5,10 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { pool } from "./data/dbconnection.js";
+import userRoutes from "./routes/users.js";
+import authRoutes from "./routes/auth.js";
+import photoRoutes from "./routes/photos.js";
+import promptRoutes from "./routes/prompt.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "uploads");

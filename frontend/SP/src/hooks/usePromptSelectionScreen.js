@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Platform } from "react-native";
+import { CommonActions } from "@react-navigation/native";
+import { Alert, InteractionManager, Platform } from "react-native";
 import {
   PROMPT_WHEEL_ITEM_GAP,
   PROMPT_WHEEL_ITEM_SIZE,
@@ -70,7 +71,19 @@ export function usePromptSelectionScreen({ route, navigation }) {
     setIsProcessing(true);
     try {
       await sendPhotoToGenerate(imageUrl, selected.id);
-      navigation.replace("Library");
+      const goToLibrary = () => {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Library" }],
+          })
+        );
+      };
+      if (Platform.OS === "web") {
+        setTimeout(goToLibrary, 0);
+      } else {
+        InteractionManager.runAfterInteractions(() => goToLibrary());
+      }
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to generate image.");
     } finally {
