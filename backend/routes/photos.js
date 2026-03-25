@@ -5,10 +5,18 @@ import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
 import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
-import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
+import { requireAuth, requireAdmin, userIsAdmin } from "../middleware/authMiddleware.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
+
+const PHOTOS_UID_PROCESSED_URI_UNIQUE = "photos_uid_processed_uri_unique";
+
+function isPhotosLibraryUniqueViolation(err) {
+  if (err?.code !== "23505") return false;
+  const c = String(err.constraint || "");
+  return c === PHOTOS_UID_PROCESSED_URI_UNIQUE || c.includes("photos_uid_processed_uri");
+}
 
 router.get("/drive-media/:fileId", async (req, res) => {
   try {
@@ -37,11 +45,15 @@ function toAbsoluteImageUrl(imageUrl, req) {
   return `${origin}${pathPart}`;
 }
 
-router.get("/", requireAuth, async (_req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM photos ORDER BY created_at DESC"
-    );
+    const admin = await userIsAdmin(req.user.uid);
+    const { rows } = admin
+      ? await pool.query("SELECT * FROM photos ORDER BY created_at DESC")
+      : await pool.query(
+          "SELECT * FROM photos WHERE uid = $1 ORDER BY created_at DESC",
+          [req.user.uid]
+        );
     return res.json(rows);
   } catch (err) {
     console.error(err);
@@ -166,6 +178,12 @@ router.post("/generate", requireAuth, async (req, res) => {
 
     return res.status(201).json(inserted[0]);
   } catch (err) {
+    if (isPhotosLibraryUniqueViolation(err)) {
+      return res.status(409).json({
+        message: "This image is already in your library.",
+        code: "PHOTOS_LIBRARY_DUPLICATE",
+      });
+    }
     console.error(err);
     res.status(500).json({ error: err.message });
   }

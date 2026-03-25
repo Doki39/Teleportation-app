@@ -6,6 +6,17 @@ const router = express.Router();
 
 const PATCHABLE = ["title", "prompt", "image_url"];
 
+function uniqueViolationMessage(err) {
+  const c = err?.constraint || "";
+  if (c.includes("image_url")) {
+    return "This image is already used for another destination. Use a different preview image.";
+  }
+  if (c.includes("title_prompt")) {
+    return "A destination with this title and the same prompt text already exists.";
+  }
+  return "That combination already exists. Change the title, prompt, or image.";
+}
+
 router.post("/", requireAuth, requireAdmin, async (req, res) => {
   try {
     const title = String(req.body?.title ?? "").trim() || "Untitled";
@@ -28,10 +39,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
     return res.status(201).json({ prompt: rows[0] });
   } catch (err) {
     if (err.code === "23505") {
-      return res.status(409).json({
-        message:
-          "This prompt already exists (same title, text, and image). Change something or use Manage prompts.",
-      });
+      return res.status(409).json({ message: uniqueViolationMessage(err) });
     }
     console.error(err);
     res.status(500).json({ message: err.message || "Failed to create prompt" });
@@ -91,6 +99,9 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res) => {
     }
     return res.json({ prompt: rows[0] });
   } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ message: uniqueViolationMessage(err) });
+    }
     console.error(err);
     res.status(500).json({ message: err.message || "Failed to update prompt" });
   }

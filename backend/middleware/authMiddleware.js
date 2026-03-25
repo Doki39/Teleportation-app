@@ -28,10 +28,14 @@ export function requireAuth(req, res, next) {
   }
 }
 
+export async function userIsAdmin(uid) {
+  const { rows } = await pool.query("SELECT role FROM users WHERE uid = $1", [uid]);
+  return rows[0]?.role === "admin";
+}
+
 export async function requireAdmin(req, res, next) {
   try {
-    const { rows } = await pool.query("SELECT role FROM users WHERE uid = $1", [req.user.uid]);
-    if (rows[0]?.role !== "admin") {
+    if (!(await userIsAdmin(req.user.uid))) {
       return res.status(403).json({ message: "Admin access required" });
     }
     next();
