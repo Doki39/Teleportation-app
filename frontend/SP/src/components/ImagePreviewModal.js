@@ -15,12 +15,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  imagePreviewModalStyles,
+  IMAGE_PREVIEW_MODAL_TOOLBAR_GAP,
+} from "../styles/imagePreviewModalStyles";
 import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { saveRemoteImage, shareRemoteImage } from "../utils/saveRemoteImage";
 
 const TOOLBAR_APPROX = 56;
-const GAP = 12;
 const EDGE = 12;
 
 export default function ImagePreviewModal({ visible, imageUri, onClose, fileName }) {
@@ -66,7 +69,7 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
         style={[
-          styles.root,
+          imagePreviewModalStyles.root,
           {
             paddingTop: topPad,
             paddingBottom: bottomPad,
@@ -81,10 +84,12 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
           accessibilityLabel="Close preview"
         />
 
-        <View style={[styles.card, { width: maxW, maxHeight: usableH, pointerEvents: "box-none" }]}>
-          <View style={styles.toolbar}>
+        <View
+          style={[imagePreviewModalStyles.card, { width: maxW, maxHeight: usableH, pointerEvents: "box-none" }]}
+        >
+          <View style={imagePreviewModalStyles.toolbar}>
             <TouchableOpacity
-              style={[promptStyles.promptBackBtn, styles.toolBtn]}
+              style={[promptStyles.promptBackBtn, imagePreviewModalStyles.toolBtn]}
               onPress={onClose}
               accessibilityRole="button"
               accessibilityLabel="Close"
@@ -92,9 +97,9 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
               <Ionicons name="close" size={22} color={ui.colors.muted} />
             </TouchableOpacity>
 
-            <View style={styles.toolbarActions}>
+            <View style={imagePreviewModalStyles.toolbarActions}>
               <TouchableOpacity
-                style={[styles.shareBtn, busyAction && styles.actionBtnBusy]}
+                style={[imagePreviewModalStyles.shareBtn, busyAction && imagePreviewModalStyles.actionBtnBusy]}
                 onPress={handleShare}
                 disabled={!!busyAction || !imageUri}
                 accessibilityRole="button"
@@ -105,7 +110,7 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
                 ) : (
                   <Ionicons name="share-outline" size={20} color={ui.colors.muted} />
                 )}
-                <Text style={styles.shareBtnText}>
+                <Text style={imagePreviewModalStyles.shareBtnText}>
                   {busyAction === "share" ? "Sharing…" : "Share"}
                 </Text>
               </TouchableOpacity>
@@ -113,8 +118,8 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
               <TouchableOpacity
                 style={[
                   promptStyles.promptConfirmBtn,
-                  styles.downloadBtn,
-                  busyAction && styles.actionBtnBusy,
+                  imagePreviewModalStyles.downloadBtn,
+                  busyAction && imagePreviewModalStyles.actionBtnBusy,
                 ]}
                 onPress={handleDownload}
                 disabled={!!busyAction || !imageUri}
@@ -133,11 +138,11 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
             </View>
           </View>
 
-          <View style={styles.imageWrap}>
+          <View style={imagePreviewModalStyles.imageWrap}>
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
-                style={[styles.image, { width: maxW, height: maxH }]}
+                style={[imagePreviewModalStyles.image, { width: maxW, height: maxH }]}
                 resizeMode="contain"
               />
             ) : null}
@@ -147,79 +152,3 @@ export default function ImagePreviewModal({ visible, imageUri, onClose, fileName
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "rgba(5,11,26,0.92)",
-    alignItems: "center",
-  },
-  card: {
-    flex: 1,
-    width: "100%",
-    alignItems: "center",
-    zIndex: 1,
-    minHeight: 0,
-  },
-  imageWrap: {
-    flex: 1,
-    width: "100%",
-    minHeight: 0,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  image: {
-    borderRadius: 16,
-    backgroundColor: ui.colors.glass,
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
-  },
-  toolbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: GAP,
-    flexShrink: 0,
-    flexGrow: 0,
-  },
-  toolBtn: {
-    backgroundColor: ui.colors.glass,
-  },
-  toolbarActions: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginLeft: 12,
-    minWidth: 0,
-  },
-  shareBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: ui.colors.glass,
-    borderWidth: 1,
-    borderColor: ui.colors.glassBorder,
-    minWidth: 0,
-  },
-  shareBtnText: {
-    color: ui.colors.muted,
-    fontWeight: "600",
-    fontSize: 15,
-  },
-  downloadBtn: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 8,
-    minWidth: 0,
-  },
-  actionBtnBusy: {
-    opacity: 0.85,
-  },
-});
