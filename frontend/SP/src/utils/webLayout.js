@@ -7,6 +7,7 @@ const WEB_LAPTOP_MAX_W = 1600;
 const WEB_LAPTOP_MAX_H = 1000;
 const WEB_DYNAMIC_MIN_W = 1024;
 const WEB_DYNAMIC_MAX_W = 1680;
+const WEB_PHONE_MAX_SHORT_EDGE = 600;
 
 function clamp01(v) {
   return Math.max(0, Math.min(1, v));
@@ -21,6 +22,7 @@ function interpolateScale(width, minScale) {
 
 export function getWebHomeScale(width, height) {
   if (Platform.OS !== "web") return 1;
+  if (Math.min(width, height) < WEB_PHONE_MAX_SHORT_EDGE) return 1;
   const compact = width < WEB_HOME_COMPACT_W || height < WEB_HOME_COMPACT_H;
   if (!compact) return 1;
 
@@ -32,6 +34,7 @@ export function getWebHomeScale(width, height) {
 
 export function isWebLaptopViewport(width, height) {
   if (Platform.OS !== "web") return false;
+  if (Math.min(width, height) < WEB_PHONE_MAX_SHORT_EDGE) return false;
   return width <= WEB_LAPTOP_MAX_W && height <= WEB_LAPTOP_MAX_H;
 }
 
