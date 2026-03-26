@@ -5,41 +5,17 @@ import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
 import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
-import { requireAuth, requireAdmin, userIsAdmin } from "../middleware/authMiddleware.js";
+import { requireAuth, requireAdmin, userIsAdmin, requireGenerationQuota } from "../middleware/authMiddleware.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
 const PHOTOS_UID_PROCESSED_URI_UNIQUE = "photos_uid_processed_uri_unique";
 
-const MAX_GENERATIONS_PER_USER = 3;
-
 function isPhotosLibraryUniqueViolation(err) {
   if (err?.code !== "23505") return false;
   const c = String(err.constraint || "");
   return c === PHOTOS_UID_PROCESSED_URI_UNIQUE || c.includes("photos_uid_processed_uri");
-}
-
-async function requireGenerationQuota(req, res, next) {
-  try {
-    if (await userIsAdmin(req.user.uid)) return next();
-    const { rows } = await pool.query(
-      "SELECT COUNT(*)::int AS c FROM photos WHERE uid = $1",
-      [req.user.uid]
-    );
-    const count = rows[0]?.c ?? 0;
-    if (count >= MAX_GENERATIONS_PER_USER) {
-      return res.status(403).json({
-        message:
-          "You have reached the limit of 3 generations for your account. Contact an administrator if you need more.",
-        code: "GENERATION_LIMIT",
-      });
-    }
-    next();
-  } catch (err) {
-    console.error("requireGenerationQuota:", err);
-    return res.status(500).json({ message: "Could not verify generation quota" });
-  }
 }
 
 router.get("/drive-media/:fileId", async (req, res) => {
@@ -96,7 +72,7 @@ router.get("/slides", async (_req, res) => {
 });
 
 
-router.post("/upload", requireAuth, uploadToDrive.single("image"), async (req, res) => {
+router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No photo sent" });
@@ -166,7 +142,7 @@ router.post(
   }
 );
 
-router.post("/generate", requireAuth, requireGenerationQuota, async (req, res) => {
+router.post("/generate", requireAuth, async (req, res) => {
   try {
     const { imageUrl, promptId } = req.body;
     if (!imageUrl) {

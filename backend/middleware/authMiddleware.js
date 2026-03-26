@@ -44,3 +44,27 @@ export async function requireAdmin(req, res, next) {
     return res.status(500).json({ message: "Authorization check failed" });
   }
 }
+
+const MAX_GENERATIONS_PER_USER = 3;
+
+export async function requireGenerationQuota(req, res, next) {
+  try {
+    if (await userIsAdmin(req.user.uid)) return next();
+    const { rows } = await pool.query(
+      "SELECT COUNT(*)::int AS c FROM photos WHERE uid = $1",
+      [req.user.uid]
+    );
+    const count = rows[0]?.c ?? 0;
+    if (count >= MAX_GENERATIONS_PER_USER) {
+      return res.status(403).json({
+        message:
+          "You have reached the limit of 3 generations for your account. Contact an administrator if you need more.",
+        code: "GENERATION_LIMIT",
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("requireGenerationQuota:", err);
+    return res.status(500).json({ message: "Could not verify generation quota" });
+  }
+}
