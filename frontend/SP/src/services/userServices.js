@@ -26,3 +26,11 @@ export async function updateCurrentUser(body) {
   await AsyncStorage.setItem("user", JSON.stringify(user));
   return user;
 }
+
+export async function deleteCurrentUser(password) {
+  const config = await authConfig();
+  await axios.delete(`${API_BASE_URL}/api/users/me`, {
+    ...config,
+    data: { password },
+  });
+}

@@ -1,6 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, useWindowDimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,8 +22,10 @@ import { promptStyles } from "../styles/promptStyles";
 import { authStyles } from "../styles/authStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
-import { fetchCurrentUser, updateCurrentUser } from "../services/userServices";
+import { fetchCurrentUser, updateCurrentUser, deleteCurrentUser } from "../services/userServices";
+import { handleLogout } from "../services/authServices";
 import { formatAxiosError, validateProfileForm } from "../utils/apiErrors";
+import { homeStyles } from "../styles/homeStyles";
 
 const emptyForm = {
   first_name: "",
@@ -41,6 +53,10 @@ export default function SettingsScreen({ navigation }) {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [formError, setFormError] = useState("");
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteModalPassword, setDeleteModalPassword] = useState("");
+  const [deleteModalError, setDeleteModalError] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const successTimerRef = useRef(null);
 
   const showSuccessBanner = useCallback((message) => {
@@ -159,6 +175,49 @@ export default function SettingsScreen({ navigation }) {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openDeleteModal = () => {
+    setDeleteModalPassword("");
+    setDeleteModalError("");
+    setDeleteModalVisible(true);
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingAccount) return;
+    setDeleteModalVisible(false);
+    setDeleteModalPassword("");
+    setDeleteModalError("");
+  };
+
+  const confirmDeleteAccount = async () => {
+    const pwd = deleteModalPassword.trim();
+    if (!pwd) {
+      setDeleteModalError("Enter your password to confirm.");
+      return;
+    }
+    setDeletingAccount(true);
+    setDeleteModalError("");
+    try {
+      await deleteCurrentUser(pwd);
+      await handleLogout();
+      setDeleteModalVisible(false);
+      setDeleteModalPassword("");
+      navigation.replace("Home");
+    } catch (err) {
+      const msg = formatAxiosError(err);
+      if (err.response?.status === 401) {
+        await handleLogout();
+        setDeleteModalVisible(false);
+        Alert.alert("Session expired", "Please log in again.", [
+          { text: "OK", onPress: () => navigation.navigate("Login") },
+        ]);
+      } else {
+        setDeleteModalError(msg);
+      }
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -345,10 +404,81 @@ export default function SettingsScreen({ navigation }) {
                   <Text style={authStyles.authPrimaryButtonText}>Save changes</Text>
                 )}
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={openDeleteModal}
+                disabled={saving || deletingAccount}
+                style={[
+                  authStyles.authPrimaryButton,
+                  homeStyles.logoutBtn,
+                  { marginTop: 12, opacity: saving || deletingAccount ? 0.7 : 1 },
+                ]}
+              >
+                <Text style={[authStyles.authPrimaryButtonText, homeStyles.logoutBtnText]}>Delete account</Text>
+              </TouchableOpacity>
             </>
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={closeDeleteModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <View style={[promptStyles.promptMgmtModalBackdrop, { justifyContent: "center", paddingTop: 0 }]}>
+            <View style={[promptStyles.promptMgmtModalCard, { maxWidth: 400, maxHeight: undefined }]}>
+              <Text style={promptStyles.promptMgmtModalTitle}>Delete account?</Text>
+              <Text style={promptStyles.promptMgmtModalMessage}>
+                Are you sure you want to delete your account? This cannot be undone. Enter your password to confirm.
+              </Text>
+              <Text style={promptStyles.promptMgmtLabel}>Password</Text>
+              <TextInput
+                style={promptStyles.promptMgmtInput}
+                value={deleteModalPassword}
+                onChangeText={(t) => {
+                  setDeleteModalError("");
+                  setDeleteModalPassword(t);
+                }}
+                placeholder="Your password"
+                placeholderTextColor={ui.colors.muted}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!deletingAccount}
+              />
+              {deleteModalError !== "" ? (
+                <Text style={[authStyles.authError, { marginTop: 8, marginBottom: 4 }]}>{deleteModalError}</Text>
+              ) : null}
+              <View style={promptStyles.promptMgmtModalActions}>
+                <TouchableOpacity
+                  style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnSecondary]}
+                  onPress={closeDeleteModal}
+                  disabled={deletingAccount}
+                >
+                  <Text style={promptStyles.promptMgmtModalBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[promptStyles.promptMgmtModalBtn, promptStyles.promptMgmtModalBtnDanger]}
+                  onPress={confirmDeleteAccount}
+                  disabled={deletingAccount}
+                >
+                  {deletingAccount ? (
+                    <ActivityIndicator color="#FCA5A5" />
+                  ) : (
+                    <Text style={[promptStyles.promptMgmtModalBtnText, { color: "#FCA5A5" }]}>Delete</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }

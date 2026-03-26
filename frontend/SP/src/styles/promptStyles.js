@@ -308,6 +308,11 @@ export const promptStyles = StyleSheet.create({
   promptMgmtModalBtnPrimary: {
     backgroundColor: ui.colors.primary,
   },
+  promptMgmtModalBtnDanger: {
+    backgroundColor: "rgba(239,68,68,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.4)",
+  },
   promptMgmtModalBtnText: { ...textBold, fontSize: 15 },
   promptMgmtModalBtnTextLight: { color: "#fff", fontWeight: "600" },
   promptMgmtChangeImageBtn: {
