@@ -4,51 +4,6 @@ dotenv.config();
 
 const BASE_URL = "https://api.nanobananaapi.ai/api/v1/nanobanana";
 
-const STATIC_IMAGE_RULES = `
-Use the reference image as the base composition.
-
-Preserve:
-- subject identity and facial features (STRICT)
-- subject pose and body position
-- camera angle and framing
-
-STRICT PRESERVE:
-- subject identity must remain exactly the same
-- do not change face, facial features, or expression
-- do not alter skin tone, hairstyle, or facial structure
-- keep original face details exactly as in the reference image
-- preserve facial texture and micro-details
-- no beautification, no stylization, no face retouching
-- replace the background so the subject appears in: [Modify]
-- integrate the subject naturally into the environment
-
-Lighting & Integration (CRITICAL):
-- adapt lighting on the subject to match the environment realistically
-- match color temperature between subject and environment
-- adjust exposure and brightness to fit the scene
-- ensure shadows fall naturally according to the scene lighting
-- maintain realistic highlights and contrast
-- avoid cut-out or pasted appearance
-
-Environment:
-- [INSERT ENVIRONMENT DETAILS: time of day, weather, objects, atmosphere]
-- ensure realistic perspective and correct scale of all elements
-- include natural depth of field (subject sharp, background slightly blended if needed)
-
-Quality:
-- photorealistic travel photo
-- high detail
-- natural colors
-- no artificial or overprocessed look`;
-
-function buildNanoBananaPrompt(modifyText) {
-  const modify = String(modifyText ?? "").trim();
-  if (!modify) {
-    throw new Error("Modify prompt from database is empty");
-  }
-  return `${STATIC_IMAGE_RULES}\n\nModify:\n${modify}`;
-}
-
 async function generateImage(apiKey, imageUrl, prompt) {
   const response = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
@@ -99,7 +54,7 @@ async function getTaskStatus(apiKey, taskId) {
     return JSON.parse(text);
   } catch {
     throw new Error(
-      `NanoBanana getTaskStatus non-JSON response (status ${response.status}): ${text.slice(0,200)}`
+      `NanoBanana getTaskStatus non-JSON response (status ${response.status}): ${text.slice(0, 200)}`
     );
   }
 }
@@ -138,7 +93,10 @@ export async function generatePicture(imageUrl, modifyText) {
     throw new Error("NANOBANANA_API_KEY is not set in environment");
   }
 
-  const prompt = buildNanoBananaPrompt(modifyText);
+  const prompt = String(modifyText ?? "").trim();
+  if (!prompt) {
+    throw new Error("Prompt is empty");
+  }
   const taskId = await generateImage(apiKey, imageUrl, prompt);
 
   const result = await waitForCompletion(apiKey, taskId);
