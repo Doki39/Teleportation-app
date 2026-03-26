@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
 import { requireAuth } from "../middleware/authMiddleware.js";
-import { patchUser, findUserByUid, findUserPasswordHashByUid, emailTakenByOtherUser, phoneTakenByOtherUser } from "../services/userService.js";
+import { patchUser, findUserByUid, findUserPasswordHashByUid, emailTakenByOtherUser, phoneTakenByOtherUser, deleteUser } from "../services/userService.js"; 
 
 const router = express.Router();
 
@@ -54,7 +54,46 @@ const patchValidators = [
       if (taken) throw new Error("Phone number already in use");
     }),
 ];
+router.delete(
+  "/me",
+  requireAuth,
+  body("password").notEmpty().withMessage("Password is required").isString(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
+    const uid = req.user.uid;
+
+    try {
+      const existing = await findUserByUid(uid);
+      if (!existing) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const passwordHash = await findUserPasswordHashByUid(uid);
+      if (!passwordHash) {
+        return res.status(500).json({ message: "Could not verify account" });
+      }
+
+      const passwordOk = await bcrypt.compare(req.body.password, passwordHash);
+      if (!passwordOk) {
+        return res.status(403).json({ message: "Invalid password" });
+      }
+
+      const deleted = await deleteUser(uid);
+      if (!deleted) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(204).send();
+    } catch (err) {
+      console.error("DELETE /users/me:", err);
+      return res.status(500).json({ message: "Failed to delete account" });
+    }
+  }
+);
 router.patch("/me", requireAuth, patchValidators, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

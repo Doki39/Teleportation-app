@@ -1,13 +1,18 @@
 import { pool } from "../data/dbconnection.js";
 
+export async function deleteUser(uid) {
+  const result = await pool.query(`DELETE FROM users WHERE uid = $1`, [uid]);
+  return result.rowCount > 0;
+}
+
 export async function findUserByEmail(email) {
-  const { rows } = await pool.query(
+  const result = await pool.query(
     `SELECT uid, email, password_hash, first_name, last_name, phone_number,
             COALESCE(role, 'user') AS role
      FROM users WHERE email = $1`,
     [email]
   );
-  return rows[0] ?? null;
+  return result.rowCount > 0; 
 }
 
 export async function findUserByUid(uid) {
