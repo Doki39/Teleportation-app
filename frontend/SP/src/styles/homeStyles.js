@@ -17,6 +17,40 @@ export const homeStyles = StyleSheet.create({
   uploadText: { ...textBold, fontSize: 18, marginTop: 20 },
   uploadSubtext: { ...textMuted, marginTop: 8 },
 
+  generationLimitIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(124, 58, 237, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  generationLimitTitle: {
+    ...textBold,
+    fontSize: 20,
+    marginBottom: 12,
+    color: ui.colors.text,
+    textAlign: "center",
+  },
+  generationLimitBody: {
+    ...textMuted,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  generationLimitClose: {
+    backgroundColor: ui.colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    alignSelf: "stretch",
+  },
+  generationLimitCloseText: { ...textBold, fontSize: 15, color: "#fff" },
+
   homeRoot: {
     flex: 1,
     backgroundColor: ui.colors.background,

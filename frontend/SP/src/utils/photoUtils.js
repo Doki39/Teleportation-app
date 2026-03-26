@@ -3,7 +3,11 @@ import { Platform, Alert } from "react-native";
 import { uploadPhotoToDrive } from "../services/photoServices";
 import { API_BASE_URL } from "../config/api";
 
-export async function handlePhotoFlow(getPayload, navigation, { onUploadStart, onUploadEnd } = {}) {
+export async function handlePhotoFlow(
+  getPayload,
+  navigation,
+  { onUploadStart, onUploadEnd, onGenerationLimit } = {}
+) {
   try {
     const payload = await getPayload();
     if (!payload) return;
@@ -20,7 +24,16 @@ export async function handlePhotoFlow(getPayload, navigation, { onUploadStart, o
   } catch (err) {
     onUploadEnd?.();
     console.log(err);
-    Alert.alert("Error", err.message);
+    if (err.code === "GENERATION_LIMIT") {
+      if (onGenerationLimit) {
+        onGenerationLimit(err.message);
+      } else {
+        Alert.alert("Generation limit reached", err.message || "You cannot create more generations.");
+      }
+      return;
+    }
+    const msg = err.message || "Something went wrong.";
+    Alert.alert("Error", msg);
   }
 }
 

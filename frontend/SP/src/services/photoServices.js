@@ -7,8 +7,16 @@ function throwFromFailedResponse(status, text) {
   if (trimmed) {
     try {
       const data = JSON.parse(trimmed);
-      if (data?.message) throw new Error(String(data.message));
-      if (typeof data?.error === "string") throw new Error(data.error);
+      if (data?.message) {
+        const err = new Error(String(data.message));
+        if (data.code) err.code = data.code;
+        throw err;
+      }
+      if (typeof data?.error === "string") {
+        const err = new Error(data.error);
+        if (data.code) err.code = data.code;
+        throw err;
+      }
     } catch (e) {
       if (!(e instanceof SyntaxError)) throw e;
     }
@@ -24,12 +32,11 @@ export async function uploadPhotoToDrive({ uri, file }) {
     headers,
     body: formData,
   });
+  const text = await response.text();
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Server responded with ${response.status}: ${text}`);
+    throwFromFailedResponse(response.status, text);
   }
-  const data = await response.json();
-  return data;
+  return text ? JSON.parse(text) : {};
 }
 
 export async function generatePromptPreview({ imageUrl, modifyText }) {

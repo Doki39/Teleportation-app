@@ -31,6 +31,8 @@ export default function HomeScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [generationLimitModalVisible, setGenerationLimitModalVisible] = useState(false);
+  const [generationLimitMessage, setGenerationLimitMessage] = useState("");
   const portalSpin = useRef(new Animated.Value(0)).current;
   const portalReverseSpin = useRef(new Animated.Value(0)).current;
   const portalPulse = useRef(new Animated.Value(0)).current;
@@ -146,16 +148,17 @@ export default function HomeScreen({ navigation }) {
   const pulseOpacity = portalPulse.interpolate({ inputRange: [0, 1], outputRange: [0.22, 0.55] });
   const driftX = portalDrift.interpolate({ inputRange: [0, 1], outputRange: [-12, 12] });
 
-  const handleUpload = () =>
-    handlePhotoFlow(openLibrary, navigation, {
-      onUploadStart: () => setIsUploading(true),
-      onUploadEnd: () => setIsUploading(false),
-    });
-  const handleCamera = () =>
-    handlePhotoFlow(openCamera, navigation, {
-      onUploadStart: () => setIsUploading(true),
-      onUploadEnd: () => setIsUploading(false),
-    });
+  const photoFlowOptions = {
+    onUploadStart: () => setIsUploading(true),
+    onUploadEnd: () => setIsUploading(false),
+    onGenerationLimit: (message) => {
+      setGenerationLimitMessage(typeof message === "string" ? message.trim() : "");
+      setGenerationLimitModalVisible(true);
+    },
+  };
+
+  const handleUpload = () => handlePhotoFlow(openLibrary, navigation, photoFlowOptions);
+  const handleCamera = () => handlePhotoFlow(openCamera, navigation, photoFlowOptions);
 
   const BUTTONS_TOP = canvasH / 2 + ROCKET_SIZE / 2 + 24 + 40;
 
@@ -173,6 +176,39 @@ export default function HomeScreen({ navigation }) {
           </View>
         </Modal>
       )}
+      <Modal
+        visible={generationLimitModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setGenerationLimitModalVisible(false);
+          setGenerationLimitMessage("");
+        }}
+      >
+        <View style={homeStyles.uploadOverlay}>
+          <View style={[homeStyles.uploadCard, { maxWidth: 340 }]}>
+            <View style={homeStyles.generationLimitIconWrap}>
+              <Ionicons name="alert-circle" size={32} color={ui.colors.primary} />
+            </View>
+            <Text style={homeStyles.generationLimitTitle}>Maximum generations reached</Text>
+            <Text style={homeStyles.generationLimitBody}>
+              {generationLimitMessage ||
+                "You have used all generations available for your account (3). Contact an administrator if you need more."}
+            </Text>
+            <Pressable
+              style={homeStyles.generationLimitClose}
+              onPress={() => {
+                setGenerationLimitModalVisible(false);
+                setGenerationLimitMessage("");
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <Text style={homeStyles.generationLimitCloseText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View style={[StyleSheet.absoluteFill, { zIndex: 1, pointerEvents: "none" }]}>
         <View style={[homeStyles.portalStage, portalScale !== 1 && { transform: [{ scale: portalScale }] }]}>
           <Animated.View style={[homeStyles.portalAura, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
