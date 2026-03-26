@@ -66,6 +66,20 @@ export default function PromptManagementScreen({ navigation }) {
           </View>
           <Ionicons name="chevron-forward" size={22} color={ui.colors.muted} />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[promptStyles.promptMgmtOption, promptStyles.promptMgmtOptionCreate, { marginTop: 12 }]}
+          onPress={() => navigation.navigate("RotationManagement")}
+          accessibilityRole="button"
+          accessibilityLabel="Rotation management"
+        >
+          <Ionicons name="images-outline" size={28} color={ui.colors.secondary} />
+          <View style={{ flex: 1 }}>
+            <Text style={promptStyles.promptMgmtOptionTitle}>Rotation management</Text>
+            <Text style={promptStyles.promptMgmtOptionSubtitle}>Home slideshow: pick recent photos and set location</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={22} color={ui.colors.muted} />
+        </TouchableOpacity>
         </View>
       </View>
     </View>

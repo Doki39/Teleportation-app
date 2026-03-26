@@ -3,6 +3,7 @@ import AdminDashboardScreen from "../screens/AdminDashboardScreen";
 import PromptManagementScreen from "../screens/PromptManagementScreen";
 import PromptCreateScreen from "../screens/PromptCreateScreen";
 import ManageExistingPromptsScreen from "../screens/ManageExistingPromptsScreen";
+import RotationManagementScreen from "../screens/RotationManagementScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -11,6 +12,7 @@ export default function AdminStack() {
     <Stack.Navigator initialRouteName="AdminDashboard" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
       <Stack.Screen name="PromptManagement" component={PromptManagementScreen} />
+      <Stack.Screen name="RotationManagement" component={RotationManagementScreen} />
       <Stack.Screen name="PromptCreate" component={PromptCreateScreen} />
       <Stack.Screen name="ManageExistingPrompts" component={ManageExistingPromptsScreen} />
     </Stack.Navigator>
