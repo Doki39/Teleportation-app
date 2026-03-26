@@ -32,7 +32,7 @@ export default function PromptManagementScreen({ navigation }) {
         <HeaderBackButton onPress={() => goBackOrHome(navigation)} />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Prompt management</Text>
-          <Text style={promptStyles.promptHeaderSubtitle}>Admin</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>Prompt library</Text>
         </View>
         <View style={promptStyles.promptBackBtn} />
       </View>

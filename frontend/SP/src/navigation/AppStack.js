@@ -5,9 +5,7 @@ import RegistrationPage from "../screens/RegisterScreen";
 import LibraryScreen from "../screens/LibraryScreen";
 import PromptSelectionScreen from "../screens/PromptSelectionScreen";
 import SettingsScreen from "../screens/SettingsScreen";
-import PromptManagementScreen from "../screens/PromptManagementScreen";
-import PromptCreateScreen from "../screens/PromptCreateScreen";
-import ManageExistingPromptsScreen from "../screens/ManageExistingPromptsScreen";
+import AdminStack from "./AdminStack";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,9 +18,7 @@ export default function AppStack() {
       <Stack.Screen name="Library" component={LibraryScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PromptSelection" component={PromptSelectionScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="PromptManagement" component={PromptManagementScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="PromptCreate" component={PromptCreateScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="ManageExistingPrompts" component={ManageExistingPromptsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AdminPanel" component={AdminStack} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

@@ -9,6 +9,7 @@ import userRoutes from "./routes/users.js";
 import authRoutes from "./routes/auth.js";
 import photoRoutes from "./routes/photos.js";
 import promptRoutes from "./routes/prompt.js";
+import adminRoutes from "./routes/admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "uploads");
@@ -43,6 +44,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/prompts", promptRoutes);
+app.use("/api/admin", adminRoutes);
 app.get("/api/db-health", async (_req, res) => {
   try {
     const { rows } = await pool.query("SELECT 1 AS ok");

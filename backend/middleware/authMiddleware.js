@@ -51,14 +51,20 @@ export async function requireGenerationQuota(req, res, next) {
   try {
     if (await userIsAdmin(req.user.uid)) return next();
     const { rows } = await pool.query(
-      "SELECT COUNT(*)::int AS c FROM photos WHERE uid = $1",
+      `SELECT
+         (SELECT COUNT(*)::int FROM photos WHERE uid = $1) AS c,
+         COALESCE(u.bonus_generations, 0)::int AS bonus
+       FROM users u
+       WHERE u.uid = $1`,
       [req.user.uid]
     );
     const count = rows[0]?.c ?? 0;
-    if (count >= MAX_GENERATIONS_PER_USER) {
+    const bonus = rows[0]?.bonus ?? 0;
+    const limit = MAX_GENERATIONS_PER_USER + bonus;
+    if (count >= limit) {
       return res.status(403).json({
         message:
-          "You have reached the limit of 3 generations for your account. Contact an administrator if you need more.",
+          "You have reached the limit of generations for your account. Contact an administrator if you need more.",
         code: "GENERATION_LIMIT",
       });
     }

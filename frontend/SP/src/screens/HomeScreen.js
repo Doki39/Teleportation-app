@@ -262,8 +262,8 @@ export default function HomeScreen({ navigation }) {
               {isAdmin && (
                 <ActionButton
                   icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
-                  label="Prompt management"
-                  onPress={() => navigation.navigate("PromptManagement")}
+                  label="Admin panel"
+                  onPress={() => navigation.navigate("AdminPanel")}
                   variant="secondary"
                 />
               )}

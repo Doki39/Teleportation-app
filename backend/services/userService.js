@@ -8,7 +8,8 @@ export async function deleteUser(uid) {
 export async function findUserByEmail(email) {
   const { rows } = await pool.query(
     `SELECT uid, email, password_hash, first_name, last_name, phone_number,
-            COALESCE(role, 'user') AS role
+            COALESCE(role, 'user') AS role,
+            COALESCE(bonus_generations, 0)::int AS bonus_generations
      FROM users WHERE email = $1`,
     [email]
   );
@@ -18,7 +19,8 @@ export async function findUserByEmail(email) {
 export async function findUserByUid(uid) {
   const { rows } = await pool.query(
     `SELECT uid, email, first_name, last_name, phone_number,
-            COALESCE(role, 'user') AS role
+            COALESCE(role, 'user') AS role,
+            COALESCE(bonus_generations, 0)::int AS bonus_generations
      FROM users WHERE uid = $1`,
     [uid]
   );
@@ -90,11 +92,29 @@ export async function patchUser(uid, rawBody) {
     UPDATE users
     SET ${fragments.join(", ")}
     WHERE uid = $${i}
-    RETURNING uid, first_name, last_name, email, phone_number, COALESCE(role, 'user') AS role
+    RETURNING uid, first_name, last_name, email, phone_number, COALESCE(role, 'user') AS role,
+              COALESCE(bonus_generations, 0)::int AS bonus_generations
   `;
   const { rows } = await pool.query(sql, values);
   if (rows.length === 0) {
     return { error: "not_found", message: "User not found" };
+  }
+  return { user: rows[0] };
+}
+
+export async function updateBonusGenerationsByEmail(email, bonusGenerations) {
+  const normalized = String(email).trim().toLowerCase();
+  const { rows } = await pool.query(
+    `UPDATE users
+     SET bonus_generations = $1
+     WHERE lower(trim(email)) = $2
+     RETURNING uid, email, first_name, last_name,
+               COALESCE(role, 'user') AS role,
+               COALESCE(bonus_generations, 0)::int AS bonus_generations`,
+    [bonusGenerations, normalized]
+  );
+  if (rows.length === 0) {
+    return { error: "not_found" };
   }
   return { user: rows[0] };
 }
