@@ -26,7 +26,7 @@ import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
 import { getPromptSelection, updatePromptSelection, deletePromptSelection } from "../services/promptServices";
-import { formatApiError } from "../services/userServices";
+import { formatAxiosError } from "../utils/apiErrors";
 import { openLibrary, buildImageUri } from "../utils/photoUtils";
 import { uploadPhotoToDrive } from "../services/photoServices";
 
@@ -167,7 +167,7 @@ export default function ManageExistingPromptsScreen({ navigation }) {
       setDeleteModalVisible(false);
       setPendingDelete(null);
     } catch (e) {
-      Alert.alert("Delete failed", formatApiError(e));
+      Alert.alert("Delete failed", formatAxiosError(e));
     } finally {
       setDeletingPrompt(false);
     }
@@ -196,7 +196,7 @@ export default function ManageExistingPromptsScreen({ navigation }) {
       await loadPrompts();
       closeModal();
     } catch (e) {
-      Alert.alert("Save failed", formatApiError(e));
+      Alert.alert("Save failed", formatAxiosError(e));
     } finally {
       setSaving(false);
     }

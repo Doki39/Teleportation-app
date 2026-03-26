@@ -25,12 +25,34 @@ const patchValidators = [
     .withMessage("Current password is required to save changes"),
   body("first_name").optional({ values: "null" }).trim().notEmpty().withMessage("First name cannot be empty"),
   body("last_name").optional({ values: "null" }).trim().notEmpty().withMessage("Last name cannot be empty"),
-  body("email").optional({ values: "null" }).isEmail().withMessage("Invalid email").normalizeEmail(),
+  body("email")
+    .optional({ values: "null" })
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email")
+    .normalizeEmail()
+    .custom(async (email, { req }) => {
+      const taken = await emailTakenByOtherUser(email, req.user.uid);
+      if (taken) throw new Error("Email already in use");
+    }),
   body("phone_number")
     .optional({ values: "null" })
     .trim()
     .notEmpty()
-    .withMessage("Phone number cannot be empty"),
+    .withMessage("Phone number is required")
+    .custom((phone) => {
+      const digits = String(phone).replace(/\D/g, "");
+      if (digits.length < 8) {
+        throw new Error("Phone number must contain at least 8 digits");
+      }
+      return true;
+    })
+    .custom(async (phone_number, { req }) => {
+      const taken = await phoneTakenByOtherUser(String(phone_number).trim(), req.user.uid);
+      if (taken) throw new Error("Phone number already in use");
+    }),
 ];
 
 router.patch("/me", requireAuth, patchValidators, async (req, res) => {
@@ -60,19 +82,6 @@ router.patch("/me", requireAuth, patchValidators, async (req, res) => {
     const passwordOk = await bcrypt.compare(req.body.current_password, passwordHash);
     if (!passwordOk) {
       return res.status(403).json({ message: "Invalid password" });
-    }
-
-    if (req.body.email) {
-      const taken = await emailTakenByOtherUser(req.body.email, uid);
-      if (taken) {
-        return res.status(409).json({ message: "Email already in use" });
-      }
-    }
-    if (req.body.phone_number) {
-      const taken = await phoneTakenByOtherUser(req.body.phone_number.trim(), uid);
-      if (taken) {
-        return res.status(409).json({ message: "Phone number already in use" });
-      }
     }
 
     const result = await patchUser(uid, req.body);

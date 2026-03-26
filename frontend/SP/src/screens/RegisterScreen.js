@@ -93,7 +93,7 @@ export default function RegisterScreen({ navigation }) {
             <View style={authStyles.authField}>
               <Text style={authStyles.authLabel}>Phone number</Text>
               <TextInput
-                placeholder="Phone number"
+                placeholder="Phone number (min. 8 digits)"
                 placeholderTextColor={ui.colors.muted}
                 style={authStyles.authInput}
                 value={phone_number}
@@ -102,8 +102,6 @@ export default function RegisterScreen({ navigation }) {
                 editable={!submitting}
               />
             </View>
-
-            {error !== "" && <Text style={authStyles.authError}>{error}</Text>}
 
             <View style={authStyles.authField}>
               <Text style={authStyles.authLabel}>Password</Text>
@@ -130,6 +128,8 @@ export default function RegisterScreen({ navigation }) {
                 editable={!submitting}
               />
             </View>
+
+            {error !== "" && <Text style={authStyles.authError}>{error}</Text>}
 
             <TouchableOpacity
               style={[authStyles.authPrimaryButton, submitting && authStyles.authPrimaryButtonDisabled]}

@@ -24,6 +24,13 @@ router.post(
       .trim()
       .notEmpty()
       .withMessage("Phone number is required")
+      .custom((phone) => {
+        const digits = String(phone).replace(/\D/g, "");
+        if (digits.length < 8) {
+          throw new Error("Phone number must contain at least 8 digits");
+        }
+        return true;
+      })
       .custom(async (phone_number) => {
         const taken = await isPhoneNumberRegistered(phone_number);
         if (taken) throw new Error("Phone number already registered");

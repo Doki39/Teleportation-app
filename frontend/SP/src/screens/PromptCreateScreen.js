@@ -25,7 +25,7 @@ import { useRequireAdmin } from "../hooks/useRequireAdmin";
 import { openLibrary, buildImageUri } from "../utils/photoUtils";
 import { uploadPhotoToDrive, generatePromptPreview } from "../services/photoServices";
 import { createPromptSelection } from "../services/promptServices";
-import { formatApiError } from "../services/userServices";
+import { formatAxiosError } from "../utils/apiErrors";
 
 export default function PromptCreateScreen({ navigation }) {
   const allowed = useRequireAdmin(navigation);
@@ -116,7 +116,7 @@ export default function PromptCreateScreen({ navigation }) {
       resetCreateForm();
       Alert.alert("Saved", "New destination prompt was added.");
     } catch (e) {
-      Alert.alert("Save failed", formatApiError(e));
+      Alert.alert("Save failed", formatAxiosError(e));
     } finally {
       setSaving(false);
     }

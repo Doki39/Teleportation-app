@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { authStyles } from "../styles/authStyles";
 import { ui } from "../theme/ui";
 import { handleLogin } from "../services/authServices";
@@ -7,6 +16,22 @@ import { handleLogin } from "../services/authServices";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const onLogin = async () => {
+    if (submitting) return;
+    setError("");
+    setSubmitting(true);
+    try {
+      const result = await handleLogin({ email, password, navigation });
+      if (!result.success && result.error) {
+        setError(result.error);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <View style={authStyles.authScreen}>
@@ -25,6 +50,7 @@ export default function LoginScreen({ navigation }) {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                editable={!submitting}
               />
             </View>
 
@@ -37,14 +63,29 @@ export default function LoginScreen({ navigation }) {
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                editable={!submitting}
               />
             </View>
 
-            <TouchableOpacity style={authStyles.authPrimaryButton} onPress={() => handleLogin({ email, password, navigation })}>
-              <Text style={authStyles.authPrimaryButtonText}>Log In</Text>
+            {error !== "" && <Text style={authStyles.authError}>{error}</Text>}
+
+            <TouchableOpacity
+              style={[authStyles.authPrimaryButton, submitting && authStyles.authPrimaryButtonDisabled]}
+              onPress={onLogin}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={authStyles.authPrimaryButtonText}>Log In</Text>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={authStyles.authSecondaryButton} onPress={() => navigation.replace("Registration")}>
+            <TouchableOpacity
+              style={authStyles.authSecondaryButton}
+              onPress={() => navigation.replace("Registration")}
+              disabled={submitting}
+            >
               <Text style={authStyles.authSecondaryButtonText}>Don't have an account?</Text>
             </TouchableOpacity>
           </View>

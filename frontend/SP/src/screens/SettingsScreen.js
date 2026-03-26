@@ -12,7 +12,8 @@ import { promptStyles } from "../styles/promptStyles";
 import { authStyles } from "../styles/authStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
-import { fetchCurrentUser, updateCurrentUser, formatApiError } from "../services/userServices";
+import { fetchCurrentUser, updateCurrentUser } from "../services/userServices";
+import { formatAxiosError, validateProfileForm } from "../utils/apiErrors";
 
 const emptyForm = {
   first_name: "",
@@ -39,6 +40,7 @@ export default function SettingsScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [formError, setFormError] = useState("");
   const successTimerRef = useRef(null);
 
   const showSuccessBanner = useCallback((message) => {
@@ -97,7 +99,7 @@ export default function SettingsScreen({ navigation }) {
         setNeedsLogin(true);
         setForm(emptyForm);
       } else if (!hasCache) {
-        Alert.alert("Could not load profile", formatApiError(err));
+        Alert.alert("Could not load profile", formatAxiosError(err));
       }
     } finally {
       setLoading(false);
@@ -110,7 +112,10 @@ export default function SettingsScreen({ navigation }) {
     }, [loadProfile])
   );
 
-  const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+  const setField = (key, value) => {
+    setFormError("");
+    setForm((f) => ({ ...f, [key]: value }));
+  };
 
   const onSave = async () => {
     if (needsLogin) {
@@ -119,29 +124,38 @@ export default function SettingsScreen({ navigation }) {
     }
     const pwd = currentPassword.trim();
     if (!pwd) {
-      Alert.alert("Password required", "Enter your current password to save changes.");
+      setFormError("Enter your current password to save changes.");
       return;
     }
+    const trimmed = {
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      email: form.email.trim(),
+      phone_number: form.phone_number.trim(),
+    };
+    const check = validateProfileForm(trimmed);
+    if (!check.ok) {
+      setFormError(check.error);
+      return;
+    }
+    setFormError("");
     setSaving(true);
     try {
       await updateCurrentUser({
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        email: form.email.trim(),
-        phone_number: form.phone_number.trim(),
+        ...trimmed,
         current_password: pwd,
       });
       setCurrentPassword("");
       showSuccessBanner("Successfully updated — your settings have been saved.");
     } catch (err) {
+      const msg = formatAxiosError(err);
       if (err.response?.status === 401) {
+        setFormError("");
         Alert.alert("Session expired", "Please log in again.", [
           { text: "OK", onPress: () => navigation.navigate("Login") },
         ]);
-      } else if (err.response?.status === 403) {
-        Alert.alert("Could not save", formatApiError(err));
       } else {
-        Alert.alert("Could not save", formatApiError(err));
+        setFormError(msg);
       }
     } finally {
       setSaving(false);
@@ -285,7 +299,7 @@ export default function SettingsScreen({ navigation }) {
               <View style={[authStyles.authField, { marginTop: 16 }]}>
                 <Text style={authStyles.authLabel}>Phone</Text>
                 <TextInput
-                  placeholder="Phone number"
+                  placeholder="Phone number (min. 8 digits)"
                   placeholderTextColor={ui.colors.muted}
                   style={authStyles.authInput}
                   value={form.phone_number}
@@ -294,6 +308,10 @@ export default function SettingsScreen({ navigation }) {
                   keyboardType="phone-pad"
                 />
               </View>
+
+              {formError !== "" ? (
+                <Text style={[authStyles.authError, { marginTop: 8 }]}>{formError}</Text>
+              ) : null}
 
               <View style={[authStyles.authField, { marginTop: 24 }]}>
                 <Text style={authStyles.authLabel}>Current password</Text>
@@ -305,7 +323,10 @@ export default function SettingsScreen({ navigation }) {
                   placeholderTextColor={ui.colors.muted}
                   style={authStyles.authInput}
                   value={currentPassword}
-                  onChangeText={setCurrentPassword}
+                  onChangeText={(t) => {
+                    setFormError("");
+                    setCurrentPassword(t);
+                  }}
                   editable={!saving}
                   secureTextEntry
                   autoCapitalize="none"

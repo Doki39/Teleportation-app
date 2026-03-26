@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { getJsonAuthHeaders } from "../utils/apiAuth";
@@ -24,13 +25,4 @@ export async function updateCurrentUser(body) {
   const user = res.data.user;
   await AsyncStorage.setItem("user", JSON.stringify(user));
   return user;
-}
-
-export function formatApiError(err) {
-  const data = err.response?.data;
-  if (data?.errors?.length) {
-    return data.errors.map((e) => e.msg || e.message).join("\n");
-  }
-  if (data?.message) return data.message;
-  return err.message || "Something went wrong";
 }
