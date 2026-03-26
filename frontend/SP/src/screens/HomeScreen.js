@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
-  useWindowDimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +28,7 @@ import {
   getWebHomeScale,
   isPhoneWebViewport,
 } from "../utils/webLayout";
+import { useWebViewportSize } from "../utils/useWebViewportSize";
 
 const ROCKET_SIZE = 118;
 
@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }) {
     }));
   }, []);
 
-  const { width: windowWidth, height } = useWindowDimensions();
+  const { width: windowWidth, height } = useWebViewportSize();
   const webHomeScale = getWebHomeScale(windowWidth, height);
   const rocketScale = getWebHomeRocketScale(windowWidth, height);
   const portalScale = getWebHomePortalScale(windowWidth, height);
