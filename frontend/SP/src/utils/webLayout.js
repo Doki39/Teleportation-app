@@ -33,6 +33,11 @@ export function getWebHomeScale(width, height) {
   return Math.max(WEB_HOME_MIN_SCALE, Math.min(1, ratio));
 }
 
+export function isPhoneWebViewport(width, height) {
+  if (Platform.OS !== "web") return false;
+  return Math.min(width, height) < WEB_PHONE_MAX_SHORT_EDGE;
+}
+
 export function isWebLaptopViewport(width, height) {
   if (Platform.OS !== "web") return false;
   if (Math.min(width, height) < WEB_PHONE_MAX_SHORT_EDGE) return false;

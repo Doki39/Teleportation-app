@@ -23,7 +23,12 @@ import { openLibrary, openCamera, handlePhotoFlow } from "../utils/photoUtils";
 import { signOut, getStoredUser, isUserAdmin } from "../services/authServices";
 import { fetchCurrentUser } from "../services/userServices";
 import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
-import { getWebHomePortalScale, getWebHomeRocketScale, getWebHomeScale } from "../utils/webLayout";
+import {
+  getWebHomePortalScale,
+  getWebHomeRocketScale,
+  getWebHomeScale,
+  isPhoneWebViewport,
+} from "../utils/webLayout";
 
 const ROCKET_SIZE = 118;
 
@@ -50,6 +55,7 @@ export default function HomeScreen({ navigation }) {
   const rocketScale = getWebHomeRocketScale(windowWidth, height);
   const portalScale = getWebHomePortalScale(windowWidth, height);
   const needsWebScale = Platform.OS === "web" && webHomeScale < 1;
+  const phoneWeb = isPhoneWebViewport(windowWidth, height);
   const canvasW = needsWebScale ? windowWidth / webHomeScale : windowWidth;
   const canvasH = needsWebScale ? height / webHomeScale : height;
 
@@ -270,9 +276,21 @@ export default function HomeScreen({ navigation }) {
   );
 
   return (
-    <View style={homeStyles.homeRoot}>
+    <View
+      style={[
+        homeStyles.homeRoot,
+        phoneWeb && needsWebScale ? { overflow: "visible" } : null,
+      ]}
+    >
       {needsWebScale ? (
-        <View style={{ flex: 1, width: windowWidth, overflow: "hidden", alignItems: "center" }}>
+        <View
+          style={{
+            flex: 1,
+            width: windowWidth,
+            overflow: phoneWeb ? "visible" : "hidden",
+            alignItems: "center",
+          }}
+        >
           <View
             style={{
               width: canvasW,
