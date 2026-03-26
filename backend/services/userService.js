@@ -6,13 +6,13 @@ export async function deleteUser(uid) {
 }
 
 export async function findUserByEmail(email) {
-  const result = await pool.query(
+  const { rows } = await pool.query(
     `SELECT uid, email, password_hash, first_name, last_name, phone_number,
             COALESCE(role, 'user') AS role
      FROM users WHERE email = $1`,
     [email]
   );
-  return result.rowCount > 0; 
+  return rows[0] ?? null;
 }
 
 export async function findUserByUid(uid) {
