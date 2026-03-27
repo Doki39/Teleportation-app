@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "nanoid": "^5.1.6",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "sharp": "^0.34.5"
   },
   "repository": {
     "type": "git",
