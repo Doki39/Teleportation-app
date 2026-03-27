@@ -302,6 +302,14 @@ export default function HomeScreen({ navigation }) {
           </>
         )}
       </View>
+      <Pressable
+        style={homeStyles.homeFooter}
+        onPress={() => navigation.navigate("ContactSupport")}
+        accessibilityRole="link"
+        accessibilityLabel="Contact support"
+      >
+        <Text style={homeStyles.homeFooterLink}>Contact support</Text>
+      </Pressable>
     </>
   );
 
