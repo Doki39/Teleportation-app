@@ -6,6 +6,7 @@ import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
 import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
 import { requireAuth, requireAdmin, userIsAdmin, requireGenerationQuota } from "../middleware/authMiddleware.js";
+import { compressUploadIfNeeded } from "../middleware/imageCompressionMiddleware.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
@@ -72,7 +73,7 @@ router.get("/slides", async (_req, res) => {
 });
 
 
-router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), async (req, res) => {
+router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), compressUploadIfNeeded, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No photo sent" });
@@ -90,6 +91,7 @@ router.post(
   requireAuth,
   requireAdmin,
   uploadToDrive.single("image"),
+  compressUploadIfNeeded,
   async (req, res) => {
     try {
       if (!req.file?.buffer) {
