@@ -38,8 +38,15 @@ export const homeStyles = StyleSheet.create({
     ...textMuted,
     fontSize: 15,
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 14,
     textAlign: "center",
+  },
+  generationLimitSupportLink: {
+    color: ui.colors.secondary,
+    fontSize: 14,
+    fontWeight: "700",
+    textDecorationLine: "underline",
+    marginBottom: 18,
   },
   generationLimitClose: {
     backgroundColor: ui.colors.primary,

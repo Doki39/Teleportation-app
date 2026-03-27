@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ui } from "../theme/ui";
 
-const SUPPORT_EMAIL = "support@teleport-app.com";
+const SUPPORT_EMAIL = "rijavecdorijan@gmail.com";
 
 export default function ContactSupportScreen() {
   const handleEmailPress = async () => {

@@ -64,7 +64,7 @@ export async function requireGenerationQuota(req, res, next) {
     if (count >= limit) {
       return res.status(403).json({
         message:
-          "You have reached the limit of generations for your account. Contact an administrator if you need more.",
+          "You have reached the limit of generations for your account. Contact support if you need more.",
         code: "GENERATION_LIMIT",
       });
     }

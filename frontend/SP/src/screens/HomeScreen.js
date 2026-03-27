@@ -193,8 +193,18 @@ export default function HomeScreen({ navigation }) {
             <Text style={homeStyles.generationLimitTitle}>Maximum generations reached</Text>
             <Text style={homeStyles.generationLimitBody}>
               {generationLimitMessage ||
-                "You have used all generations available for your account (3). Contact an administrator if you need more."}
+                "You have used all generations available for your account (3). Contact support if you need more."}
             </Text>
+            <Pressable
+              onPress={() => {
+                setGenerationLimitModalVisible(false);
+                navigation.navigate("ContactSupport");
+              }}
+              accessibilityRole="link"
+              accessibilityLabel="Contact support"
+            >
+              <Text style={homeStyles.generationLimitSupportLink}>Contact support</Text>
+            </Pressable>
             <Pressable
               style={homeStyles.generationLimitClose}
               onPress={() => {
