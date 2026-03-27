@@ -85,7 +85,38 @@ export function usePromptSelectionScreen({ route, navigation }) {
         InteractionManager.runAfterInteractions(() => goToLibrary());
       }
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to generate image.");
+      const generationFailedMessage =
+        "We couldn’t generate your image. Please make sure the photo is appropriate and try again. If this keeps happening, contact support.";
+      const goHomeAndNotify = () => {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Home" }],
+          })
+        );
+        if (Platform.OS === "web" && typeof window !== "undefined" && typeof window.confirm === "function") {
+          setTimeout(() => {
+            const wantsSupport = window.confirm(`${generationFailedMessage}\n\nPress OK to contact support.`);
+            if (wantsSupport) {
+              navigation.navigate("ContactSupport");
+            }
+          }, 0);
+        } else {
+          setTimeout(
+            () =>
+              Alert.alert("Image generation failed", generationFailedMessage, [
+                { text: "Back to Home", style: "cancel" },
+                { text: "Contact Support", onPress: () => navigation.navigate("ContactSupport") },
+              ]),
+            0
+          );
+        }
+      };
+      if (Platform.OS === "web") {
+        setTimeout(goHomeAndNotify, 0);
+      } else {
+        InteractionManager.runAfterInteractions(() => goHomeAndNotify());
+      }
     } finally {
       setIsProcessing(false);
     }

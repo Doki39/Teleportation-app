@@ -185,6 +185,20 @@ export const homeStyles = StyleSheet.create({
     marginBottom: 8,
   },
   guestText: { ...textMuted, textAlign: "center", lineHeight: 20 },
+  homeFooter: {
+    position: "absolute",
+    bottom: 14,
+    alignSelf: "center",
+    zIndex: 30,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  homeFooterLink: {
+    color: ui.colors.secondary,
+    fontSize: 14,
+    fontWeight: "700",
+    textDecorationLine: "underline",
+  },
   portalStage: {
     ...centerContent,
     position: "absolute",
