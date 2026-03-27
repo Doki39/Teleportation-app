@@ -48,14 +48,33 @@ function toAbsoluteImageUrl(imageUrl, req) {
 
 router.get("/", requireAuth, async (req, res) => {
   try {
+    const rawPage = Number.parseInt(String(req.query.page ?? "1"), 10);
+    const rawLimit = Number.parseInt(String(req.query.limit ?? "10"), 10);
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 10;
+    const offset = (page - 1) * limit;
     const admin = await userIsAdmin(req.user.uid);
-    const { rows } = admin
-      ? await pool.query("SELECT * FROM photos ORDER BY created_at DESC")
+    const countResult = admin
+      ? await pool.query("SELECT COUNT(*)::int AS total FROM photos")
+      : await pool.query("SELECT COUNT(*)::int AS total FROM photos WHERE uid = $1", [req.user.uid]);
+    const total = countResult.rows[0]?.total ?? 0;
+    const rowsResult = admin
+      ? await pool.query(
+          "SELECT * FROM photos ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+          [limit, offset]
+        )
       : await pool.query(
-          "SELECT * FROM photos WHERE uid = $1 ORDER BY created_at DESC",
-          [req.user.uid]
+          "SELECT * FROM photos WHERE uid = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+          [req.user.uid, limit, offset]
         );
-    return res.json(rows);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return res.json({
+      items: rowsResult.rows,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to fetch photos" });

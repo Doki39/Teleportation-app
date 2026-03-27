@@ -63,6 +63,35 @@ export const libraryStyles = StyleSheet.create({
     ...textMuted,
     marginTop: 12,
   },
+  paginationWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 18,
+    paddingTop: 6,
+  },
+  paginationBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.4)",
+    backgroundColor: "rgba(124,58,237,0.14)",
+  },
+  paginationBtnDisabled: {
+    opacity: 0.45,
+  },
+  paginationBtnText: {
+    ...textBold,
+    fontSize: 13,
+    color: ui.colors.text,
+  },
+  paginationMeta: {
+    ...textMuted,
+    fontSize: 13,
+  },
   rotationAddBtn: {
     marginTop: 8,
     paddingVertical: 10,

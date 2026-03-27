@@ -25,6 +25,7 @@ import { buildImageUri } from "../utils/photoUtils";
 const LIST_HORIZONTAL_PAD = 16;
 const TILE_GAP = 10;
 const NUM_COLUMNS = 3;
+const PAGE_SIZE = 10;
 
 export default function LibraryScreen({ navigation }) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -33,6 +34,8 @@ export default function LibraryScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [previewUri, setPreviewUri] = useState(null);
   const [previewName, setPreviewName] = useState(null);
 
@@ -46,14 +49,24 @@ export default function LibraryScreen({ navigation }) {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
       try {
-        const data = await getGeneratedPhotos();
-        if (!cancelled) setPhotos(Array.isArray(data) ? data : []);
+        const data = await getGeneratedPhotos({ page, limit: PAGE_SIZE });
+        if (!cancelled) {
+          if (Array.isArray(data)) {
+            setPhotos(data);
+            setTotalPages(1);
+          } else {
+            setPhotos(Array.isArray(data?.items) ? data.items : []);
+            setTotalPages(Number.isFinite(data?.totalPages) ? Math.max(1, data.totalPages) : 1);
+          }
+        }
       } catch (err) {
         if (!cancelled) {
           Alert.alert("Error", err.message || "Failed to load pictures");
           setPhotos([]);
+          setTotalPages(1);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -62,7 +75,7 @@ export default function LibraryScreen({ navigation }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page]);
 
   const openPreview = useCallback((item) => {
     const uri = buildImageUri(item);
@@ -124,25 +137,48 @@ export default function LibraryScreen({ navigation }) {
           <Text style={libraryStyles.libraryLoadingText}>Loading your photos…</Text>
         </View>
       ) : (
-        <FlatList
-          data={photos}
-          keyExtractor={(item, index) => String(item.id ?? index)}
-          numColumns={NUM_COLUMNS}
-          columnWrapperStyle={photos.length > 0 ? libraryStyles.libraryRow : undefined}
-          contentContainerStyle={[
-            libraryStyles.libraryListContent,
-            photos.length === 0 && { flex: 1 },
-          ]}
-          renderItem={renderItem}
-          ListEmptyComponent={
-            <View style={libraryStyles.libraryEmptyWrap}>
-              <Text style={libraryStyles.libraryEmptyTitle}>No photos yet</Text>
-              <Text style={libraryStyles.libraryEmptySubtitle}>
-                Generate an image from the home screen and it will show up here.
+        <>
+          <FlatList
+            data={photos}
+            keyExtractor={(item, index) => String(item.id ?? index)}
+            numColumns={NUM_COLUMNS}
+            columnWrapperStyle={photos.length > 0 ? libraryStyles.libraryRow : undefined}
+            contentContainerStyle={[
+              libraryStyles.libraryListContent,
+              photos.length === 0 && { flex: 1 },
+            ]}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <View style={libraryStyles.libraryEmptyWrap}>
+                <Text style={libraryStyles.libraryEmptyTitle}>No photos yet</Text>
+                <Text style={libraryStyles.libraryEmptySubtitle}>
+                  Generate an image from the home screen and it will show up here.
+                </Text>
+              </View>
+            }
+          />
+          {photos.length > 0 && (
+            <View style={libraryStyles.paginationWrap}>
+              <TouchableOpacity
+                style={[libraryStyles.paginationBtn, page <= 1 && libraryStyles.paginationBtnDisabled]}
+                onPress={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <Text style={libraryStyles.paginationBtnText}>Prev</Text>
+              </TouchableOpacity>
+              <Text style={libraryStyles.paginationMeta}>
+                Page {page} / {totalPages}
               </Text>
+              <TouchableOpacity
+                style={[libraryStyles.paginationBtn, page >= totalPages && libraryStyles.paginationBtnDisabled]}
+                onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                <Text style={libraryStyles.paginationBtnText}>Next</Text>
+              </TouchableOpacity>
             </View>
-          }
-        />
+          )}
+        </>
       )}
 
       <ImagePreviewModal
