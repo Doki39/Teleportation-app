@@ -15,7 +15,7 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
 import ImagePreviewModal from "../components/ImagePreviewModal";
 import HeaderBackButton from "../components/HeaderBackButton";
-import { getGeneratedPhotos } from "../services/libraryServices";
+import { getGeneratedPhotos, normalizePhotosListResponse } from "../services/libraryServices";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
@@ -54,13 +54,14 @@ export default function LibraryScreen({ navigation }) {
       try {
         const data = await getGeneratedPhotos({ page, limit: PAGE_SIZE });
         if (!cancelled) {
-          if (Array.isArray(data)) {
-            setPhotos(data);
-            setTotalPages(1);
-          } else {
-            setPhotos(Array.isArray(data?.items) ? data.items : []);
-            setTotalPages(Number.isFinite(data?.totalPages) ? Math.max(1, data.totalPages) : 1);
-          }
+          setPhotos(normalizePhotosListResponse(data));
+          setTotalPages(
+            Array.isArray(data)
+              ? 1
+              : Number.isFinite(data?.totalPages)
+                ? Math.max(1, data.totalPages)
+                : 1
+          );
         }
       } catch (err) {
         if (!cancelled) {

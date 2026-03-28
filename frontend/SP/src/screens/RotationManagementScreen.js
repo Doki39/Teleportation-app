@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
 import HeaderBackButton from "../components/HeaderBackButton";
 import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
-import { getGeneratedPhotos } from "../services/libraryServices";
+import { getGeneratedPhotos, normalizePhotosListResponse } from "../services/libraryServices";
 import { getPhotoRotationList, postPhotoRotation, deletePhotoRotation } from "../services/adminServices";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
@@ -62,10 +62,13 @@ export default function RotationManagementScreen({ navigation }) {
     let cancelled = false;
     (async () => {
       try {
-        const [rot, photoData] = await Promise.all([getPhotoRotationList(), getGeneratedPhotos()]);
+        const [rot, photoData] = await Promise.all([
+          getPhotoRotationList(),
+          getGeneratedPhotos({ page: 1, limit: RECENT_COUNT }),
+        ]);
         if (!cancelled) {
           setRotationEntries(Array.isArray(rot) ? rot : []);
-          setPhotos(Array.isArray(photoData) ? photoData : []);
+          setPhotos(normalizePhotosListResponse(photoData));
         }
       } catch (e) {
         if (!cancelled) {
