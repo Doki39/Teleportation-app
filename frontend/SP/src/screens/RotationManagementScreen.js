@@ -58,6 +58,18 @@ export default function RotationManagementScreen({ navigation }) {
     setRotationEntries(Array.isArray(rows) ? rows : []);
   }, []);
 
+  const removeEntry = useCallback(
+    async (id) => {
+      try {
+        await deletePhotoRotation(id);
+        await refreshRotation();
+      } catch (e) {
+        Alert.alert("Error", e.message || "Could not remove");
+      }
+    },
+    [refreshRotation]
+  );
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -87,6 +99,16 @@ export default function RotationManagementScreen({ navigation }) {
 
   const onRemoveEntry = useCallback(
     (id) => {
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        const confirmed = window.confirm(
+          "This slide will no longer appear on the home page. Do you want to remove it?"
+        );
+        if (confirmed) {
+          void removeEntry(id);
+        }
+        return;
+      }
+
       Alert.alert(
         "Remove from rotation",
         "This slide will no longer appear on the home page.",
@@ -95,19 +117,14 @@ export default function RotationManagementScreen({ navigation }) {
           {
             text: "Remove",
             style: "destructive",
-            onPress: async () => {
-              try {
-                await deletePhotoRotation(id);
-                await refreshRotation();
-              } catch (e) {
-                Alert.alert("Error", e.message || "Could not remove");
-              }
+            onPress: () => {
+              void removeEntry(id);
             },
           },
         ]
       );
     },
-    [refreshRotation]
+    [removeEntry]
   );
 
   const openLocationModal = useCallback((item) => {
