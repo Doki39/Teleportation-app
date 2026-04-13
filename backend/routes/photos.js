@@ -81,17 +81,6 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/slides", async (_req, res) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM photo_rotation");
-    return res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch slide photos" });
-  }
-});
-
-
 router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), compressUploadIfNeeded, async (req, res) => {
   try {
     if (!req.file) {
