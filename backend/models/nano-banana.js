@@ -1,60 +1,56 @@
-import dotenv from "dotenv";
-
-dotenv.config();
+import { httpRequestText, httpRequestBuffer } from "../utils/httpNative.js";
 
 const BASE_URL = "https://api.nanobananaapi.ai/api/v1/nanobanana";
 
 async function generateImage(apiKey, imageUrl, prompt) {
-  const response = await fetch(`${BASE_URL}/generate`, {
+  const payload = JSON.stringify({
+    prompt,
+    type: "IMAGETOIAMGE",
+    imageUrls: imageUrl,
+    numImages: 1,
+    image_size: "16:9",
+  });
+  const { statusCode, bodyText } = await httpRequestText(`${BASE_URL}/generate`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      prompt,
-      type: "IMAGETOIAMGE",
-      imageUrls: imageUrl,
-      numImages: 1,
-      image_size: "16:9",
-    }),
+    body: payload,
   });
 
-  const text = await response.text();
   let result;
-
   try {
-    result = JSON.parse(text);
+    result = JSON.parse(bodyText);
   } catch {
     throw new Error(
-      `NanoBanana generateImage non-JSON response (status ${response.status}): ${text.slice(0, 200)}`
+      `NanoBanana generateImage non-JSON response (status ${statusCode}): ${bodyText.slice(0, 200)}`
     );
   }
 
-  if (!response.ok || result.code !== 200) {
+  if (statusCode < 200 || statusCode >= 300 || result.code !== 200) {
     throw new Error(
-      `NanoBanana generation failed (${result.code || response.status}): ${
-        result.msg || "Unknown error"
-      }`
+      `NanoBanana generation failed (${result.code || statusCode}): ${result.msg || "Unknown error"}`
     );
   }
   return result.data.taskId;
 }
 
 async function getTaskStatus(apiKey, taskId) {
-  const response = await fetch(`${BASE_URL}/record-info?taskId=${taskId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-  });
-
-  const text = await response.text();
+  const { statusCode, bodyText } = await httpRequestText(
+    `${BASE_URL}/record-info?taskId=${encodeURIComponent(taskId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    }
+  );
   try {
-    return JSON.parse(text);
+    return JSON.parse(bodyText);
   } catch {
     throw new Error(
-      `NanoBanana getTaskStatus non-JSON response (status ${response.status}): ${text.slice(0, 200)}`
+      `NanoBanana getTaskStatus non-JSON response (status ${statusCode}): ${bodyText.slice(0, 200)}`
     );
   }
 }
@@ -79,6 +75,8 @@ async function waitForCompletion(apiKey, taskId, maxWaitTime = 300000) {
       case 2:
       case 3:
         throw new Error(data.errorMessage || "Generation failed");
+      default:
+        break;
     }
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -105,13 +103,12 @@ export async function generatePicture(imageUrl, modifyText) {
     throw new Error("NanoBanana did not return image URL");
   }
 
-  const imageResponse = await fetch(result.resultImageUrl);
-  if (!imageResponse.ok) {
-    throw new Error(`Failed to download NanoBanana image: ${imageResponse.status}`);
+  const imageRes = await httpRequestBuffer(result.resultImageUrl);
+  if (imageRes.statusCode < 200 || imageRes.statusCode >= 300) {
+    throw new Error(`Failed to download NanoBanana image: ${imageRes.statusCode}`);
   }
 
-  const arrayBuffer = await imageResponse.arrayBuffer();
-  const outputBase64 = Buffer.from(arrayBuffer).toString("base64");
+  const outputBase64 = imageRes.body.toString("base64");
 
   if (!outputBase64) {
     throw new Error("Image generation did not return image data");
