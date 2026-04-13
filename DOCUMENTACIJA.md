@@ -226,8 +226,8 @@ Autentikacija: za zaštićene rute zaglavlje `Authorization: Bearer <JWT>`.
 
 ### 6.3. Razvojno pokretanje
 
-**Poslužitelj (iz korijena repozitorija):**  
-`npm install` → podesiti `.env` (`DATABASE_URL`, `JWT_SECRET`, ključeve za Drive i NanoBanana, …) → `npm start` ili `npm run dev`.
+**Poslužitelj (`backend/`):**  
+`cd backend` → `npm install` → podesiti `.env` (`DATABASE_URL`, `JWT_SECRET`, ključeve za Drive i NanoBanana, …) → `npm start` ili `npm run dev`.
 
 **Klijent (`frontend/SP`):**  
 `npm install` → postaviti `EXPO_PUBLIC_API_BASE_URL` na adresu API-ja → `npx expo start`.
