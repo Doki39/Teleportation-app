@@ -21,12 +21,41 @@ fs.mkdirSync(path.join(UPLOADS_DIR, "unprocessed"), { recursive: true });
 const PORT = process.env.PORT || 10000;
 const app = express();
 
+function normalizeCorsOrigin(entry) {
+  const s = entry.trim().replace(/\/$/, "");
+  if (!s || s === "*") return s || "";
+  if (/^https?:\/\//i.test(s)) return s;
+  return `https://${s}`;
+}
+
+function collectCorsOrigins() {
+  const out = [];
+  const pushList = (raw) => {
+    if (!raw?.trim()) return;
+    raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((s) => out.push(normalizeCorsOrigin(s)));
+  };
+  pushList(process.env.CORS_ORIGIN);
+  const front = process.env.FRONTEND_URL?.trim();
+  if (front) out.push(normalizeCorsOrigin(front));
+  return out.filter(Boolean);
+}
+
 function corsOriginFromEnv() {
-  const raw = process.env.CORS_ORIGIN?.trim();
-  if (!raw || raw === "*") return true;
-  const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  const parts = collectCorsOrigins();
   if (parts.length === 0) return true;
-  return parts.length === 1 ? parts[0] : parts;
+  if (parts.includes("*")) return true;
+  const uniq = [...new Set(parts)];
+  if (uniq.length === 1) return uniq[0];
+  return (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const norm = origin.replace(/\/$/, "");
+    if (uniq.includes(norm)) return callback(null, true);
+    callback(null, false);
+  };
 }
 
 app.use(
