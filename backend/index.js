@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { pool } from "./data/dbconnection.js";
+import { initGoogleCredentials } from "./services/googleAuthService.js";
 import userRoutes from "./routes/users.js";
 import authRoutes from "./routes/auth.js";
 import photosSlidesRoutes from "./routes/photosSlides.js";
@@ -71,6 +72,16 @@ app.get("/api/db-health", async (_req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function start() {
+  try {
+    await initGoogleCredentials();
+  } catch (err) {
+    console.error("[googleAuthService] Failed to load Google credentials from S3:", err.message);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start();
