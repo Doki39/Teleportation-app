@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { Platform, View } from "react-native";
 import AppStack from "../src/navigation/AppStack";
+import SouProgramHeaderLogo from "../src/components/SouProgramHeaderLogo";
 
 const WEB_VIEWPORT_RELOAD_KEY = "__sp_web_viewport_reload_once";
 
@@ -42,6 +43,7 @@ export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <AppStack />
+      <SouProgramHeaderLogo />
       <StatusBar style="auto" />
     </View>
   );
