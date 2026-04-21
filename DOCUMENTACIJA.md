@@ -243,7 +243,7 @@ Autentikacija: za zaštićene rute zaglavlje `Authorization: Bearer <JWT>`.
 | Baza | PostgreSQL |
 | Oblasni kod | JavaScript ES moduli |
 
-Varijable okruženja (nepotpuni popis): `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`, `NANOBANANA_API_KEY`, `DRIVE_UPLOAD_FOLDER_ID`, `PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_API_BASE_URL`.
+Varijable okruženja (nepotpuni popis): `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`, `NANOBANANA_API_KEY`, `DRIVE_UPLOAD_FOLDER_ID`, `PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_API_BASE_URL`, `GOOGLE_APPLICATION_CREDENTIALS` (lokalna JSON putanja, opcionalno), za učitavanje istog JSON-a s S3 na udaljenom poslužitelju: `AWS_GOOGLE_CREDENTIALS_BUCKET` ili `AWS_S3_BUCKET` / `AWS_S3_BUCKET_NAME`, `GOOGLE_CREDENTIALS_OBJECT_KEY` (zadano `teleportation-app-c7f4fbfab6d8.json`), `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` / `AWS_DEFAULT_REGION`, opcionalno `AWS_ENDPOINT_URL` (kompatibilni S3).
 
 ---
 
