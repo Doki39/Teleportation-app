@@ -72,11 +72,31 @@ export async function signOut({ setLoggedIn, navigation } = {}) {
 }
 
 export const handleLogin = async ({ email, password, navigation }) => {
+  const trimmedEmail = String(email ?? "").trim();
+  const pwd = String(password ?? "");
+  if (!trimmedEmail) {
+    return { success: false, error: "Email is required" };
+  }
+  if (!pwd) {
+    return { success: false, error: "Password is required" };
+  }
+
   try {
-    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
-    await AsyncStorage.setItem("token", res.data.token);
-    if (res.data.user) {
-      await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      email: trimmedEmail,
+      password: pwd,
+    });
+
+    const token = res.data?.token;
+    const user = res.data?.user;
+    if (!token || typeof token !== "string") {
+      const msg = formatApiResponseBody(res.data) || "Login failed: no token from server";
+      return { success: false, error: msg };
+    }
+
+    await AsyncStorage.setItem("token", token);
+    if (user && typeof user === "object") {
+      await AsyncStorage.setItem("user", JSON.stringify(user));
     }
     navigation.replace("Home");
     return { success: true };
