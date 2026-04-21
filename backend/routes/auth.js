@@ -109,26 +109,31 @@ router.post(
     }
 
     const { email, password } = req.body;
-    const user = await findUserByEmail(email);
-    if (!user) return res.status(404).json({ message: "Wrong email or password" });
+    try {
+      const user = await findUserByEmail(email);
+      if (!user) return res.status(404).json({ message: "Wrong email or password" });
 
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(401).json({ message: "Wrong email or password" });
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (!match) return res.status(401).json({ message: "Wrong email or password" });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      console.error("JWT_SECRET is not set in .env");
-      return res.status(500).json({ message: "Server misconfiguration" });
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        console.error("JWT_SECRET is not set in .env");
+        return res.status(500).json({ message: "Server misconfiguration" });
+      }
+
+      const token = jwt.sign(
+        { uid: user.uid, email: user.email, role: user.role },
+        secret,
+        { expiresIn: "14d" }
+      );
+
+      const { password_hash, ...safeUser } = user;
+      return res.json({ message: "Logged in", token, user: safeUser });
+    } catch (err) {
+      console.error("POST /api/auth/login:", err);
+      return res.status(500).json({ message: "Server error" });
     }
-
-    const token = jwt.sign(
-      { uid: user.uid, email: user.email, role: user.role },
-      secret,
-      { expiresIn: "14d" }
-    );
-
-    const { password_hash, ...safeUser } = user;
-    res.json({ message: "Logged in", token, user: safeUser });
   }
 );
 
