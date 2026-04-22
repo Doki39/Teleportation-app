@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
 import { platformShadow, platformTextShadow } from "../utils/platformStyles";
 import { centerContent, flexCenter, glassBorder, textBold, textMuted } from "./bases";
@@ -72,6 +72,54 @@ export const homeStyles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: "center",
   },
+  homeTopBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 10,
+  },
+  homeTopBarRow: {
+    position: "relative",
+    width: "100%",
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  homeTopBarSide: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: "center",
+  },
+  homeTopBarLeft: {
+    alignItems: "flex-start",
+    zIndex: 1,
+  },
+  homeTopBarRight: {
+    alignItems: "flex-end",
+    zIndex: 1,
+  },
+  homeTopBarTitleOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+    paddingHorizontal: 8,
+  },
+  homeTitleInBar: {
+    marginBottom: 0,
+    textAlign: "center",
+    fontSize: 32,
+    lineHeight: 40,
+    letterSpacing: 0.2,
+  },
   homeRocketContainer: {
     position: "absolute",
     left: "50%",
@@ -112,7 +160,7 @@ export const homeStyles = StyleSheet.create({
   },
   slideShowSection: {
     alignSelf: "center",
-    marginTop: 12,
+    marginTop: Platform.OS === "web" ? 4 : -6,
   },
   slideShowSectionTitle: {
     fontSize: 15,
@@ -120,7 +168,7 @@ export const homeStyles = StyleSheet.create({
     letterSpacing: 0.2,
     textAlign: "center",
     color: ui.colors.text,
-    marginBottom: 10,
+    marginBottom: Platform.OS === "web" ? 8 : 4,
   },
   slideShowContainer: {
     marginTop: 0,

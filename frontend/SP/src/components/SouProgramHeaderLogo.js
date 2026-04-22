@@ -3,8 +3,9 @@ import { Image, Platform, StyleSheet, useWindowDimensions, View } from "react-na
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ASPECT = 1.35;
+const SIZE_SCALE = 1.3;
 
-export default function SouProgramHeaderLogo() {
+export default function SouProgramHeaderLogo({ inline = false }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
@@ -14,11 +15,34 @@ export default function SouProgramHeaderLogo() {
     const maxH = compact ? 38 : width < 900 ? 46 : 54;
     const wByH = maxH * ASPECT;
     const hByW = maxW / ASPECT;
+    let logoW0;
+    let logoH0;
     if (wByH <= maxW) {
-      return { logoW: wByH, logoH: maxH };
+      logoW0 = wByH;
+      logoH0 = maxH;
+    } else {
+      logoW0 = maxW;
+      logoH0 = hByW;
     }
-    return { logoW: maxW, logoH: hByW };
+    return { logoW: logoW0 * SIZE_SCALE, logoH: logoH0 * SIZE_SCALE };
   }, [width]);
+
+  const image = (
+    <Image
+      source={require("../../assets/images/logo.png")}
+      style={{ width: logoW, height: logoH }}
+      resizeMode="contain"
+      accessibilityLabel="ŠOU Program"
+    />
+  );
+
+  if (inline) {
+    return (
+      <View style={{ width: logoW, height: logoH }} pointerEvents="none">
+        {image}
+      </View>
+    );
+  }
 
   const topPad = Platform.OS === "web" ? 10 : 6;
   const top = Math.max(insets.top, Platform.OS === "ios" ? 8 : 4) + topPad;
@@ -26,12 +50,7 @@ export default function SouProgramHeaderLogo() {
 
   return (
     <View style={[styles.wrap, { top, left, width: logoW, height: logoH }]} pointerEvents="none">
-      <Image
-        source={require("../../assets/images/logo.png")}
-        style={{ width: logoW, height: logoH }}
-        resizeMode="contain"
-        accessibilityLabel="ŠOU Program"
-      />
+      {image}
     </View>
   );
 }

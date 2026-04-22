@@ -25,6 +25,7 @@ import { fetchCurrentUser } from "../services/userServices";
 import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 import { getWebHomePortalScale, getWebHomeRocketScale, getWebHomeScale } from "../utils/webLayout";
 import { useWebViewportSize } from "../utils/useWebViewportSize";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ROCKET_SIZE = 118;
 
@@ -48,6 +49,7 @@ export default function HomeScreen({ navigation }) {
     }));
   }, []);
 
+  const insets = useSafeAreaInsets();
   const { width: windowWidth, height } = useWebViewportSize();
   const webHomeScale = getWebHomeScale(windowWidth, height);
   const rocketScale = getWebHomeRocketScale(windowWidth, height);
@@ -162,6 +164,7 @@ export default function HomeScreen({ navigation }) {
   const handleCamera = () => handlePhotoFlow(openCamera, navigation, photoFlowOptions);
 
   const BUTTONS_TOP = canvasH / 2 + ROCKET_SIZE / 2 + 24 + 40;
+  const homeHeaderClearance = Math.max(insets.top, Platform.OS === "ios" ? 8 : 4) + 78;
 
   const mainContent = (
     <>
@@ -250,8 +253,36 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      <ConnectedProfileMenuButton showLogout={loggedIn} setLoggedIn={setLoggedIn} replaceToHomeOnLogout={false} />
-      <SouProgramHeaderLogo />
+      <View
+        style={[
+          homeStyles.homeTopBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === "ios" ? 8 : 4) + 6,
+            paddingLeft: Math.max(insets.left, 14),
+            paddingRight: Math.max(insets.right, 14),
+            pointerEvents: "box-none",
+          },
+        ]}
+      >
+        <View style={homeStyles.homeTopBarRow}>
+          <View style={[homeStyles.homeTopBarSide, homeStyles.homeTopBarLeft, { pointerEvents: "box-none" }]}>
+            <SouProgramHeaderLogo inline />
+          </View>
+          <View style={homeStyles.homeTopBarTitleOverlay} pointerEvents="none">
+            <Text style={[homeStyles.homeTitle, homeStyles.homeTitleInBar]} numberOfLines={1}>
+              Teleport
+            </Text>
+          </View>
+          <View style={[homeStyles.homeTopBarSide, homeStyles.homeTopBarRight]}>
+            <ConnectedProfileMenuButton
+              showLogout={loggedIn}
+              setLoggedIn={setLoggedIn}
+              replaceToHomeOnLogout={false}
+              headerLayout
+            />
+          </View>
+        </View>
+      </View>
 
       {loggedIn && (
         <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>
@@ -282,11 +313,12 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      <View style={[homeStyles.homeContentWrapper, { pointerEvents: loggedIn ? "box-none" : "auto" }]}>
-        <View style={homeStyles.titleBlock}>
-          <Text style={homeStyles.homeTitle}>Teleport</Text>
-        </View>
-
+      <View
+        style={[
+          homeStyles.homeContentWrapper,
+          { pointerEvents: loggedIn ? "box-none" : "auto", paddingTop: homeHeaderClearance },
+        ]}
+      >
         <SlideShow title="Where people went with us" />
 
         {!loggedIn && (

@@ -7,6 +7,7 @@ export default function ConnectedProfileMenuButton({
   showLogout = true,
   setLoggedIn,
   replaceToHomeOnLogout = true,
+  headerLayout = false,
 }) {
   const navigation = useNavigation();
 
@@ -18,5 +19,5 @@ export default function ConnectedProfileMenuButton({
     }
   };
 
-  return <ProfileMenuButton showLogout={showLogout} onLogout={onLogout} />;
+  return <ProfileMenuButton showLogout={showLogout} onLogout={onLogout} headerLayout={headerLayout} />;
 }

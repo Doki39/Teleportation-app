@@ -10,6 +10,11 @@ export const profileStyles = StyleSheet.create({
     zIndex: 50,
     borderRadius: 999,
   },
+  profileWrapInline: {
+    position: "relative",
+    zIndex: 50,
+    borderRadius: 999,
+  },
   profileButton: {
     ...iconButtonBase,
     backgroundColor: "rgba(255,255,255,0.06)",

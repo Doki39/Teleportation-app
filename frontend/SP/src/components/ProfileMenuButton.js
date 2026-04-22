@@ -7,12 +7,13 @@ import {
   View,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { profileStyles } from "../styles/profileStyles";
 import { ui } from "../theme/ui";
 import { platformShadow, USE_NATIVE_DRIVER } from "../utils/platformStyles";
 
-function ProfileAvatarTrigger({ onPress }) {
+function ProfileAvatarTrigger({ onPress, inline }) {
   const scale = useRef(new Animated.Value(1)).current;
   const glow = useRef(new Animated.Value(0)).current;
   const hovered = useRef(false);
@@ -45,7 +46,13 @@ function ProfileAvatarTrigger({ onPress }) {
   );
 
   return (
-    <Animated.View style={[profileStyles.profileWrap, shadowStyle, { transform: [{ scale }] }]}>
+    <Animated.View
+      style={[
+        inline ? profileStyles.profileWrapInline : profileStyles.profileWrap,
+        shadowStyle,
+        { transform: [{ scale }] },
+      ]}
+    >
       <Pressable
         onPress={onPress}
         onHoverIn={() => {
@@ -71,8 +78,9 @@ function ProfileAvatarTrigger({ onPress }) {
   );
 }
 
-export default function ProfileMenuButton({ onLogout, showLogout = true }) {
+export default function ProfileMenuButton({ onLogout, showLogout = true, headerLayout = false }) {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
@@ -87,14 +95,18 @@ export default function ProfileMenuButton({ onLogout, showLogout = true }) {
     await onLogout?.();
   };
 
+  const menuAnchorStyle = headerLayout
+    ? [profileStyles.profileMenuAnchor, { top: insets.top + 58, right: 24 }]
+    : profileStyles.profileMenuAnchor;
+
   return (
     <>
-      <ProfileAvatarTrigger onPress={() => setOpen(true)} />
+      <ProfileAvatarTrigger inline={headerLayout} onPress={() => setOpen(true)} />
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={close}>
         <View style={profileStyles.profileMenuRoot}>
           <Pressable style={profileStyles.profileMenuBackdrop} onPress={close} accessibilityLabel="Close menu" />
-          <View style={[profileStyles.profileMenuAnchor, { pointerEvents: "box-none" }]}>
+          <View style={[menuAnchorStyle, { pointerEvents: "box-none" }]}>
             <View style={profileStyles.profileMenuCard} accessibilityRole="menu">
               <Pressable
                 style={({ pressed }) => [profileStyles.profileMenuRow, pressed && { opacity: 0.85 }]}
