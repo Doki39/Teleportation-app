@@ -27,7 +27,7 @@ export default function SouProgramHeaderLogo() {
   return (
     <View style={[styles.wrap, { top, left, width: logoW, height: logoH }]} pointerEvents="none">
       <Image
-        source={require("./Logo_RGB.png")}
+        source={require("../../assets/images/logo.png")}
         style={{ width: logoW, height: logoH }}
         resizeMode="contain"
         accessibilityLabel="ŠOU Program"
