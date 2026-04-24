@@ -23,6 +23,11 @@ const patchValidators = [
   body("current_password")
     .notEmpty()
     .withMessage("Current password is required to save changes"),
+  body("new_password")
+    .optional({ checkFalsy: true })
+    .isString()
+    .isLength({ min: 8 })
+    .withMessage("New password must be at least 8 characters"),
   body("first_name").optional({ values: "null" }).trim().notEmpty().withMessage("First name cannot be empty"),
   body("last_name").optional({ values: "null" }).trim().notEmpty().withMessage("Last name cannot be empty"),
   body("email")
@@ -101,7 +106,10 @@ router.patch("/me", requireAuth, patchValidators, async (req, res) => {
   }
 
   const allowedKeys = ["first_name", "last_name", "email", "phone_number"];
-  const hasAny = allowedKeys.some((k) => Object.prototype.hasOwnProperty.call(req.body, k));
+  const newPwdRaw = req.body.new_password;
+  const hasNewPassword = newPwdRaw != null && String(newPwdRaw).trim() !== "";
+  const hasAny =
+    allowedKeys.some((k) => Object.prototype.hasOwnProperty.call(req.body, k)) || hasNewPassword;
   if (!hasAny) {
     return res.status(400).json({ message: "No updatable fields provided" });
   }
@@ -123,7 +131,16 @@ router.patch("/me", requireAuth, patchValidators, async (req, res) => {
       return res.status(403).json({ message: "Invalid password" });
     }
 
-    const result = await patchUser(uid, req.body);
+    const profilePayload = { ...req.body };
+    delete profilePayload.new_password;
+    delete profilePayload.current_password;
+
+    let newPasswordHash = null;
+    if (hasNewPassword) {
+      newPasswordHash = await bcrypt.hash(String(newPwdRaw).trim(), 10);
+    }
+
+    const result = await patchUser(uid, profilePayload, { passwordHash: newPasswordHash });
     if (result.error === "empty") {
       return res.status(400).json({ message: result.message });
     }

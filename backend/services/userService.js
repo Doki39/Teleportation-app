@@ -61,7 +61,7 @@ export async function isPhoneNumberRegistered(phone_number) {
 
 const PATCHABLE = ["first_name", "last_name", "email", "phone_number"];
 
-export async function patchUser(uid, rawBody) {
+export async function patchUser(uid, rawBody, { passwordHash = null } = {}) {
   const updates = {};
   for (const key of PATCHABLE) {
     if (Object.prototype.hasOwnProperty.call(rawBody, key)) {
@@ -74,7 +74,8 @@ export async function patchUser(uid, rawBody) {
   }
 
   const keys = Object.keys(updates).filter((k) => updates[k] !== undefined && updates[k] !== "");
-  if (keys.length === 0) {
+  const hasPassword = passwordHash != null && String(passwordHash).length > 0;
+  if (keys.length === 0 && !hasPassword) {
     return { error: "empty", message: "No updatable fields provided" };
   }
 
@@ -84,6 +85,11 @@ export async function patchUser(uid, rawBody) {
   for (const key of keys) {
     fragments.push(`${key} = $${i}`);
     values.push(updates[key]);
+    i++;
+  }
+  if (hasPassword) {
+    fragments.push(`password_hash = $${i}`);
+    values.push(passwordHash);
     i++;
   }
   values.push(uid);

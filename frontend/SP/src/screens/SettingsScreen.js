@@ -48,6 +48,7 @@ export default function SettingsScreen({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [form, setForm] = useState(emptyForm);
   const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
@@ -82,6 +83,7 @@ export default function SettingsScreen({ navigation }) {
       setNeedsLogin(true);
       setForm(emptyForm);
       setCurrentPassword("");
+      setNewPassword("");
       setLoading(false);
       return;
     }
@@ -114,6 +116,7 @@ export default function SettingsScreen({ navigation }) {
       if (err.response?.status === 401) {
         setNeedsLogin(true);
         setForm(emptyForm);
+        setNewPassword("");
       } else if (!hasCache) {
         Alert.alert("Could not load profile", formatAxiosError(err));
       }
@@ -154,15 +157,29 @@ export default function SettingsScreen({ navigation }) {
       setFormError(check.error);
       return;
     }
+    const newPwd = newPassword.trim();
+    if (newPwd.length > 0 && newPwd.length < 8) {
+      setFormError("New password must be at least 8 characters.");
+      return;
+    }
     setFormError("");
     setSaving(true);
     try {
-      await updateCurrentUser({
+      const payload = {
         ...trimmed,
         current_password: pwd,
-      });
+      };
+      if (newPwd.length > 0) {
+        payload.new_password = newPwd;
+      }
+      await updateCurrentUser(payload);
       setCurrentPassword("");
-      showSuccessBanner("Successfully updated — your settings have been saved.");
+      setNewPassword("");
+      if (newPwd.length > 0) {
+        showSuccessBanner("Your password was successfully changed.");
+      } else {
+        showSuccessBanner("Successfully updated — your settings have been saved.");
+      }
     } catch (err) {
       const msg = formatAxiosError(err);
       if (err.response?.status === 401) {
@@ -385,6 +402,27 @@ export default function SettingsScreen({ navigation }) {
                   onChangeText={(t) => {
                     setFormError("");
                     setCurrentPassword(t);
+                  }}
+                  editable={!saving}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={[authStyles.authField, { marginTop: 16 }]}>
+                <Text style={authStyles.authLabel}>New password</Text>
+                <Text style={{ color: ui.colors.muted, fontSize: 12, marginBottom: 8 }}>
+                  Leave empty to keep your current password. At least 8 characters if you set a new one.
+                </Text>
+                <TextInput
+                  placeholder="New password (optional)"
+                  placeholderTextColor={ui.colors.muted}
+                  style={authStyles.authInput}
+                  value={newPassword}
+                  onChangeText={(t) => {
+                    setFormError("");
+                    setNewPassword(t);
                   }}
                   editable={!saving}
                   secureTextEntry
