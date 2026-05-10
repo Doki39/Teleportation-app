@@ -327,6 +327,13 @@ export default function HomeScreen({ navigation }) {
             label="View Library"
             onPress={() => navigation.replace("Library")}
           />
+          {guestUploadAllowed && (
+            <ActionButton
+              icon={<Ionicons name="person-add-outline" size={20} color={ui.colors.primary} />}
+              label="Register"
+              onPress={() => navigation.replace("Registration")}
+            />
+          )}
           {loggedIn && isAdmin && (
             <ActionButton
               icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
@@ -348,28 +355,6 @@ export default function HomeScreen({ navigation }) {
         ]}
       >
         <SlideShow title="Where people went with us" />
-
-        {!loggedIn && guestUploadAllowed && (
-          <View style={[homeStyles.guestWrap, { marginTop: 12, marginBottom: 8 }]}>
-            <Text style={[homeStyles.guestText, { marginBottom: 10 }]}>
-              Sign in to keep your library on your account across devices. Guest images stay available for this browser
-              session.
-            </Text>
-            <View style={homeStyles.secondaryWrap}>
-              <ActionButton
-                icon={<Ionicons name="log-in-outline" size={20} color={ui.colors.secondary} />}
-                label="Log In"
-                onPress={() => navigation.replace("Login")}
-                variant="secondary"
-              />
-              <ActionButton
-                icon={<Ionicons name="person-add-outline" size={20} color={ui.colors.primary} />}
-                label="Register"
-                onPress={() => navigation.replace("Registration")}
-              />
-            </View>
-          </View>
-        )}
 
         {!loggedIn && !guestUploadAllowed && (
           <>

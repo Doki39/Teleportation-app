@@ -1,14 +1,16 @@
 import { StyleSheet } from "react-native";
 import { ui } from "../theme/ui";
-import { centerContent, glassBorder, textBold, textMuted } from "./bases";
+import { centerContent, glassBorder, textMuted } from "./bases";
 
 export const authStyles = StyleSheet.create({
   authScreen: {
     flex: 1,
     backgroundColor: ui.colors.background,
+  },
+  authScrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingVertical: 24,
-    justifyContent: "center",
   },
   authForm: {
     maxWidth: 400,
@@ -16,7 +18,6 @@ export const authStyles = StyleSheet.create({
     width: "100%",
     gap: 24,
   },
-  authTitle: { ...textBold, fontSize: 22, textAlign: "center" },
   authField: {
     gap: 8,
   },
