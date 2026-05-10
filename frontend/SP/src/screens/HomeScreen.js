@@ -186,10 +186,10 @@ export default function HomeScreen({ navigation }) {
   const handleCamera = () => handlePhotoFlow(openCamera, navigation, photoFlowOptions);
 
   const BUTTONS_TOP = canvasH / 2 + ROCKET_SIZE / 2 + 24 + 40;
-  const GUEST_UPLOAD_BUTTONS_TOP = canvasH / 2 + 32;
   const homeHeaderClearance = Math.max(insets.top, Platform.OS === "ios" ? 8 : 4) + 78;
 
   const guestUploadAllowed = !loggedIn && guestEntryModeEnabled;
+  const showPrimaryActions = loggedIn || guestUploadAllowed;
 
   const mainContent = (
     <>
@@ -309,37 +309,14 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {loggedIn && (
+      {showPrimaryActions && (
         <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>
           <RocketButton onPress={handleCamera} baseScale={rocketScale} />
         </View>
       )}
 
-      {loggedIn && (
+      {showPrimaryActions && (
         <View style={[homeStyles.buttonsWrap, { top: BUTTONS_TOP }]}>
-              <ActionButton
-                icon={<Ionicons name="cloud-upload-outline" size={20} color={ui.colors.primary} />}
-                label="Upload from Library"
-                onPress={handleUpload}
-              />
-              <ActionButton
-                icon={<Ionicons name="images-outline" size={20} color={ui.colors.secondary} />}
-                label="View Library"
-                onPress={() => navigation.replace("Library")}
-              />
-              {isAdmin && (
-                <ActionButton
-                  icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
-                  label="Admin panel"
-                  onPress={() => navigation.navigate("AdminPanel")}
-                  variant="secondary"
-                />
-              )}
-        </View>
-      )}
-
-      {guestUploadAllowed && (
-        <View style={[homeStyles.buttonsWrap, { top: GUEST_UPLOAD_BUTTONS_TOP }]}>
           <ActionButton
             icon={<Ionicons name="cloud-upload-outline" size={20} color={ui.colors.primary} />}
             label="Upload from Library"
@@ -349,8 +326,15 @@ export default function HomeScreen({ navigation }) {
             icon={<Ionicons name="images-outline" size={20} color={ui.colors.secondary} />}
             label="View Library"
             onPress={() => navigation.replace("Library")}
-            variant="secondary"
           />
+          {loggedIn && isAdmin && (
+            <ActionButton
+              icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
+              label="Admin panel"
+              onPress={() => navigation.navigate("AdminPanel")}
+              variant="secondary"
+            />
+          )}
         </View>
       )}
 
@@ -358,12 +342,34 @@ export default function HomeScreen({ navigation }) {
         style={[
           homeStyles.homeContentWrapper,
           {
-            pointerEvents: loggedIn || guestUploadAllowed ? "box-none" : "auto",
+            pointerEvents: showPrimaryActions ? "box-none" : "auto",
             paddingTop: homeHeaderClearance,
           },
         ]}
       >
         <SlideShow title="Where people went with us" />
+
+        {!loggedIn && guestUploadAllowed && (
+          <View style={[homeStyles.guestWrap, { marginTop: 12, marginBottom: 8 }]}>
+            <Text style={[homeStyles.guestText, { marginBottom: 10 }]}>
+              Sign in to keep your library on your account across devices. Guest images stay available for this browser
+              session.
+            </Text>
+            <View style={homeStyles.secondaryWrap}>
+              <ActionButton
+                icon={<Ionicons name="log-in-outline" size={20} color={ui.colors.secondary} />}
+                label="Log In"
+                onPress={() => navigation.replace("Login")}
+                variant="secondary"
+              />
+              <ActionButton
+                icon={<Ionicons name="person-add-outline" size={20} color={ui.colors.primary} />}
+                label="Register"
+                onPress={() => navigation.replace("Registration")}
+              />
+            </View>
+          </View>
+        )}
 
         {!loggedIn && !guestUploadAllowed && (
           <>
@@ -387,30 +393,6 @@ export default function HomeScreen({ navigation }) {
               </View>
             </View>
             <View style={{ flex: 1 }} />
-          </>
-        )}
-
-        {!loggedIn && guestUploadAllowed && (
-          <>
-            <View style={{ flex: 1 }} />
-            <View style={homeStyles.guestWrap}>
-              <Text style={[homeStyles.guestText, { textAlign: "center", marginBottom: 12 }]}>
-                Log in or register to save images to your library and unlock the camera.
-              </Text>
-              <View style={homeStyles.secondaryWrap}>
-                <ActionButton
-                  icon={<Ionicons name="log-in-outline" size={20} color={ui.colors.secondary} />}
-                  label="Log In"
-                  onPress={() => navigation.replace("Login")}
-                  variant="secondary"
-                />
-                <ActionButton
-                  icon={<Ionicons name="person-add-outline" size={20} color={ui.colors.primary} />}
-                  label="Register"
-                  onPress={() => navigation.replace("Registration")}
-                />
-              </View>
-            </View>
           </>
         )}
       </View>
