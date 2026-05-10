@@ -32,23 +32,12 @@ const adminDashboardStyles = StyleSheet.create({
     flexShrink: 0,
     alignSelf: "stretch",
   },
-  adminPanelCard: {
-    flex: 0,
-    flexGrow: 0,
-    flexShrink: 0,
-    width: "100%",
-    maxWidth: 560,
-    alignSelf: "center",
-    overflow: "hidden",
-  },
   entryToggleRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
     paddingVertical: 4,
-    width: "100%",
-    maxWidth: "100%",
   },
   entryToggleLabels: {
     flex: 1,
@@ -56,15 +45,11 @@ const adminDashboardStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginRight: 8,
-    minWidth: 0,
-    flexShrink: 1,
   },
   entryToggleLabel: {
     fontSize: 13,
     color: ui.colors.muted,
     flex: 1,
-    flexShrink: 1,
-    minWidth: 0,
   },
   entryToggleLabelActive: {
     color: ui.colors.text,
@@ -75,30 +60,13 @@ const adminDashboardStyles = StyleSheet.create({
     flexShrink: 0,
     alignSelf: "stretch",
   },
-  scrollRoot: {
-    flex: 1,
-    minHeight: 0,
-    width: "100%",
-  },
-  scrollContent: {
+  entryBlock: {
+    zIndex: 2,
     paddingHorizontal: 14,
-    paddingTop: 8,
-    paddingBottom: 40,
-    alignItems: "center",
-    width: "100%",
-  },
-  cardBodyText: {
-    width: "100%",
-    alignSelf: "stretch",
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 });
-
-const cardOuter = [
-  promptStyles.promptMgmtBoardOuter,
-  adminDashboardStyles.contentCard,
-  adminDashboardStyles.boardCard,
-  adminDashboardStyles.adminPanelCard,
-];
 
 export default function AdminDashboardScreen({ navigation }) {
   const allowed = useRequireAdmin(navigation);
@@ -160,144 +128,6 @@ export default function AdminDashboardScreen({ navigation }) {
     }
   };
 
-  const adminScrollContent = (
-    <>
-      <View style={[...cardOuter, { marginBottom: 16 }]}>
-        <Text style={[promptStyles.promptMgmtModalTitle, adminDashboardStyles.cardBodyText, { marginBottom: 8 }]}>
-          Home entry mode
-        </Text>
-        <Text style={[promptStyles.promptMgmtModalMessage, adminDashboardStyles.cardBodyText, { marginBottom: 14 }]}>
-          When Guest is on, anyone can use upload on the home screen without logging in (same for every device).
-          Optional env ALLOW_GUEST_HOME_FLOW=true still forces guest API access if you use it for deployment.
-        </Text>
-        <View style={adminDashboardStyles.entryToggleRow}>
-          <View style={adminDashboardStyles.entryToggleLabels}>
-            <Text
-              style={[
-                adminDashboardStyles.entryToggleLabel,
-                !guestModeEnabled && adminDashboardStyles.entryToggleLabelActive,
-              ]}
-              numberOfLines={2}
-            >
-              Registration
-            </Text>
-            <Text
-              style={[
-                adminDashboardStyles.entryToggleLabel,
-                guestModeEnabled && adminDashboardStyles.entryToggleLabelActive,
-              ]}
-              numberOfLines={2}
-            >
-              Guest
-            </Text>
-          </View>
-          <View style={{ flexShrink: 0 }}>
-            <Switch
-              value={guestModeEnabled}
-              onValueChange={(v) => {
-                setGuestModeEnabled(v);
-                void patchGuestHomeFlow(v).catch(() => {
-                  setGuestModeEnabled(!v);
-                });
-              }}
-              trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
-              thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
-              ios_backgroundColor="rgba(148,163,184,0.35)"
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle guest mode versus registration mode"
-              accessibilityState={{ checked: guestModeEnabled }}
-            />
-          </View>
-        </View>
-      </View>
-
-      <View style={[...cardOuter, { marginBottom: 16 }]}>
-        <Text style={[promptStyles.promptMgmtModalTitle, adminDashboardStyles.cardBodyText, { marginBottom: 8 }]}>
-          Bonus generations
-        </Text>
-        <Text style={[promptStyles.promptMgmtModalMessage, adminDashboardStyles.cardBodyText, { marginBottom: 16 }]}>
-          Set extra generations on top of the default {DEFAULT_CAP} per user. Example: bonus 2 → 5 total allowed.
-        </Text>
-
-        <Text style={promptStyles.promptMgmtLabel}>User email</Text>
-        <TextInput
-          style={promptStyles.promptMgmtInput}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="user@example.com"
-          placeholderTextColor={ui.colors.muted}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-        />
-
-        <Text style={promptStyles.promptMgmtLabel}>Bonus generations</Text>
-        <TextInput
-          style={promptStyles.promptMgmtInput}
-          value={bonusGenerations}
-          onChangeText={setBonusGenerations}
-          placeholder="0"
-          placeholderTextColor={ui.colors.muted}
-          keyboardType="number-pad"
-        />
-
-        {feedback && (
-          <Text
-            style={[
-              promptStyles.promptMgmtModalMessage,
-              adminDashboardStyles.cardBodyText,
-              { marginTop: 12, color: feedback.type === "ok" ? ui.colors.secondary : "#f87171" },
-            ]}
-          >
-            {feedback.text}
-          </Text>
-        )}
-
-        <TouchableOpacity
-          style={[promptStyles.promptMgmtChangeImageBtn, { marginTop: 16, opacity: saving ? 0.7 : 1 }]}
-          onPress={onSubmitBonus}
-          disabled={saving}
-          accessibilityRole="button"
-          accessibilityLabel="Save bonus generations"
-        >
-          {saving ? (
-            <ActivityIndicator color={ui.colors.primary} />
-          ) : (
-            <>
-              <Ionicons name="save-outline" size={22} color={ui.colors.primary} />
-              <Text style={[promptStyles.promptMgmtModalBtnText, { color: ui.colors.text }]}>Save</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[promptStyles.promptMgmtOption, promptStyles.promptMgmtOptionCreate, { marginTop: 24 }]}
-          onPress={() => navigation.navigate("PromptManagement")}
-          accessibilityRole="button"
-          accessibilityLabel="Open prompt management"
-        >
-          <Ionicons name="construct-outline" size={28} color={ui.colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={promptStyles.promptMgmtOptionTitle}>Prompt management</Text>
-            <Text style={promptStyles.promptMgmtOptionSubtitle}>Create and edit teleport prompts</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={22} color={ui.colors.muted} />
-        </TouchableOpacity>
-      </View>
-    </>
-  );
-
-  const scrollView = (
-    <ScrollView
-      style={adminDashboardStyles.scrollRoot}
-      contentContainerStyle={adminDashboardStyles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator
-    >
-      {adminScrollContent}
-    </ScrollView>
-  );
-
   return (
     <View style={libraryStyles.libraryScreen}>
       <BackgroundParticles width={width} height={height} />
@@ -313,17 +143,135 @@ export default function AdminDashboardScreen({ navigation }) {
         <View style={promptStyles.promptBackBtn} />
       </View>
 
-      {Platform.OS === "web" ? (
-        <View style={adminDashboardStyles.scrollRoot}>{scrollView}</View>
-      ) : (
-        <KeyboardAvoidingView
-          style={adminDashboardStyles.scrollRoot}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <View style={adminDashboardStyles.entryBlock}>
+          <View
+            style={[
+              promptStyles.promptMgmtBoardOuter,
+              adminDashboardStyles.contentCard,
+              adminDashboardStyles.boardCard,
+            ]}
+          >
+            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
+            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
+              When Guest is on, the home screen allows upload without login for everyone. Optional: set
+              ALLOW_GUEST_HOME_FLOW=true in server env.
+            </Text>
+            <View style={adminDashboardStyles.entryToggleRow}>
+              <View style={adminDashboardStyles.entryToggleLabels}>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, !guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Registration
+                </Text>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Guest
+                </Text>
+              </View>
+              <Switch
+                value={guestModeEnabled}
+                onValueChange={(v) => {
+                  setGuestModeEnabled(v);
+                  void patchGuestHomeFlow(v).catch(() => {
+                    setGuestModeEnabled(!v);
+                  });
+                }}
+                trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
+                thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
+                ios_backgroundColor="rgba(148,163,184,0.35)"
+                accessibilityRole="switch"
+                accessibilityLabel="Toggle guest mode versus registration mode"
+                accessibilityState={{ checked: guestModeEnabled }}
+              />
+            </View>
+          </View>
+        </View>
+
+        <ScrollView
+          style={promptStyles.promptMgmtListScroll}
+          contentContainerStyle={{ paddingBottom: 32, paddingTop: 0, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          {scrollView}
-        </KeyboardAvoidingView>
-      )}
+          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.contentCard, adminDashboardStyles.boardCard]}>
+            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Bonus generations</Text>
+            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 16 }]}>
+              Set extra generations on top of the default {DEFAULT_CAP} per user. Example: bonus 2 → 5 total allowed.
+            </Text>
+
+            <Text style={promptStyles.promptMgmtLabel}>User email</Text>
+            <TextInput
+              style={promptStyles.promptMgmtInput}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="user@example.com"
+              placeholderTextColor={ui.colors.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+            />
+
+            <Text style={promptStyles.promptMgmtLabel}>Bonus generations</Text>
+            <TextInput
+              style={promptStyles.promptMgmtInput}
+              value={bonusGenerations}
+              onChangeText={setBonusGenerations}
+              placeholder="0"
+              placeholderTextColor={ui.colors.muted}
+              keyboardType="number-pad"
+            />
+
+            {feedback && (
+              <Text
+                style={[
+                  promptStyles.promptMgmtModalMessage,
+                  { marginTop: 12, color: feedback.type === "ok" ? ui.colors.secondary : "#f87171" },
+                ]}
+              >
+                {feedback.text}
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={[promptStyles.promptMgmtChangeImageBtn, { marginTop: 16, opacity: saving ? 0.7 : 1 }]}
+              onPress={onSubmitBonus}
+              disabled={saving}
+              accessibilityRole="button"
+              accessibilityLabel="Save bonus generations"
+            >
+              {saving ? (
+                <ActivityIndicator color={ui.colors.primary} />
+              ) : (
+                <>
+                  <Ionicons name="save-outline" size={22} color={ui.colors.primary} />
+                  <Text style={[promptStyles.promptMgmtModalBtnText, { color: ui.colors.text }]}>Save</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[promptStyles.promptMgmtOption, promptStyles.promptMgmtOptionCreate, { marginTop: 24 }]}
+              onPress={() => navigation.navigate("PromptManagement")}
+              accessibilityRole="button"
+              accessibilityLabel="Open prompt management"
+            >
+              <Ionicons name="construct-outline" size={28} color={ui.colors.primary} />
+              <View style={{ flex: 1 }}>
+                <Text style={promptStyles.promptMgmtOptionTitle}>Prompt management</Text>
+                <Text style={promptStyles.promptMgmtOptionSubtitle}>Create and edit teleport prompts</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color={ui.colors.muted} />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
