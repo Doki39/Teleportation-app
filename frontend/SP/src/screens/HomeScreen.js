@@ -26,7 +26,7 @@ import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 import { getWebHomePortalScale, getWebHomeRocketScale, getWebHomeScale } from "../utils/webLayout";
 import { useWebViewportSize } from "../utils/useWebViewportSize";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getGuestEntryMode } from "../utils/guestEntryMode";
+import { fetchPublicConfig } from "../services/configServices";
 
 const ROCKET_SIZE = 118;
 
@@ -66,8 +66,14 @@ export default function HomeScreen({ navigation }) {
       if (token) setLoggedIn(true);
       const u = await getStoredUser();
       setIsAdmin(isUserAdmin(u));
-      const guestMode = await getGuestEntryMode();
-      setGuestEntryModeEnabled(guestMode);
+      try {
+        const cfg = await fetchPublicConfig();
+        if (typeof cfg?.guestHomeFlowEnabled === "boolean") {
+          setGuestEntryModeEnabled(cfg.guestHomeFlowEnabled);
+        }
+      } catch {
+        setGuestEntryModeEnabled(false);
+      }
     };
     checkLogin();
   }, []);
@@ -76,8 +82,18 @@ export default function HomeScreen({ navigation }) {
     useCallback(() => {
       let cancelled = false;
       (async () => {
-        const guestMode = await getGuestEntryMode();
-        if (!cancelled) setGuestEntryModeEnabled(guestMode);
+        try {
+          const cfg = await fetchPublicConfig();
+          if (
+            !cancelled &&
+            cfg &&
+            typeof cfg.guestHomeFlowEnabled === "boolean"
+          ) {
+            setGuestEntryModeEnabled(cfg.guestHomeFlowEnabled);
+          }
+        } catch {
+          if (!cancelled) setGuestEntryModeEnabled(false);
+        }
         const token = await AsyncStorage.getItem("token");
         if (!token) {
           setIsAdmin(false);
