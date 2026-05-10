@@ -1,6 +1,6 @@
 import express from "express";
 import { pool } from "../data/dbconnection.js";
-import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
+import { requireAuth, requireAdmin, optionalAuth, requireUserOrGuestHomeFlow } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/", requireAuth, async (_req, res) => {
+router.get("/", optionalAuth, requireUserOrGuestHomeFlow, async (_req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM prompt_selection");
     return res.json(rows);

@@ -1,11 +1,14 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { buildFormData } from "../utils/photoFormat";
 import { API_BASE_URL } from "../config/api";
 import { getBearerAuthHeader, getJsonAuthHeaders } from "../utils/apiAuth";
 import { throwFromFailedResponse } from "../utils/apiError";
 
 export async function uploadPhotoToDrive({ uri, file }) {
-  const headers = await getBearerAuthHeader();
+  const token = await AsyncStorage.getItem("token");
   const formData = await buildFormData({ uri, file });
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_BASE_URL}/api/photos/upload`, {
     method: "POST",
     headers,
@@ -33,7 +36,9 @@ export async function generatePromptPreview({ imageUrl, modifyText }) {
 }
 
 export async function sendPhotoToGenerate(imageUrl, promptId) {
-  const headers = await getJsonAuthHeaders();
+  const token = await AsyncStorage.getItem("token");
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_BASE_URL}/api/photos/generate`, {
     method: "POST",
     headers,

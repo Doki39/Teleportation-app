@@ -5,7 +5,14 @@ import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
 import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
-import { requireAuth, requireAdmin, userIsAdmin, requireGenerationQuota } from "../middleware/authMiddleware.js";
+import {
+  requireAuth,
+  requireAdmin,
+  userIsAdmin,
+  requireGenerationQuota,
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+} from "../middleware/authMiddleware.js";
 import { compressUploadIfNeeded } from "../middleware/imageCompressionMiddleware.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
@@ -81,18 +88,31 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), compressUploadIfNeeded, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No photo sent" });
+function requireGenerationQuotaIfUser(req, res, next) {
+  if (!req.user) return next();
+  return requireGenerationQuota(req, res, next);
+}
+
+router.post(
+  "/upload",
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+  requireGenerationQuotaIfUser,
+  uploadToDrive.single("image"),
+  compressUploadIfNeeded,
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo sent" });
+      }
+      const imageUrl = await uploadImage(req.file);
+      return res.json({ imageUrl });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: err.message || "Upload to Drive failed" });
     }
-    const imageUrl = await uploadImage(req.file);
-    return res.json({ imageUrl });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message || "Upload to Drive failed" });
   }
-});
+);
 
 router.post(
   "/upload-local",
@@ -152,7 +172,7 @@ router.post(
   }
 );
 
-router.post("/generate", requireAuth, async (req, res) => {
+router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, res) => {
   try {
     const { imageUrl, promptId } = req.body;
     if (!imageUrl) {
@@ -178,6 +198,13 @@ router.post("/generate", requireAuth, async (req, res) => {
       filename: `generated-${nanoid()}.jpg`,
       mimeType: "image/jpeg",
     });
+
+    if (!req.user) {
+      return res.status(200).json({
+        processed_uri: processedUri,
+        guest: true,
+      });
+    }
 
     const unprocessedImageUri = imageUrl;
 

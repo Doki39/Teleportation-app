@@ -1,6 +1,46 @@
 import jwt from "jsonwebtoken";
 import { pool } from "../data/dbconnection.js";
 
+export function optionalAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    req.user = null;
+    return next();
+  }
+  const token = header.slice("Bearer ".length).trim();
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    req.user = null;
+    return next();
+  }
+  try {
+    const payload = jwt.verify(token, secret);
+    if (!payload.uid) {
+      req.user = null;
+      return next();
+    }
+    req.user = {
+      uid: payload.uid,
+      email: payload.email,
+      role: payload.role ?? payload.roles ?? "user",
+    };
+    next();
+  } catch {
+    req.user = null;
+    next();
+  }
+}
+
+export function allowGuestHomeFlow() {
+  return process.env.ALLOW_GUEST_HOME_FLOW === "true";
+}
+
+export function requireUserOrGuestHomeFlow(req, res, next) {
+  if (req.user) return next();
+  if (allowGuestHomeFlow()) return next();
+  return res.status(401).json({ message: "Unauthorized" });
+}
+
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {

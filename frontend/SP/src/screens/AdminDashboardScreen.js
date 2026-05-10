@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
 import { patchUserBonusGenerations } from "../services/adminServices";
+import { getGuestEntryMode, setGuestEntryMode } from "../utils/guestEntryMode";
 
 const DEFAULT_CAP = 3;
 
@@ -54,6 +55,17 @@ const adminDashboardStyles = StyleSheet.create({
     color: ui.colors.text,
     fontWeight: "600",
   },
+  contentCard: {
+    flexGrow: 0,
+    flexShrink: 0,
+    alignSelf: "stretch",
+  },
+  entryBlock: {
+    zIndex: 2,
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 10,
+  },
 });
 
 export default function AdminDashboardScreen({ navigation }) {
@@ -64,6 +76,17 @@ export default function AdminDashboardScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [guestModeEnabled, setGuestModeEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!allowed) return;
+    let cancelled = false;
+    getGuestEntryMode().then((v) => {
+      if (!cancelled) setGuestModeEnabled(v);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [allowed]);
 
   if (!allowed) {
     return (
@@ -121,15 +144,18 @@ export default function AdminDashboardScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        <ScrollView
-          style={promptStyles.promptMgmtListScroll}
-          contentContainerStyle={{ paddingBottom: 32, paddingTop: 8 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.boardCard, { marginBottom: 16 }]}>
+        <View style={adminDashboardStyles.entryBlock}>
+          <View
+            style={[
+              promptStyles.promptMgmtBoardOuter,
+              adminDashboardStyles.contentCard,
+              adminDashboardStyles.boardCard,
+            ]}
+          >
             <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
             <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
-              Switch between registration flow (login required) and guest flow. Backend hook-up will be added later.
+              Guests see upload on the home screen when Guest is on. The server must set ALLOW_GUEST_HOME_FLOW=true for
+              unauthenticated upload and generation.
             </Text>
             <View style={adminDashboardStyles.entryToggleRow}>
               <View style={adminDashboardStyles.entryToggleLabels}>
@@ -148,7 +174,10 @@ export default function AdminDashboardScreen({ navigation }) {
               </View>
               <Switch
                 value={guestModeEnabled}
-                onValueChange={setGuestModeEnabled}
+                onValueChange={(v) => {
+                  setGuestModeEnabled(v);
+                  void setGuestEntryMode(v);
+                }}
                 trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
                 thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
                 ios_backgroundColor="rgba(148,163,184,0.35)"
@@ -158,8 +187,14 @@ export default function AdminDashboardScreen({ navigation }) {
               />
             </View>
           </View>
+        </View>
 
-          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.boardCard]}>
+        <ScrollView
+          style={promptStyles.promptMgmtListScroll}
+          contentContainerStyle={{ paddingBottom: 32, paddingTop: 0, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.contentCard, adminDashboardStyles.boardCard]}>
             <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Bonus generations</Text>
             <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 16 }]}>
               Set extra generations on top of the default {DEFAULT_CAP} per user. Example: bonus 2 → 5 total allowed.
