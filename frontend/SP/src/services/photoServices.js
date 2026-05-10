@@ -8,6 +8,9 @@ import { ensureGuestSessionId } from "../utils/guestSession";
 export async function uploadPhotoToDrive({ uri, file }) {
   const token = await AsyncStorage.getItem("token");
   const formData = await buildFormData({ uri, file });
+  if (!token) {
+    formData.append("guestSessionId", await ensureGuestSessionId());
+  }
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_BASE_URL}/api/photos/upload`, {

@@ -10,6 +10,8 @@ import {
   requireAdmin,
   userIsAdmin,
   requireGenerationQuota,
+  requireGenerationQuotaUniversal,
+  requireGuestGenerationQuotaAfterUpload,
   optionalAuth,
   requireUserOrGuestHomeFlow,
   isGuestHomeFlowAllowed,
@@ -144,6 +146,7 @@ router.post(
   requireUserOrGuestHomeFlow,
   requireGenerationQuotaIfUser,
   uploadToDrive.single("image"),
+  requireGuestGenerationQuotaAfterUpload,
   compressUploadIfNeeded,
   async (req, res) => {
     try {
@@ -217,7 +220,12 @@ router.post(
   }
 );
 
-router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, res) => {
+router.post(
+  "/generate",
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+  requireGenerationQuotaUniversal,
+  async (req, res) => {
   try {
     const { imageUrl, promptId, guestSessionId: rawGuestSession } = req.body;
     if (!imageUrl) {
@@ -248,9 +256,6 @@ router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, r
 
     if (!req.user) {
       const guestSessionId = normalizeGuestSessionId(rawGuestSession);
-      if (!guestSessionId) {
-        return res.status(400).json({ message: "guestSessionId is required for guest generation" });
-      }
       const { rows: inserted } = await pool.query(
         `INSERT INTO photos (uid, guest_session_id, unprocessed_image_uri, processed_uri)
          VALUES (NULL, $1, $2, $3) RETURNING *`,
@@ -275,6 +280,7 @@ router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, r
     console.error(err);
     res.status(500).json({ error: err.message });
   }
-});
+  }
+);
 
 export default router;

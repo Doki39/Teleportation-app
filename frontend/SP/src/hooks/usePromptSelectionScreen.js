@@ -89,8 +89,12 @@ export function usePromptSelectionScreen({ route, navigation }) {
         InteractionManager.runAfterInteractions(() => goToLibrary());
       }
     } catch (error) {
-      const generationFailedMessage =
-        "We couldn’t generate your image. Please make sure the photo is appropriate and try again. If this keeps happening, contact support.";
+      const isGenerationLimit = error?.code === "GENERATION_LIMIT";
+      const generationFailedMessage = isGenerationLimit
+        ? error?.message ||
+          "You have reached your generation limit. Contact support if you need more."
+        : "We couldn’t generate your image. Please make sure the photo is appropriate and try again. If this keeps happening, contact support.";
+      const alertTitle = isGenerationLimit ? "Generation limit reached" : "Image generation failed";
       const goHomeAndNotify = () => {
         navigation.dispatch(
           CommonActions.reset({
@@ -100,7 +104,9 @@ export function usePromptSelectionScreen({ route, navigation }) {
         );
         if (Platform.OS === "web" && typeof window !== "undefined" && typeof window.confirm === "function") {
           setTimeout(() => {
-            const wantsSupport = window.confirm(`${generationFailedMessage}\n\nPress OK to contact support.`);
+            const wantsSupport = window.confirm(
+              `${generationFailedMessage}\n\nPress OK to contact support.`
+            );
             if (wantsSupport) {
               navigation.navigate("ContactSupport");
             }
@@ -108,7 +114,7 @@ export function usePromptSelectionScreen({ route, navigation }) {
         } else {
           setTimeout(
             () =>
-              Alert.alert("Image generation failed", generationFailedMessage, [
+              Alert.alert(alertTitle, generationFailedMessage, [
                 { text: "Back to Home", style: "cancel" },
                 { text: "Contact Support", onPress: () => navigation.navigate("ContactSupport") },
               ]),

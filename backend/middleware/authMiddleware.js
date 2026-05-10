@@ -97,7 +97,14 @@ export async function requireAdmin(req, res, next) {
   }
 }
 
-const MAX_GENERATIONS_PER_USER = 3;
+export const MAX_GENERATIONS_PER_USER = 3;
+
+function normalizeGuestSessionIdForQuota(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s || s.length > 64) return null;
+  if (!/^[a-zA-Z0-9_-]+$/.test(s)) return null;
+  return s;
+}
 
 export async function requireGenerationQuota(req, res, next) {
   try {
@@ -123,6 +130,61 @@ export async function requireGenerationQuota(req, res, next) {
     next();
   } catch (err) {
     console.error("requireGenerationQuota:", err);
+    return res.status(500).json({ message: "Could not verify generation quota" });
+  }
+}
+
+async function guestGenerationCount(guestSessionId) {
+  const { rows } = await pool.query(
+    "SELECT COUNT(*)::int AS c FROM photos WHERE guest_session_id = $1",
+    [guestSessionId]
+  );
+  return rows[0]?.c ?? 0;
+}
+
+export async function requireGenerationQuotaUniversal(req, res, next) {
+  try {
+    if (req.user) {
+      if (await userIsAdmin(req.user.uid)) return next();
+      return requireGenerationQuota(req, res, next);
+    }
+    const guestSessionId = normalizeGuestSessionIdForQuota(req.body?.guestSessionId);
+    if (!guestSessionId) {
+      return res.status(400).json({ message: "guestSessionId is required for guest generation" });
+    }
+    const count = await guestGenerationCount(guestSessionId);
+    if (count >= MAX_GENERATIONS_PER_USER) {
+      return res.status(403).json({
+        message:
+          "You have reached the limit of generations for this guest session (3). Sign in for an account or contact support if you need more.",
+        code: "GENERATION_LIMIT",
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("requireGenerationQuotaUniversal:", err);
+    return res.status(500).json({ message: "Could not verify generation quota" });
+  }
+}
+
+export async function requireGuestGenerationQuotaAfterUpload(req, res, next) {
+  if (req.user) return next();
+  try {
+    const guestSessionId = normalizeGuestSessionIdForQuota(req.body?.guestSessionId);
+    if (!guestSessionId) {
+      return res.status(400).json({ message: "guestSessionId is required for guest upload" });
+    }
+    const count = await guestGenerationCount(guestSessionId);
+    if (count >= MAX_GENERATIONS_PER_USER) {
+      return res.status(403).json({
+        message:
+          "You have reached the limit of generations for this guest session (3). Sign in for an account or contact support if you need more.",
+        code: "GENERATION_LIMIT",
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("requireGuestGenerationQuotaAfterUpload:", err);
     return res.status(500).json({ message: "Could not verify generation quota" });
   }
 }
