@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -30,6 +31,29 @@ const adminDashboardStyles = StyleSheet.create({
     flexShrink: 0,
     alignSelf: "stretch",
   },
+  entryToggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 4,
+  },
+  entryToggleLabels: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginRight: 8,
+  },
+  entryToggleLabel: {
+    fontSize: 13,
+    color: ui.colors.muted,
+    flex: 1,
+  },
+  entryToggleLabelActive: {
+    color: ui.colors.text,
+    fontWeight: "600",
+  },
 });
 
 export default function AdminDashboardScreen({ navigation }) {
@@ -39,6 +63,7 @@ export default function AdminDashboardScreen({ navigation }) {
   const [bonusGenerations, setBonusGenerations] = useState("");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [guestModeEnabled, setGuestModeEnabled] = useState(false);
 
   if (!allowed) {
     return (
@@ -101,6 +126,39 @@ export default function AdminDashboardScreen({ navigation }) {
           contentContainerStyle={{ paddingBottom: 32, paddingTop: 8 }}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.boardCard, { marginBottom: 16 }]}>
+            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
+            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
+              Switch between registration flow (login required) and guest flow. Backend hook-up will be added later.
+            </Text>
+            <View style={adminDashboardStyles.entryToggleRow}>
+              <View style={adminDashboardStyles.entryToggleLabels}>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, !guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Registration
+                </Text>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Guest
+                </Text>
+              </View>
+              <Switch
+                value={guestModeEnabled}
+                onValueChange={setGuestModeEnabled}
+                trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
+                thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
+                ios_backgroundColor="rgba(148,163,184,0.35)"
+                accessibilityRole="switch"
+                accessibilityLabel="Toggle guest mode versus registration mode"
+                accessibilityState={{ checked: guestModeEnabled }}
+              />
+            </View>
+          </View>
+
           <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.boardCard]}>
             <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Bonus generations</Text>
             <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 16 }]}>
