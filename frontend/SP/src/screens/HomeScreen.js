@@ -345,6 +345,12 @@ export default function HomeScreen({ navigation }) {
             label="Upload from Library"
             onPress={handleUpload}
           />
+          <ActionButton
+            icon={<Ionicons name="images-outline" size={20} color={ui.colors.secondary} />}
+            label="View Library"
+            onPress={() => navigation.replace("Library")}
+            variant="secondary"
+          />
         </View>
       )}
 

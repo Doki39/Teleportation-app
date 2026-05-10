@@ -13,6 +13,7 @@ import promptRoutes from "./routes/prompt.js";
 import adminRoutes from "./routes/admin.js";
 import configRoutes from "./routes/config.js";
 import { ensureAppSettingsTable } from "./services/appSettingsService.js";
+import { ensurePhotosGuestSessionSupport } from "./services/photosSchemaService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "uploads");
@@ -115,6 +116,12 @@ async function start() {
     await ensureAppSettingsTable();
   } catch (err) {
     console.error("[appSettings] Table init:", err.message);
+  }
+
+  try {
+    await ensurePhotosGuestSessionSupport();
+  } catch (err) {
+    console.error("[photosSchema] Init:", err.message);
   }
 
   app.listen(PORT, () => {

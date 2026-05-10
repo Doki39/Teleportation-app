@@ -12,6 +12,7 @@ import {
   requireGenerationQuota,
   optionalAuth,
   requireUserOrGuestHomeFlow,
+  isGuestHomeFlowAllowed,
 } from "../middleware/authMiddleware.js";
 import { compressUploadIfNeeded } from "../middleware/imageCompressionMiddleware.js";
 
@@ -52,6 +53,50 @@ function toAbsoluteImageUrl(imageUrl, req) {
   const pathPart = s.startsWith("/") ? s : `/${s}`;
   return `${origin}${pathPart}`;
 }
+
+function normalizeGuestSessionId(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s || s.length > 64) return null;
+  if (!/^[a-zA-Z0-9_-]+$/.test(s)) return null;
+  return s;
+}
+
+router.get("/guest-session", async (req, res) => {
+  try {
+    if (!(await isGuestHomeFlowAllowed())) {
+      return res.status(403).json({ message: "Guest library is not available" });
+    }
+    const sessionId = normalizeGuestSessionId(req.query.sessionId);
+    if (!sessionId) {
+      return res.status(400).json({ message: "sessionId is required" });
+    }
+    const rawPage = Number.parseInt(String(req.query.page ?? "1"), 10);
+    const rawLimit = Number.parseInt(String(req.query.limit ?? "10"), 10);
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 10;
+    const offset = (page - 1) * limit;
+    const countResult = await pool.query(
+      "SELECT COUNT(*)::int AS total FROM photos WHERE guest_session_id = $1",
+      [sessionId]
+    );
+    const total = countResult.rows[0]?.total ?? 0;
+    const rowsResult = await pool.query(
+      `SELECT * FROM photos WHERE guest_session_id = $1 ORDER BY created_at DESC NULLS LAST, id DESC LIMIT $2 OFFSET $3`,
+      [sessionId, limit, offset]
+    );
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return res.json({
+      items: rowsResult.rows,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
+  } catch (err) {
+    console.error("GET /photos/guest-session:", err);
+    res.status(500).json({ message: "Failed to fetch guest photos" });
+  }
+});
 
 router.get("/", requireAuth, async (req, res) => {
   try {
@@ -174,7 +219,7 @@ router.post(
 
 router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, res) => {
   try {
-    const { imageUrl, promptId } = req.body;
+    const { imageUrl, promptId, guestSessionId: rawGuestSession } = req.body;
     if (!imageUrl) {
       return res.status(400).json({ message: "No imageUrl provided" });
     }
@@ -199,14 +244,20 @@ router.post("/generate", optionalAuth, requireUserOrGuestHomeFlow, async (req, r
       mimeType: "image/jpeg",
     });
 
-    if (!req.user) {
-      return res.status(200).json({
-        processed_uri: processedUri,
-        guest: true,
-      });
-    }
-
     const unprocessedImageUri = imageUrl;
+
+    if (!req.user) {
+      const guestSessionId = normalizeGuestSessionId(rawGuestSession);
+      if (!guestSessionId) {
+        return res.status(400).json({ message: "guestSessionId is required for guest generation" });
+      }
+      const { rows: inserted } = await pool.query(
+        `INSERT INTO photos (uid, guest_session_id, unprocessed_image_uri, processed_uri)
+         VALUES (NULL, $1, $2, $3) RETURNING *`,
+        [guestSessionId, unprocessedImageUri, processedUri]
+      );
+      return res.status(201).json({ ...inserted[0], guest: true });
+    }
 
     const { rows: inserted } = await pool.query(
       "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",

@@ -3,6 +3,7 @@ import { buildFormData } from "../utils/photoFormat";
 import { API_BASE_URL } from "../config/api";
 import { getBearerAuthHeader, getJsonAuthHeaders } from "../utils/apiAuth";
 import { throwFromFailedResponse } from "../utils/apiError";
+import { ensureGuestSessionId } from "../utils/guestSession";
 
 export async function uploadPhotoToDrive({ uri, file }) {
   const token = await AsyncStorage.getItem("token");
@@ -39,10 +40,14 @@ export async function sendPhotoToGenerate(imageUrl, promptId) {
   const token = await AsyncStorage.getItem("token");
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
+  const body = { imageUrl, promptId };
+  if (!token) {
+    body.guestSessionId = await ensureGuestSessionId();
+  }
   const response = await fetch(`${API_BASE_URL}/api/photos/generate`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ imageUrl, promptId }),
+    body: JSON.stringify(body),
   });
   const text = await response.text();
   if (!response.ok) {

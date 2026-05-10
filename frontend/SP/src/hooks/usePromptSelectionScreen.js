@@ -6,6 +6,7 @@ import {
   PROMPT_WHEEL_ITEM_SIZE,
 } from "../styles/promptStyles";
 import { sendPhotoToGenerate } from "../services/photoServices";
+import { appendGuestLibraryCache } from "../utils/guestSession";
 import { getPromptSelection } from "../services/promptServices";
 import { getPromptDisplayTitle } from "../utils/promptDisplay";
 import { resolvePromptImageUri } from "../utils/promptSelectionHelpers";
@@ -71,28 +72,8 @@ export function usePromptSelectionScreen({ route, navigation }) {
     setIsProcessing(true);
     try {
       const data = await sendPhotoToGenerate(imageUrl, selected.id);
-      const goHome = () => {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: "Home" }],
-          })
-        );
-      };
-      if (data?.guest) {
-        if (Platform.OS === "web" && typeof window !== "undefined" && typeof window.alert === "function") {
-          setTimeout(() => {
-            window.alert("Your image was generated. Log in to save images to your library.");
-            goHome();
-          }, 0);
-        } else {
-          InteractionManager.runAfterInteractions(() => {
-            Alert.alert("Done", "Your image was generated. Log in to save images to your library.", [
-              { text: "OK", onPress: goHome },
-            ]);
-          });
-        }
-        return;
+      if (data?.guest && data?.id != null) {
+        await appendGuestLibraryCache(data);
       }
       const goToLibrary = () => {
         navigation.dispatch(

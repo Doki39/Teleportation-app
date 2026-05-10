@@ -158,8 +158,9 @@ export default function AdminDashboardScreen({ navigation }) {
           >
             <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
             <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
-              When Guest is on, the home screen allows upload without login for everyone. Optional: set
-              ALLOW_GUEST_HOME_FLOW=true in server env.
+              Guest mode lets visitors use upload, generation, and a session-based library without creating an account.
+              The same setting applies to all devices once saved. For deployments, you can also enable
+              ALLOW_GUEST_HOME_FLOW=true in the server environment to permit unauthenticated API access.
             </Text>
             <View style={adminDashboardStyles.entryToggleRow}>
               <View style={adminDashboardStyles.entryToggleLabels}>

@@ -22,6 +22,22 @@ export async function getGeneratedPhotos({ page = 1, limit = 10 } = {}) {
   return response.json();
 }
 
+export async function getGuestSessionPhotos({ sessionId, page = 1, limit = 10 }) {
+  const q = new URLSearchParams({
+    sessionId: String(sessionId),
+    page: String(page),
+    limit: String(limit),
+  });
+  const response = await fetch(`${API_BASE_URL}/api/photos/guest-session?${q}`, {
+    method: "GET",
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Server responded with ${response.status}: ${text}`);
+  }
+  return response.json();
+}
+
 export async function getPhotosForSlide() {
   const response = await fetch(`${API_BASE_URL}/api/photos/slides`, {
     method: "GET",
