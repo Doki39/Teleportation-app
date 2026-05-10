@@ -21,8 +21,8 @@ import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
-import { patchUserBonusGenerations } from "../services/adminServices";
-import { getGuestEntryMode, setGuestEntryMode } from "../utils/guestEntryMode";
+import { patchUserBonusGenerations, patchGuestHomeFlow } from "../services/adminServices";
+import { fetchPublicConfig } from "../services/configServices";
 
 const DEFAULT_CAP = 3;
 
@@ -101,9 +101,13 @@ export default function AdminDashboardScreen({ navigation }) {
   useEffect(() => {
     if (!allowed) return;
     let cancelled = false;
-    getGuestEntryMode().then((v) => {
-      if (!cancelled) setGuestModeEnabled(v);
-    });
+    fetchPublicConfig()
+      .then((cfg) => {
+        if (!cancelled && typeof cfg?.guestHomeFlowEnabled === "boolean") {
+          setGuestModeEnabled(cfg.guestHomeFlowEnabled);
+        }
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -180,8 +184,8 @@ export default function AdminDashboardScreen({ navigation }) {
             <Text
               style={[promptStyles.promptMgmtModalMessage, adminDashboardStyles.cardBodyText, { marginBottom: 14 }]}
             >
-              Guests see upload on the home screen when Guest is on. The server must set ALLOW_GUEST_HOME_FLOW=true for
-              unauthenticated upload and generation.
+              When Guest is on, anyone can use upload on the home screen without logging in (same for every device).
+              Optional env ALLOW_GUEST_HOME_FLOW=true still forces guest API access if you use it for deployment.
             </Text>
             <View style={adminDashboardStyles.entryToggleRow}>
               <View style={adminDashboardStyles.entryToggleLabels}>
@@ -203,7 +207,9 @@ export default function AdminDashboardScreen({ navigation }) {
                   value={guestModeEnabled}
                   onValueChange={(v) => {
                     setGuestModeEnabled(v);
-                    void setGuestEntryMode(v);
+                    void patchGuestHomeFlow(v).catch(() => {
+                      setGuestModeEnabled(!v);
+                    });
                   }}
                   trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
                   thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { pool } from "../data/dbconnection.js";
+import { getGuestHomeFlowEnabled } from "../services/appSettingsService.js";
 
 export function optionalAuth(req, res, next) {
   const header = req.headers.authorization;
@@ -31,13 +32,24 @@ export function optionalAuth(req, res, next) {
   }
 }
 
-export function allowGuestHomeFlow() {
-  return process.env.ALLOW_GUEST_HOME_FLOW === "true";
+export async function isGuestHomeFlowAllowed() {
+  if (process.env.ALLOW_GUEST_HOME_FLOW === "true") return true;
+  try {
+    return await getGuestHomeFlowEnabled();
+  } catch (e) {
+    console.error("isGuestHomeFlowAllowed:", e);
+    return false;
+  }
 }
 
-export function requireUserOrGuestHomeFlow(req, res, next) {
+export async function requireUserOrGuestHomeFlow(req, res, next) {
   if (req.user) return next();
-  if (allowGuestHomeFlow()) return next();
+  try {
+    if (await isGuestHomeFlowAllowed()) return next();
+  } catch (e) {
+    console.error("requireUserOrGuestHomeFlow:", e);
+    return res.status(500).json({ message: "Server error" });
+  }
   return res.status(401).json({ message: "Unauthorized" });
 }
 

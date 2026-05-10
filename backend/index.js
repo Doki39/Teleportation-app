@@ -11,6 +11,8 @@ import authRoutes from "./routes/auth.js";
 import photosSlidesRoutes from "./routes/photosSlides.js";
 import promptRoutes from "./routes/prompt.js";
 import adminRoutes from "./routes/admin.js";
+import configRoutes from "./routes/config.js";
+import { ensureAppSettingsTable } from "./services/appSettingsService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "uploads");
@@ -90,6 +92,7 @@ app.use("/api/photos", (req, res, next) => {
 
 app.use("/api/prompts", promptRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/config", configRoutes);
 
 app.get("/api/db-health", async (_req, res) => {
   try {
@@ -106,6 +109,12 @@ async function start() {
     await initGoogleCredentials();
   } catch (err) {
     console.error("[googleAuthService] Failed to load Google credentials from S3:", err.message);
+  }
+
+  try {
+    await ensureAppSettingsTable();
+  } catch (err) {
+    console.error("[appSettings] Table init:", err.message);
   }
 
   app.listen(PORT, () => {
