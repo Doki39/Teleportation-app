@@ -32,12 +32,23 @@ const adminDashboardStyles = StyleSheet.create({
     flexShrink: 0,
     alignSelf: "stretch",
   },
+  adminPanelCard: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
+    overflow: "hidden",
+  },
   entryToggleRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
     paddingVertical: 4,
+    width: "100%",
+    maxWidth: "100%",
   },
   entryToggleLabels: {
     flex: 1,
@@ -45,11 +56,15 @@ const adminDashboardStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginRight: 8,
+    minWidth: 0,
+    flexShrink: 1,
   },
   entryToggleLabel: {
     fontSize: 13,
     color: ui.colors.muted,
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   entryToggleLabelActive: {
     color: ui.colors.text,
@@ -62,9 +77,15 @@ const adminDashboardStyles = StyleSheet.create({
   },
   entryBlock: {
     zIndex: 2,
+    width: "100%",
     paddingHorizontal: 14,
     paddingTop: 4,
     paddingBottom: 10,
+    alignItems: "center",
+  },
+  cardBodyText: {
+    width: "100%",
+    alignSelf: "stretch",
   },
 });
 
@@ -150,10 +171,15 @@ export default function AdminDashboardScreen({ navigation }) {
               promptStyles.promptMgmtBoardOuter,
               adminDashboardStyles.contentCard,
               adminDashboardStyles.boardCard,
+              adminDashboardStyles.adminPanelCard,
             ]}
           >
-            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
-            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
+            <Text style={[promptStyles.promptMgmtModalTitle, adminDashboardStyles.cardBodyText, { marginBottom: 8 }]}>
+              Home entry mode
+            </Text>
+            <Text
+              style={[promptStyles.promptMgmtModalMessage, adminDashboardStyles.cardBodyText, { marginBottom: 14 }]}
+            >
               Guests see upload on the home screen when Guest is on. The server must set ALLOW_GUEST_HOME_FLOW=true for
               unauthenticated upload and generation.
             </Text>
@@ -172,31 +198,49 @@ export default function AdminDashboardScreen({ navigation }) {
                   Guest
                 </Text>
               </View>
-              <Switch
-                value={guestModeEnabled}
-                onValueChange={(v) => {
-                  setGuestModeEnabled(v);
-                  void setGuestEntryMode(v);
-                }}
-                trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
-                thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
-                ios_backgroundColor="rgba(148,163,184,0.35)"
-                accessibilityRole="switch"
-                accessibilityLabel="Toggle guest mode versus registration mode"
-                accessibilityState={{ checked: guestModeEnabled }}
-              />
+              <View style={{ flexShrink: 0 }}>
+                <Switch
+                  value={guestModeEnabled}
+                  onValueChange={(v) => {
+                    setGuestModeEnabled(v);
+                    void setGuestEntryMode(v);
+                  }}
+                  trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
+                  thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
+                  ios_backgroundColor="rgba(148,163,184,0.35)"
+                  accessibilityRole="switch"
+                  accessibilityLabel="Toggle guest mode versus registration mode"
+                  accessibilityState={{ checked: guestModeEnabled }}
+                />
+              </View>
             </View>
           </View>
         </View>
 
         <ScrollView
           style={promptStyles.promptMgmtListScroll}
-          contentContainerStyle={{ paddingBottom: 32, paddingTop: 0, flexGrow: 1 }}
+          contentContainerStyle={{
+            paddingBottom: 32,
+            paddingTop: 0,
+            flexGrow: 1,
+            alignItems: "center",
+            width: "100%",
+          }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.contentCard, adminDashboardStyles.boardCard]}>
-            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Bonus generations</Text>
-            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 16 }]}>
+          <View
+            style={[
+              promptStyles.promptMgmtBoardOuter,
+              adminDashboardStyles.contentCard,
+              adminDashboardStyles.boardCard,
+              adminDashboardStyles.adminPanelCard,
+              { marginBottom: 16 },
+            ]}
+          >
+            <Text style={[promptStyles.promptMgmtModalTitle, adminDashboardStyles.cardBodyText, { marginBottom: 8 }]}>
+              Bonus generations
+            </Text>
+            <Text style={[promptStyles.promptMgmtModalMessage, adminDashboardStyles.cardBodyText, { marginBottom: 16 }]}>
               Set extra generations on top of the default {DEFAULT_CAP} per user. Example: bonus 2 → 5 total allowed.
             </Text>
 
@@ -226,6 +270,7 @@ export default function AdminDashboardScreen({ navigation }) {
               <Text
                 style={[
                   promptStyles.promptMgmtModalMessage,
+                  adminDashboardStyles.cardBodyText,
                   { marginTop: 12, color: feedback.type === "ok" ? ui.colors.secondary : "#f87171" },
                 ]}
               >
