@@ -17,6 +17,7 @@ import {
   isGuestHomeFlowAllowed,
 } from "../middleware/authMiddleware.js";
 import { compressUploadIfNeeded } from "../middleware/imageCompressionMiddleware.js";
+import { syncPhotosIdSequence } from "../services/photosSchemaService.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
@@ -27,6 +28,41 @@ function isPhotosLibraryUniqueViolation(err) {
   if (err?.code !== "23505") return false;
   const c = String(err.constraint || "");
   return c === PHOTOS_UID_PROCESSED_URI_UNIQUE || c.includes("photos_uid_processed_uri");
+}
+
+function isPhotosPkeyDuplicate(err) {
+  return err?.code === "23505" && String(err.constraint || "") === "photos_pkey";
+}
+
+async function insertGeneratedPhotoRow({ uid, guestSessionId, unprocessedImageUri, processedUri }) {
+  const guestInsert = () =>
+    pool.query(
+      `INSERT INTO photos (uid, guest_session_id, unprocessed_image_uri, processed_uri)
+       VALUES (NULL, $1, $2, $3) RETURNING *`,
+      [guestSessionId, unprocessedImageUri, processedUri]
+    );
+  const userInsert = () =>
+    pool.query(
+      "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",
+      [uid, unprocessedImageUri, processedUri]
+    );
+  try {
+    if (uid == null) {
+      const { rows } = await guestInsert();
+      return rows;
+    }
+    const { rows } = await userInsert();
+    return rows;
+  } catch (err) {
+    if (!isPhotosPkeyDuplicate(err)) throw err;
+    await syncPhotosIdSequence();
+    if (uid == null) {
+      const { rows } = await guestInsert();
+      return rows;
+    }
+    const { rows } = await userInsert();
+    return rows;
+  }
 }
 
 router.get("/drive-media/:fileId", async (req, res) => {
@@ -256,18 +292,21 @@ router.post(
 
     if (!req.user) {
       const guestSessionId = normalizeGuestSessionId(rawGuestSession);
-      const { rows: inserted } = await pool.query(
-        `INSERT INTO photos (uid, guest_session_id, unprocessed_image_uri, processed_uri)
-         VALUES (NULL, $1, $2, $3) RETURNING *`,
-        [guestSessionId, unprocessedImageUri, processedUri]
-      );
+      const inserted = await insertGeneratedPhotoRow({
+        uid: null,
+        guestSessionId,
+        unprocessedImageUri,
+        processedUri,
+      });
       return res.status(201).json({ ...inserted[0], guest: true });
     }
 
-    const { rows: inserted } = await pool.query(
-      "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",
-      [req.user.uid, unprocessedImageUri, processedUri]
-    );
+    const inserted = await insertGeneratedPhotoRow({
+      uid: req.user.uid,
+      guestSessionId: null,
+      unprocessedImageUri,
+      processedUri,
+    });
 
     return res.status(201).json(inserted[0]);
   } catch (err) {
