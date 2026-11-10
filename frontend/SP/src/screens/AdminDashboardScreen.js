@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -20,7 +21,8 @@ import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { useRequireAdmin } from "../hooks/useRequireAdmin";
-import { patchUserBonusGenerations } from "../services/adminServices";
+import { patchUserBonusGenerations, patchGuestHomeFlow } from "../services/adminServices";
+import { fetchPublicConfig } from "../services/configServices";
 
 const DEFAULT_CAP = 3;
 
@@ -29,6 +31,40 @@ const adminDashboardStyles = StyleSheet.create({
     flexGrow: 0,
     flexShrink: 0,
     alignSelf: "stretch",
+  },
+  entryToggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 4,
+  },
+  entryToggleLabels: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginRight: 8,
+  },
+  entryToggleLabel: {
+    fontSize: 13,
+    color: ui.colors.muted,
+    flex: 1,
+  },
+  entryToggleLabelActive: {
+    color: ui.colors.text,
+    fontWeight: "600",
+  },
+  contentCard: {
+    flexGrow: 0,
+    flexShrink: 0,
+    alignSelf: "stretch",
+  },
+  entryBlock: {
+    zIndex: 2,
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 });
 
@@ -39,6 +75,22 @@ export default function AdminDashboardScreen({ navigation }) {
   const [bonusGenerations, setBonusGenerations] = useState("");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [guestModeEnabled, setGuestModeEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!allowed) return;
+    let cancelled = false;
+    fetchPublicConfig()
+      .then((cfg) => {
+        if (!cancelled && typeof cfg?.guestHomeFlowEnabled === "boolean") {
+          setGuestModeEnabled(cfg.guestHomeFlowEnabled);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [allowed]);
 
   if (!allowed) {
     return (
@@ -96,12 +148,60 @@ export default function AdminDashboardScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
+        <View style={adminDashboardStyles.entryBlock}>
+          <View
+            style={[
+              promptStyles.promptMgmtBoardOuter,
+              adminDashboardStyles.contentCard,
+              adminDashboardStyles.boardCard,
+            ]}
+          >
+            <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Home entry mode</Text>
+            <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 14 }]}>
+              Guest mode lets visitors use upload, generation, and a session-based library without creating an account.
+              The same setting applies to all devices once saved. For deployments, you can also enable
+              ALLOW_GUEST_HOME_FLOW=true in the server environment to permit unauthenticated API access.
+            </Text>
+            <View style={adminDashboardStyles.entryToggleRow}>
+              <View style={adminDashboardStyles.entryToggleLabels}>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, !guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Registration
+                </Text>
+                <Text
+                  style={[adminDashboardStyles.entryToggleLabel, guestModeEnabled && adminDashboardStyles.entryToggleLabelActive]}
+                  numberOfLines={2}
+                >
+                  Guest
+                </Text>
+              </View>
+              <Switch
+                value={guestModeEnabled}
+                onValueChange={(v) => {
+                  setGuestModeEnabled(v);
+                  void patchGuestHomeFlow(v).catch(() => {
+                    setGuestModeEnabled(!v);
+                  });
+                }}
+                trackColor={{ false: "rgba(148,163,184,0.35)", true: "rgba(124,58,237,0.55)" }}
+                thumbColor={guestModeEnabled ? ui.colors.primary : "#f4f4f5"}
+                ios_backgroundColor="rgba(148,163,184,0.35)"
+                accessibilityRole="switch"
+                accessibilityLabel="Toggle guest mode versus registration mode"
+                accessibilityState={{ checked: guestModeEnabled }}
+              />
+            </View>
+          </View>
+        </View>
+
         <ScrollView
           style={promptStyles.promptMgmtListScroll}
-          contentContainerStyle={{ paddingBottom: 32, paddingTop: 8 }}
+          contentContainerStyle={{ paddingBottom: 32, paddingTop: 0, flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.boardCard]}>
+          <View style={[promptStyles.promptMgmtBoardOuter, adminDashboardStyles.contentCard, adminDashboardStyles.boardCard]}>
             <Text style={[promptStyles.promptMgmtModalTitle, { marginBottom: 8 }]}>Bonus generations</Text>
             <Text style={[promptStyles.promptMgmtModalMessage, { marginBottom: 16 }]}>
               Set extra generations on top of the default {DEFAULT_CAP} per user. Example: bonus 2 → 5 total allowed.

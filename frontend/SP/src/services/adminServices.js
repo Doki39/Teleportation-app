@@ -45,6 +45,20 @@ export async function postPhotoRotation({ imageUrl, location }) {
   return text ? JSON.parse(text) : null;
 }
 
+export async function patchGuestHomeFlow(enabled) {
+  const headers = await getJsonAuthHeaders();
+  const response = await fetch(`${API_BASE_URL}/api/admin/settings/guest-home-flow`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ enabled: Boolean(enabled) }),
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throwFromFailedResponse(response.status, text);
+  }
+  return text ? JSON.parse(text) : {};
+}
+
 export async function patchUserBonusGenerations(email, bonusGenerations) {
   const headers = await getJsonAuthHeaders();
   const n = Number.parseInt(String(bonusGenerations), 10);

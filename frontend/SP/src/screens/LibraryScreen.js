@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -15,7 +16,12 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import ConnectedProfileMenuButton from "../components/ConnectedProfileMenuButton";
 import ImagePreviewModal from "../components/ImagePreviewModal";
 import HeaderBackButton from "../components/HeaderBackButton";
-import { getGeneratedPhotos, normalizePhotosListResponse } from "../services/libraryServices";
+import { getGeneratedPhotos, getGuestSessionPhotos, normalizePhotosListResponse } from "../services/libraryServices";
+import {
+  ensureGuestSessionId,
+  getGuestLibraryCache,
+  mergeGuestPhotoLists,
+} from "../utils/guestSession";
 import { goBackOrHome } from "../utils/navigationHelpers";
 import { libraryStyles } from "../styles/libraryStyles";
 import { promptStyles } from "../styles/promptStyles";
@@ -47,36 +53,64 @@ export default function LibraryScreen({ navigation }) {
     checkLogin();
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadPhotos = useCallback(async () => {
     setLoading(true);
-    (async () => {
-      try {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      setLoggedIn(!!token);
+      if (token) {
         const data = await getGeneratedPhotos({ page, limit: PAGE_SIZE });
-        if (!cancelled) {
-          setPhotos(normalizePhotosListResponse(data));
-          setTotalPages(
-            Array.isArray(data)
-              ? 1
-              : Number.isFinite(data?.totalPages)
-                ? Math.max(1, data.totalPages)
-                : 1
-          );
-        }
-      } catch (err) {
-        if (!cancelled) {
-          Alert.alert("Error", err.message || "Failed to load pictures");
-          setPhotos([]);
-          setTotalPages(1);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+        setPhotos(normalizePhotosListResponse(data));
+        setTotalPages(
+          Array.isArray(data)
+            ? 1
+            : Number.isFinite(data?.totalPages)
+              ? Math.max(1, data.totalPages)
+              : 1
+        );
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      const sessionId = await ensureGuestSessionId();
+      const cached = await getGuestLibraryCache();
+      try {
+        const data = await getGuestSessionPhotos({ sessionId, page, limit: PAGE_SIZE });
+        let items = normalizePhotosListResponse(data);
+        if (page === 1 && cached.length > 0) {
+          const apiIds = new Set(items.map((i) => i.id));
+          const extra = cached.filter((c) => c?.id != null && !apiIds.has(c.id));
+          items = mergeGuestPhotoLists(items, extra);
+        }
+        setPhotos(items);
+        setTotalPages(
+          Array.isArray(data)
+            ? 1
+            : Number.isFinite(data?.totalPages)
+              ? Math.max(1, data.totalPages)
+              : 1
+        );
+      } catch {
+        const start = (page - 1) * PAGE_SIZE;
+        setPhotos(cached.slice(start, start + PAGE_SIZE));
+        setTotalPages(Math.max(1, Math.ceil(cached.length / PAGE_SIZE)));
+      }
+    } catch (err) {
+      Alert.alert("Error", err.message || "Failed to load pictures");
+      setPhotos([]);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
   }, [page]);
+
+  useEffect(() => {
+    void loadPhotos();
+  }, [loadPhotos]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPhotos();
+    }, [loadPhotos])
+  );
 
   const openPreview = useCallback((item) => {
     const uri = buildImageUri(item);
@@ -128,7 +162,9 @@ export default function LibraryScreen({ navigation }) {
         />
         <View style={promptStyles.promptHeaderText}>
           <Text style={promptStyles.promptHeaderTitle}>Library</Text>
-          <Text style={promptStyles.promptHeaderSubtitle}>Tap a photo to preview or download</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>
+            {loggedIn ? "Tap a photo to preview or download" : "Guest session — tap a photo to download. Log in to keep a permanent library."}
+          </Text>
         </View>
       </View>
 

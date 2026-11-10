@@ -5,8 +5,19 @@ import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
 import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
-import { requireAuth, requireAdmin, userIsAdmin, requireGenerationQuota } from "../middleware/authMiddleware.js";
+import {
+  requireAuth,
+  requireAdmin,
+  userIsAdmin,
+  requireGenerationQuota,
+  requireGenerationQuotaUniversal,
+  requireGuestGenerationQuotaAfterUpload,
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+  isGuestHomeFlowAllowed,
+} from "../middleware/authMiddleware.js";
 import { compressUploadIfNeeded } from "../middleware/imageCompressionMiddleware.js";
+import { syncPhotosIdSequence } from "../services/photosSchemaService.js";
 
 const uploadToDrive = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
@@ -17,6 +28,41 @@ function isPhotosLibraryUniqueViolation(err) {
   if (err?.code !== "23505") return false;
   const c = String(err.constraint || "");
   return c === PHOTOS_UID_PROCESSED_URI_UNIQUE || c.includes("photos_uid_processed_uri");
+}
+
+function isPhotosPkeyDuplicate(err) {
+  return err?.code === "23505" && String(err.constraint || "") === "photos_pkey";
+}
+
+async function insertGeneratedPhotoRow({ uid, guestSessionId, unprocessedImageUri, processedUri }) {
+  const guestInsert = () =>
+    pool.query(
+      `INSERT INTO photos (uid, guest_session_id, unprocessed_image_uri, processed_uri)
+       VALUES (NULL, $1, $2, $3) RETURNING *`,
+      [guestSessionId, unprocessedImageUri, processedUri]
+    );
+  const userInsert = () =>
+    pool.query(
+      "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",
+      [uid, unprocessedImageUri, processedUri]
+    );
+  try {
+    if (uid == null) {
+      const { rows } = await guestInsert();
+      return rows;
+    }
+    const { rows } = await userInsert();
+    return rows;
+  } catch (err) {
+    if (!isPhotosPkeyDuplicate(err)) throw err;
+    await syncPhotosIdSequence();
+    if (uid == null) {
+      const { rows } = await guestInsert();
+      return rows;
+    }
+    const { rows } = await userInsert();
+    return rows;
+  }
 }
 
 router.get("/drive-media/:fileId", async (req, res) => {
@@ -45,6 +91,50 @@ function toAbsoluteImageUrl(imageUrl, req) {
   const pathPart = s.startsWith("/") ? s : `/${s}`;
   return `${origin}${pathPart}`;
 }
+
+function normalizeGuestSessionId(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s || s.length > 64) return null;
+  if (!/^[a-zA-Z0-9_-]+$/.test(s)) return null;
+  return s;
+}
+
+router.get("/guest-session", async (req, res) => {
+  try {
+    if (!(await isGuestHomeFlowAllowed())) {
+      return res.status(403).json({ message: "Guest library is not available" });
+    }
+    const sessionId = normalizeGuestSessionId(req.query.sessionId);
+    if (!sessionId) {
+      return res.status(400).json({ message: "sessionId is required" });
+    }
+    const rawPage = Number.parseInt(String(req.query.page ?? "1"), 10);
+    const rawLimit = Number.parseInt(String(req.query.limit ?? "10"), 10);
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 10;
+    const offset = (page - 1) * limit;
+    const countResult = await pool.query(
+      "SELECT COUNT(*)::int AS total FROM photos WHERE guest_session_id = $1",
+      [sessionId]
+    );
+    const total = countResult.rows[0]?.total ?? 0;
+    const rowsResult = await pool.query(
+      `SELECT * FROM photos WHERE guest_session_id = $1 ORDER BY created_at DESC NULLS LAST, id DESC LIMIT $2 OFFSET $3`,
+      [sessionId, limit, offset]
+    );
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return res.json({
+      items: rowsResult.rows,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
+  } catch (err) {
+    console.error("GET /photos/guest-session:", err);
+    res.status(500).json({ message: "Failed to fetch guest photos" });
+  }
+});
 
 router.get("/", requireAuth, async (req, res) => {
   try {
@@ -81,18 +171,32 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/upload", requireAuth, requireGenerationQuota, uploadToDrive.single("image"), compressUploadIfNeeded, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No photo sent" });
+function requireGenerationQuotaIfUser(req, res, next) {
+  if (!req.user) return next();
+  return requireGenerationQuota(req, res, next);
+}
+
+router.post(
+  "/upload",
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+  requireGenerationQuotaIfUser,
+  uploadToDrive.single("image"),
+  requireGuestGenerationQuotaAfterUpload,
+  compressUploadIfNeeded,
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo sent" });
+      }
+      const imageUrl = await uploadImage(req.file);
+      return res.json({ imageUrl });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: err.message || "Upload to Drive failed" });
     }
-    const imageUrl = await uploadImage(req.file);
-    return res.json({ imageUrl });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message || "Upload to Drive failed" });
   }
-});
+);
 
 router.post(
   "/upload-local",
@@ -152,9 +256,14 @@ router.post(
   }
 );
 
-router.post("/generate", requireAuth, async (req, res) => {
+router.post(
+  "/generate",
+  optionalAuth,
+  requireUserOrGuestHomeFlow,
+  requireGenerationQuotaUniversal,
+  async (req, res) => {
   try {
-    const { imageUrl, promptId } = req.body;
+    const { imageUrl, promptId, guestSessionId: rawGuestSession } = req.body;
     if (!imageUrl) {
       return res.status(400).json({ message: "No imageUrl provided" });
     }
@@ -181,10 +290,23 @@ router.post("/generate", requireAuth, async (req, res) => {
 
     const unprocessedImageUri = imageUrl;
 
-    const { rows: inserted } = await pool.query(
-      "INSERT INTO photos (uid, unprocessed_image_uri, processed_uri) VALUES ($1, $2, $3) RETURNING *",
-      [req.user.uid, unprocessedImageUri, processedUri]
-    );
+    if (!req.user) {
+      const guestSessionId = normalizeGuestSessionId(rawGuestSession);
+      const inserted = await insertGeneratedPhotoRow({
+        uid: null,
+        guestSessionId,
+        unprocessedImageUri,
+        processedUri,
+      });
+      return res.status(201).json({ ...inserted[0], guest: true });
+    }
+
+    const inserted = await insertGeneratedPhotoRow({
+      uid: req.user.uid,
+      guestSessionId: null,
+      unprocessedImageUri,
+      processedUri,
+    });
 
     return res.status(201).json(inserted[0]);
   } catch (err) {
@@ -197,6 +319,7 @@ router.post("/generate", requireAuth, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
-});
+  }
+);
 
 export default router;

@@ -28,7 +28,7 @@ import { buildImageUri } from "../utils/photoUtils";
 const LIST_HORIZONTAL_PAD = 16;
 const TILE_GAP = 10;
 const NUM_COLUMNS = 3;
-const RECENT_COUNT = 10;
+const PAGE_SIZE = 10;
 
 function getStoredImageUrl(item) {
   if (!item || typeof item !== "object") return "";
@@ -46,12 +46,12 @@ export default function RotationManagementScreen({ navigation }) {
   const [photos, setPhotos] = useState([]);
   const [rotationEntries, setRotationEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingImageUrl, setPendingImageUrl] = useState("");
   const [locationInput, setLocationInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const recentPhotos = useMemo(() => (Array.isArray(photos) ? photos.slice(0, RECENT_COUNT) : []), [photos]);
 
   const refreshRotation = useCallback(async () => {
     const rows = await getPhotoRotationList();
@@ -73,20 +73,32 @@ export default function RotationManagementScreen({ navigation }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
-        const [rot, photoData] = await Promise.all([
-          getPhotoRotationList(),
-          getGeneratedPhotos({ page: 1, limit: RECENT_COUNT }),
-        ]);
+        const photoPromise = getGeneratedPhotos({ page, limit: PAGE_SIZE });
+        const rotPromise = page === 1 ? getPhotoRotationList() : Promise.resolve(undefined);
+        const [rot, photoData] = await Promise.all([rotPromise, photoPromise]);
         if (!cancelled) {
-          setRotationEntries(Array.isArray(rot) ? rot : []);
+          if (rot !== undefined) {
+            setRotationEntries(Array.isArray(rot) ? rot : []);
+          }
           setPhotos(normalizePhotosListResponse(photoData));
+          setTotalPages(
+            Array.isArray(photoData)
+              ? 1
+              : Number.isFinite(photoData?.totalPages)
+                ? Math.max(1, photoData.totalPages)
+                : 1
+          );
         }
       } catch (e) {
         if (!cancelled) {
           Alert.alert("Error", e.message || "Failed to load");
-          setRotationEntries([]);
+          if (page === 1) {
+            setRotationEntries([]);
+          }
           setPhotos([]);
+          setTotalPages(1);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -95,7 +107,7 @@ export default function RotationManagementScreen({ navigation }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page]);
 
   const onRemoveEntry = useCallback(
     (id) => {
@@ -230,14 +242,14 @@ export default function RotationManagementScreen({ navigation }) {
           })
         )}
 
-        <Text style={[libraryStyles.rotationSectionTitle, { marginTop: 8 }]}>Add from recent</Text>
+        <Text style={[libraryStyles.rotationSectionTitle, { marginTop: 8 }]}>Add from generated photos</Text>
         <Text style={[promptStyles.promptMgmtModalMessage, { paddingHorizontal: 16, marginBottom: 12 }]}>
-          Last {RECENT_COUNT} generated photos (newest first). Add one to the public home slideshow with a location
-          label.
+          {PAGE_SIZE} per page, newest first (page {page} of {totalPages}). Add one to the public home slideshow with a
+          location label.
         </Text>
       </View>
     ),
-    [rotationEntries, onRemoveEntry]
+    [rotationEntries, onRemoveEntry, page, totalPages]
   );
 
   if (!allowed) {
@@ -269,26 +281,52 @@ export default function RotationManagementScreen({ navigation }) {
           <Text style={libraryStyles.libraryLoadingText}>Loading…</Text>
         </View>
       ) : (
-        <FlatList
-          data={recentPhotos}
-          keyExtractor={(item, index) => `recent-${item.id ?? index}`}
-          numColumns={NUM_COLUMNS}
-          columnWrapperStyle={recentPhotos.length > 0 ? libraryStyles.libraryRow : undefined}
-          ListHeaderComponent={listHeader}
-          contentContainerStyle={[
-            libraryStyles.libraryListContent,
-            recentPhotos.length === 0 && rotationEntries.length === 0 && { flex: 1 },
-          ]}
-          renderItem={renderItem}
-          ListEmptyComponent={
-            <View style={libraryStyles.libraryEmptyWrap}>
-              <Text style={libraryStyles.libraryEmptyTitle}>No recent photos</Text>
-              <Text style={libraryStyles.libraryEmptySubtitle}>
-                Generate images from the home screen and they will appear here to add to the rotation.
+        <View style={{ flex: 1 }}>
+          <FlatList
+            style={{ flex: 1 }}
+            data={photos}
+            keyExtractor={(item, index) => String(item.id ?? index)}
+            numColumns={NUM_COLUMNS}
+            columnWrapperStyle={photos.length > 0 ? libraryStyles.libraryRow : undefined}
+            ListHeaderComponent={listHeader}
+            contentContainerStyle={[
+              libraryStyles.libraryListContent,
+              photos.length === 0 && rotationEntries.length === 0 && { flex: 1 },
+            ]}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <View style={libraryStyles.libraryEmptyWrap}>
+                <Text style={libraryStyles.libraryEmptyTitle}>{page > 1 ? "No photos on this page" : "No photos yet"}</Text>
+                <Text style={libraryStyles.libraryEmptySubtitle}>
+                  {page > 1
+                    ? "Try going to the previous page or generate new images from the home screen."
+                    : "Generate images from the home screen and they will appear here to add to the rotation."}
+                </Text>
+              </View>
+            }
+          />
+          {totalPages > 1 && (
+            <View style={libraryStyles.paginationWrap}>
+              <TouchableOpacity
+                style={[libraryStyles.paginationBtn, page <= 1 && libraryStyles.paginationBtnDisabled]}
+                onPress={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <Text style={libraryStyles.paginationBtnText}>Prev</Text>
+              </TouchableOpacity>
+              <Text style={libraryStyles.paginationMeta}>
+                Page {page} / {totalPages}
               </Text>
+              <TouchableOpacity
+                style={[libraryStyles.paginationBtn, page >= totalPages && libraryStyles.paginationBtnDisabled]}
+                onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                <Text style={libraryStyles.paginationBtnText}>Next</Text>
+              </TouchableOpacity>
             </View>
-          }
-        />
+          )}
+        </View>
       )}
 
       <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closeModal}>

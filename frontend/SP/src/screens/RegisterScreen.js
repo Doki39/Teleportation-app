@@ -10,8 +10,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { authStyles } from "../styles/authStyles";
+import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { handleRegistration } from "../services/authServices";
+import HeaderBackButton from "../components/HeaderBackButton";
+import { goBackOrHome } from "../utils/navigationHelpers";
 
 export default function RegisterScreen({ navigation }) {
   const [first_name, setFirst_name] = useState("");
@@ -47,11 +50,19 @@ export default function RegisterScreen({ navigation }) {
   
   return (
     <View style={authStyles.authScreen}>
+      <View style={promptStyles.promptHeader}>
+        <HeaderBackButton
+          onPress={() => goBackOrHome(navigation)}
+          accessibilityLabel="Back to home"
+        />
+        <View style={promptStyles.promptHeaderText}>
+          <Text style={promptStyles.promptHeaderTitle}>Register</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>Create your account</Text>
+        </View>
+      </View>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingVertical: 24 }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={authStyles.authScrollContent} keyboardShouldPersistTaps="handled">
           <View style={authStyles.authForm}>
-            <Text style={authStyles.authTitle}>Register</Text>
-
             <View style={authStyles.authField}>
               <Text style={authStyles.authLabel}>First name</Text>
               <TextInput

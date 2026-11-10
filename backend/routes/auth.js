@@ -46,6 +46,7 @@ router.post(
     }
 
     const { first_name, last_name, email, phone_number, password } = req.body;
+    const phone_digits = String(phone_number ?? "").replace(/\D/g, "");
     const uid = nanoid(16);
     const password_hash = await bcrypt.hash(password, 10);
 
@@ -54,7 +55,7 @@ router.post(
       VALUES ($1, $2, $3, $4, $5, $6, 'user')
       RETURNING uid, first_name, last_name, email, phone_number, COALESCE(role, 'user') AS role;
     `;
-    const values = [uid, first_name, last_name, email, phone_number, password_hash];
+    const values = [uid, first_name, last_name, email, phone_digits, password_hash];
 
     try {
       const { rows } = await pool.query(insertQuery, values);
@@ -75,6 +76,13 @@ router.post(
     } catch (err) {
       console.error("Error inserting user:", err);
       if (err.code === "23505") {
+        const detail = String(err.detail || "");
+        if (/Key \(email\)/i.test(detail)) {
+          return res.status(409).json({ message: "Email already registered" });
+        }
+        if (/Key \(phone_number\)/i.test(detail) || /Key \(phone\)/i.test(detail)) {
+          return res.status(409).json({ message: "Phone number already registered" });
+        }
         const c = String(err.constraint || "");
         if (c.includes("email")) {
           return res.status(409).json({ message: "Email already registered" });

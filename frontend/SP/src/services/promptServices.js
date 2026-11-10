@@ -1,9 +1,12 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { getBearerAuthHeader, getJsonAuthHeaders } from "../utils/apiAuth";
 
 export async function getPromptSelection() {
-  const headers = await getBearerAuthHeader();
+  const token = await AsyncStorage.getItem("token");
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_BASE_URL}/api/prompts`, {
     method: "GET",
     headers,

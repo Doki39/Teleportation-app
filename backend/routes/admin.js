@@ -3,10 +3,32 @@ import { body, validationResult } from "express-validator";
 import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
 import { pool } from "../data/dbconnection.js";
 import { updateBonusGenerationsByEmail } from "../services/userService.js";
+import { setGuestHomeFlowEnabled } from "../services/appSettingsService.js";
 
 const router = express.Router();
 
 const DEFAULT_GENERATION_CAP = 3;
+
+router.patch(
+  "/settings/guest-home-flow",
+  requireAuth,
+  requireAdmin,
+  body("enabled").isBoolean().withMessage("enabled must be true or false"),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: errors.array()[0]?.msg || "Invalid input" });
+    }
+    const enabled = Boolean(req.body.enabled);
+    try {
+      await setGuestHomeFlowEnabled(enabled);
+      return res.json({ guestHomeFlowEnabled: enabled });
+    } catch (err) {
+      console.error("PATCH /admin/settings/guest-home-flow:", err);
+      return res.status(500).json({ message: err.message || "Failed to save setting" });
+    }
+  }
+);
 
 router.patch(
   "/users/bonus-generations",

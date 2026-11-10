@@ -1,5 +1,5 @@
-import { google } from "googleapis";
 import { Readable } from "stream";
+import { getDriveV3 } from "./googleDriveClient.js";
 
 export async function uploadBufferToDrive(buffer, { filename = "image.jpg", mimeType = "image/jpeg" } = {}) {
   const folderId = process.env.DRIVE_UPLOAD_FOLDER_ID;
@@ -7,11 +7,7 @@ export async function uploadBufferToDrive(buffer, { filename = "image.jpg", mime
     throw new Error("DRIVE_UPLOAD_FOLDER_ID is not set");
   }
 
-  const auth = new google.auth.GoogleAuth({
-    scopes: "https://www.googleapis.com/auth/drive",
-  });
-  const authClient = await auth.getClient();
-  const service = google.drive({ version: "v3", auth: authClient });
+  const service = await getDriveV3();
 
   const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
   const requestBody = {

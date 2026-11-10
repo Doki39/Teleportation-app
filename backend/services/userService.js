@@ -1,5 +1,9 @@
 import { pool } from "../data/dbconnection.js";
 
+function phoneDigitsOnly(phone) {
+  return String(phone ?? "").replace(/\D/g, "");
+}
+
 export async function deleteUser(uid) {
   const result = await pool.query(`DELETE FROM users WHERE uid = $1`, [uid]);
   return result.rowCount > 0;
@@ -10,7 +14,7 @@ export async function findUserByEmail(email) {
     `SELECT uid, email, password_hash, first_name, last_name, phone_number,
             COALESCE(role, 'user') AS role,
             COALESCE(bonus_generations, 0)::int AS bonus_generations
-     FROM users WHERE email = $1`,
+     FROM users WHERE lower(trim(email)) = lower(trim($1::text))`,
     [email]
   );
   return rows[0] ?? null;
@@ -37,24 +41,32 @@ export async function findUserPasswordHashByUid(uid) {
 
 export async function emailTakenByOtherUser(email, excludeUid) {
   const { rows } = await pool.query(
-    "SELECT uid FROM users WHERE email = $1 AND uid <> $2",
+    "SELECT uid FROM users WHERE lower(trim(email)) = lower(trim($1::text)) AND uid <> $2",
     [email, excludeUid]
   );
   return rows.length > 0;
 }
 
 export async function phoneTakenByOtherUser(phone_number, excludeUid) {
+  const digits = phoneDigitsOnly(phone_number);
+  if (!digits) return false;
   const { rows } = await pool.query(
-    "SELECT uid FROM users WHERE phone_number = $1 AND uid <> $2",
-    [phone_number, excludeUid]
+    `SELECT uid FROM users
+     WHERE regexp_replace(COALESCE(phone_number::text, ''), '[^0-9]', '', 'g') = $1
+       AND uid <> $2`,
+    [digits, excludeUid]
   );
   return rows.length > 0;
 }
 
 export async function isPhoneNumberRegistered(phone_number) {
+  const digits = phoneDigitsOnly(phone_number);
+  if (!digits) return false;
   const { rows } = await pool.query(
-    "SELECT 1 FROM users WHERE phone_number = $1 LIMIT 1",
-    [phone_number]
+    `SELECT 1 FROM users
+     WHERE regexp_replace(COALESCE(phone_number::text, ''), '[^0-9]', '', 'g') = $1
+     LIMIT 1`,
+    [digits]
   );
   return rows.length > 0;
 }

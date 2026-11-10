@@ -10,8 +10,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { authStyles } from "../styles/authStyles";
+import { promptStyles } from "../styles/promptStyles";
 import { ui } from "../theme/ui";
 import { handleLogin } from "../services/authServices";
+import HeaderBackButton from "../components/HeaderBackButton";
+import { goBackOrHome } from "../utils/navigationHelpers";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -35,11 +38,22 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={authStyles.authScreen}>
+      <View style={promptStyles.promptHeader}>
+        <HeaderBackButton
+          onPress={() => goBackOrHome(navigation)}
+          accessibilityLabel="Back to home"
+        />
+        <View style={promptStyles.promptHeaderText}>
+          <Text style={promptStyles.promptHeaderTitle}>Login</Text>
+          <Text style={promptStyles.promptHeaderSubtitle}>Sign in to your account</Text>
+        </View>
+      </View>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={[authStyles.authScrollContent, { justifyContent: "center" }]}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={authStyles.authForm}>
-            <Text style={authStyles.authTitle}>Login</Text>
-
             <View style={authStyles.authField}>
               <Text style={authStyles.authLabel}>Email</Text>
               <TextInput

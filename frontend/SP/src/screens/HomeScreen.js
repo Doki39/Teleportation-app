@@ -26,6 +26,7 @@ import { USE_NATIVE_DRIVER } from "../utils/platformStyles";
 import { getWebHomePortalScale, getWebHomeRocketScale, getWebHomeScale } from "../utils/webLayout";
 import { useWebViewportSize } from "../utils/useWebViewportSize";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { fetchPublicConfig } from "../services/configServices";
 
 const ROCKET_SIZE = 118;
 
@@ -35,6 +36,7 @@ export default function HomeScreen({ navigation }) {
   const [isUploading, setIsUploading] = useState(false);
   const [generationLimitModalVisible, setGenerationLimitModalVisible] = useState(false);
   const [generationLimitMessage, setGenerationLimitMessage] = useState("");
+  const [guestEntryModeEnabled, setGuestEntryModeEnabled] = useState(false);
   const portalSpin = useRef(new Animated.Value(0)).current;
   const portalReverseSpin = useRef(new Animated.Value(0)).current;
   const portalPulse = useRef(new Animated.Value(0)).current;
@@ -64,6 +66,14 @@ export default function HomeScreen({ navigation }) {
       if (token) setLoggedIn(true);
       const u = await getStoredUser();
       setIsAdmin(isUserAdmin(u));
+      try {
+        const cfg = await fetchPublicConfig();
+        if (typeof cfg?.guestHomeFlowEnabled === "boolean") {
+          setGuestEntryModeEnabled(cfg.guestHomeFlowEnabled);
+        }
+      } catch {
+        setGuestEntryModeEnabled(false);
+      }
     };
     checkLogin();
   }, []);
@@ -72,6 +82,18 @@ export default function HomeScreen({ navigation }) {
     useCallback(() => {
       let cancelled = false;
       (async () => {
+        try {
+          const cfg = await fetchPublicConfig();
+          if (
+            !cancelled &&
+            cfg &&
+            typeof cfg.guestHomeFlowEnabled === "boolean"
+          ) {
+            setGuestEntryModeEnabled(cfg.guestHomeFlowEnabled);
+          }
+        } catch {
+          if (!cancelled) setGuestEntryModeEnabled(false);
+        }
         const token = await AsyncStorage.getItem("token");
         if (!token) {
           setIsAdmin(false);
@@ -165,6 +187,9 @@ export default function HomeScreen({ navigation }) {
 
   const BUTTONS_TOP = canvasH / 2 + ROCKET_SIZE / 2 + 24 + 40;
   const homeHeaderClearance = Math.max(insets.top, Platform.OS === "ios" ? 8 : 4) + 78;
+
+  const guestUploadAllowed = !loggedIn && guestEntryModeEnabled;
+  const showPrimaryActions = loggedIn || guestUploadAllowed;
 
   const mainContent = (
     <>
@@ -284,44 +309,54 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {loggedIn && (
+      {showPrimaryActions && (
         <View style={[homeStyles.homeRocketContainer, { pointerEvents: "box-none" }]}>
           <RocketButton onPress={handleCamera} baseScale={rocketScale} />
         </View>
       )}
 
-      {loggedIn && (
+      {showPrimaryActions && (
         <View style={[homeStyles.buttonsWrap, { top: BUTTONS_TOP }]}>
-              <ActionButton
-                icon={<Ionicons name="cloud-upload-outline" size={20} color={ui.colors.primary} />}
-                label="Upload from Library"
-                onPress={handleUpload}
-              />
-              <ActionButton
-                icon={<Ionicons name="images-outline" size={20} color={ui.colors.secondary} />}
-                label="View Library"
-                onPress={() => navigation.replace("Library")}
-              />
-              {isAdmin && (
-                <ActionButton
-                  icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
-                  label="Admin panel"
-                  onPress={() => navigation.navigate("AdminPanel")}
-                  variant="secondary"
-                />
-              )}
+          <ActionButton
+            icon={<Ionicons name="cloud-upload-outline" size={20} color={ui.colors.primary} />}
+            label="Upload from Library"
+            onPress={handleUpload}
+          />
+          <ActionButton
+            icon={<Ionicons name="images-outline" size={20} color={ui.colors.secondary} />}
+            label="View Library"
+            onPress={() => navigation.replace("Library")}
+          />
+          {guestUploadAllowed && (
+            <ActionButton
+              icon={<Ionicons name="person-add-outline" size={20} color={ui.colors.primary} />}
+              label="Register"
+              onPress={() => navigation.replace("Registration")}
+            />
+          )}
+          {loggedIn && isAdmin && (
+            <ActionButton
+              icon={<Ionicons name="construct-outline" size={20} color={ui.colors.secondary} />}
+              label="Admin panel"
+              onPress={() => navigation.navigate("AdminPanel")}
+              variant="secondary"
+            />
+          )}
         </View>
       )}
 
       <View
         style={[
           homeStyles.homeContentWrapper,
-          { pointerEvents: loggedIn ? "box-none" : "auto", paddingTop: homeHeaderClearance },
+          {
+            pointerEvents: showPrimaryActions ? "box-none" : "auto",
+            paddingTop: homeHeaderClearance,
+          },
         ]}
       >
         <SlideShow title="Where people went with us" />
 
-        {!loggedIn && (
+        {!loggedIn && !guestUploadAllowed && (
           <>
             <View style={{ flex: 0.8 }} />
             <View style={homeStyles.guestWrap}>

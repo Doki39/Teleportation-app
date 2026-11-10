@@ -1,11 +1,7 @@
-import { google } from "googleapis";
+import { getDriveV3 } from "./googleDriveClient.js";
 
 export async function pipeDriveFileToResponse(fileId, res) {
-  const auth = new google.auth.GoogleAuth({
-    scopes: "https://www.googleapis.com/auth/drive",
-  });
-  const authClient = await auth.getClient();
-  const drive = google.drive({ version: "v3", auth: authClient });
+  const drive = await getDriveV3();
 
   const meta = await drive.files.get({
     fileId,
