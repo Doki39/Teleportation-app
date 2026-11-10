@@ -45,6 +45,7 @@ services:
       GOOGLE_CREDENTIALS_OBJECT_KEY: ${GOOGLE_CREDENTIALS_OBJECT_KEY:-}
     volumes:
       - api_uploads:/app/uploads
+      - ./backend/teleportation-app-c7f4fbfab6d8.json:/app/teleportation-app-c7f4fbfab6d8.json:ro
 
   web:
     profiles: ["web"]
