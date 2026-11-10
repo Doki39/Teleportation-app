@@ -47,25 +47,21 @@ function collectCorsOrigins() {
   return out.filter(Boolean);
 }
 
-function corsOriginFromEnv() {
+function buildCorsOptions() {
   const parts = collectCorsOrigins();
-  if (parts.length === 0) return true;
-  if (parts.includes("*")) return true;
-  const uniq = [...new Set(parts)];
-  if (uniq.length === 1) return uniq[0];
-  return (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const norm = origin.replace(/\/$/, "");
-    if (uniq.includes(norm)) return callback(null, true);
-    callback(null, false);
+  const base = {
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+    optionsSuccessStatus: 204,
   };
+  if (parts.length === 0 || parts.includes("*")) {
+    return { ...base, origin: true };
+  }
+  return { ...base, origin: [...new Set(parts)] };
 }
 
-app.use(
-  cors({
-    origin: corsOriginFromEnv(),
-  })
-);
+const corsOptions = buildCorsOptions();
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/uploads", express.static(UPLOADS_DIR));
@@ -125,7 +121,11 @@ async function start() {
   }
 
   app.listen(PORT, () => {
+    const allowed = corsOptions.origin;
+    const corsLabel =
+      allowed === true ? "(reflect / allow all)" : JSON.stringify(allowed);
     console.log(`Server running on port ${PORT}`);
+    console.log(`[cors] allowed origins ${corsLabel}`);
   });
 }
 
