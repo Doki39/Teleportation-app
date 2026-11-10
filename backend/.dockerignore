@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+.git
+uploads
+teleportation-app-c7f4fbfab6d8.json
+*.md

@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-teleport}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-teleport}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-teleport} -d ${POSTGRES_DB:-teleport}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-10000}:10000"
+    environment:
+      PORT: 10000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-teleport}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-teleport}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:10000}
+      DRIVE_UPLOAD_FOLDER_ID: ${DRIVE_UPLOAD_FOLDER_ID:-}
+      NANOBANANA_API_KEY: ${NANOBANANA_API_KEY:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-}
+      AWS_GOOGLE_CREDENTIALS_BUCKET: ${AWS_GOOGLE_CREDENTIALS_BUCKET:-}
+      GOOGLE_CREDENTIALS_OBJECT_KEY: ${GOOGLE_CREDENTIALS_OBJECT_KEY:-}
+    volumes:
+      - api_uploads:/app/uploads
+
+  web:
+    profiles: ["web"]
+    build:
+      context: ./frontend/SP
+      dockerfile: Dockerfile
+      args:
+        EXPO_PUBLIC_API_BASE_URL: ${EXPO_PUBLIC_API_BASE_URL:-http://localhost:10000}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  postgres_data:
+  api_uploads:

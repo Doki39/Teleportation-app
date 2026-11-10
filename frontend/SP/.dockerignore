@@ -1,0 +1,11 @@
+node_modules
+.expo
+dist
+web-build
+.git
+.env
+.env.*
+npm-debug.log
+*.md
+android
+ios
