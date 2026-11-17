@@ -4,7 +4,6 @@ import { nanoid } from "nanoid";
 import { generatePicture } from "../models/nano-banana.js";
 import { pool } from "../data/dbconnection.js";
 import { uploadImage, uploadBufferToDrive } from "../services/uploadService.js";
-import { pipeDriveFileToResponse } from "../services/driveMediaService.js";
 import {
   requireAuth,
   requireAdmin,
@@ -64,22 +63,6 @@ async function insertGeneratedPhotoRow({ uid, guestSessionId, unprocessedImageUr
     return rows;
   }
 }
-
-router.get("/drive-media/:fileId", async (req, res) => {
-  try {
-    const raw = req.params.fileId;
-    const fileId = decodeURIComponent(String(raw ?? "").trim());
-    if (!fileId || fileId.includes("..") || fileId.includes("/") || fileId.length > 128) {
-      return res.status(400).json({ message: "Invalid Drive file id" });
-    }
-    await pipeDriveFileToResponse(fileId, res);
-  } catch (err) {
-    console.error("drive-media:", err);
-    if (!res.headersSent) {
-      res.status(500).json({ message: err.message || "Failed to load image" });
-    }
-  }
-});
 
 function toAbsoluteImageUrl(imageUrl, req) {
   const s = String(imageUrl ?? "").trim();
